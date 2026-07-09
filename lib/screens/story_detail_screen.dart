@@ -41,31 +41,26 @@ class StoryDetailScreen extends StatelessWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppTheme.screenPadding,
-                  4,
-                  AppTheme.screenPadding,
-                  32,
-                ),
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      story.locationLabel,
+                      story.locationLabel.replaceAll(' · ', ' • '),
                       style: AppTheme.sans(
                         fontSize: 12,
-                        letterSpacing: 1.0,
+                        letterSpacing: 0.8,
                         fontWeight: FontWeight.w500,
                         color: AppColors.mutedText,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Text(
                       story.headline,
                       style: AppTheme.serif(
-                        fontSize: 28,
+                        fontSize: 30,
                         fontWeight: FontWeight.w500,
-                        height: 1.2,
+                        height: 1.18,
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -119,10 +114,10 @@ class StoryDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Container(
-                      height: 180,
+                      height: 176,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(20),
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -137,12 +132,13 @@ class StoryDetailScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 24),
                     Text(
                       story.body,
-                      style: AppTheme.sans(
-                        fontSize: 16,
-                        height: 1.65,
+                      style: AppTheme.serif(
+                        fontSize: 17,
+                        height: 1.7,
+                        fontWeight: FontWeight.w400,
                         color: AppColors.text,
                       ),
                     ),

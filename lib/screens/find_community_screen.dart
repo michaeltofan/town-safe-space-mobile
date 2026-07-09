@@ -26,11 +26,11 @@ class _FindCommunityScreenState extends State<FindCommunityScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.screenPadding),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               IconButton(
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
@@ -38,12 +38,12 @@ class _FindCommunityScreenState extends State<FindCommunityScreen> {
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
               Text(
                 'Where do you live?',
-                style: AppTheme.serif(fontSize: 28, fontWeight: FontWeight.w500),
+                style: AppTheme.serif(fontSize: 30, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
                 'We’ll connect you to your real local community.',
                 style: AppTheme.sans(
@@ -52,21 +52,21 @@ class _FindCommunityScreenState extends State<FindCommunityScreen> {
                   height: 1.45,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               CommunityDropdown(
                 label: 'Country',
                 value: _country,
                 items: const ['Italy'],
                 onChanged: (value) => setState(() => _country = value),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               CommunityDropdown(
                 label: 'City',
                 value: _city,
                 items: const ['Milano'],
                 onChanged: (value) => setState(() => _city = value),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               CommunityDropdown(
                 label: 'Neighborhood',
                 value: _neighborhood,
@@ -90,7 +90,7 @@ class _FindCommunityScreenState extends State<FindCommunityScreen> {
                       }
                     : null,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Center(
                 child: Text(
                   'You can change later in your profile.',
@@ -100,7 +100,7 @@ class _FindCommunityScreenState extends State<FindCommunityScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
             ],
           ),
         ),

@@ -25,7 +25,7 @@ class LocalDiscussionScreen extends StatelessWidget {
           const SizedBox(height: 6),
         ],
         Text(
-          locationLabel,
+          locationLabel.replaceAll(' · ', ' • '),
           style: AppTheme.sans(
             fontSize: 13,
             color: AppColors.mutedText,
@@ -82,45 +82,58 @@ class LocalDiscussionScreen extends StatelessWidget {
             ),
             Container(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.card,
-                border: const Border(
+                border: Border(
                   top: BorderSide(color: AppColors.border),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, -3),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Write your comment…',
+                        hintStyle: AppTheme.sans(
+                          fontSize: 14,
+                          color: AppColors.mutedText,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.background,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(999),
+                          borderSide: const BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_upward_rounded,
+                      color: AppColors.card,
+                      size: 18,
+                    ),
                   ),
                 ],
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Write your comment…',
-                  hintStyle: AppTheme.sans(
-                    fontSize: 14,
-                    color: AppColors.mutedText,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(999),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(999),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(999),
-                    borderSide: const BorderSide(color: AppColors.primary),
-                  ),
-                ),
               ),
             ),
           ],
@@ -153,20 +166,38 @@ class _CommentCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            name,
-            style: AppTheme.serif(fontSize: 16, fontWeight: FontWeight.w500),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.softWarm,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Icon(Icons.person_outline, size: 16, color: AppColors.primary),
           ),
-          const SizedBox(height: 6),
-          Text(
-            body,
-            style: AppTheme.sans(
-              fontSize: 14,
-              height: 1.5,
-              color: AppColors.text,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: AppTheme.serif(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  body,
+                  style: AppTheme.sans(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: AppColors.text,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

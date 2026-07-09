@@ -20,36 +20,36 @@ class AccessGrantedScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.screenPadding),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             children: [
               const Spacer(flex: 2),
               Container(
-                width: 92,
-                height: 92,
+                width: 108,
+                height: 108,
                 decoration: BoxDecoration(
-                  color: AppColors.softWarm,
+                  color: const Color(0xFFE6DDD0),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 18,
+                      blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
                   ],
                 ),
                 child: const Icon(
                   Icons.check_rounded,
-                  size: 46,
+                  size: 48,
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               Text(
                 'You’re in!',
-                style: AppTheme.serif(fontSize: 34, fontWeight: FontWeight.w500),
+                style: AppTheme.serif(fontSize: 36, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Text(
                 'You now have access to $neighborhood, $city.\n'
                 'Welcome to your community.',
@@ -57,7 +57,7 @@ class AccessGrantedScreen extends StatelessWidget {
                 style: AppTheme.sans(
                   fontSize: 15,
                   color: AppColors.mutedText,
-                  height: 1.55,
+                  height: 1.6,
                 ),
               ),
               const Spacer(flex: 3),
@@ -75,7 +75,7 @@ class AccessGrantedScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
             ],
           ),
         ),

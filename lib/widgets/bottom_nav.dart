@@ -15,58 +15,41 @@ class BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        border: const Border(
-          top: BorderSide(color: AppColors.border),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
+      color: AppColors.primary,
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 58,
+          height: 56,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(
-                icon: Icons.auto_stories_outlined,
-                selectedIcon: Icons.auto_stories,
-                label: 'Feed',
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home_rounded,
                 selected: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
               _NavItem(
                 icon: Icons.search,
                 selectedIcon: Icons.search,
-                label: 'Search',
                 selected: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
               _NavItem(
                 icon: Icons.add_circle_outline,
                 selectedIcon: Icons.add_circle,
-                label: 'Create',
                 selected: currentIndex == 2,
                 onTap: () => onTap(2),
               ),
               _NavItem(
-                icon: Icons.forum_outlined,
-                selectedIcon: Icons.forum,
-                label: 'Discussion',
+                icon: Icons.chat_bubble_outline_rounded,
+                selectedIcon: Icons.chat_bubble_rounded,
                 selected: currentIndex == 3,
                 onTap: () => onTap(3),
               ),
               _NavItem(
                 icon: Icons.person_outline,
                 selectedIcon: Icons.person,
-                label: 'Profile',
                 selected: currentIndex == 4,
                 onTap: () => onTap(4),
               ),
@@ -82,39 +65,30 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.icon,
     required this.selectedIcon,
-    required this.label,
     required this.selected,
     required this.onTap,
   });
 
   final IconData icon;
   final IconData selectedIcon;
-  final String label;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.mutedText;
+    final color = selected
+        ? AppColors.card
+        : AppColors.card.withValues(alpha: 0.55);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(selected ? selectedIcon : icon, color: color, size: 20),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: AppTheme.sans(
-                fontSize: 10,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                color: color,
-              ),
-            ),
-          ],
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: Icon(
+          selected ? selectedIcon : icon,
+          color: color,
+          size: 22,
         ),
       ),
     );

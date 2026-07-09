@@ -42,7 +42,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         city: widget.city,
         neighborhood: widget.neighborhood,
         onOpenFeed: () => setState(() => _index = 0),
-        onOpenDiscussion: () => setState(() => _index = 3),
       ),
     ];
 
@@ -70,7 +69,7 @@ class _PlaceholderTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.screenPadding),
+        padding: const EdgeInsets.all(28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -99,65 +98,57 @@ class _ProfileMenu extends StatelessWidget {
     required this.city,
     required this.neighborhood,
     required this.onOpenFeed,
-    required this.onOpenDiscussion,
   });
 
   final String city;
   final String neighborhood;
   final VoidCallback onOpenFeed;
-  final VoidCallback onOpenDiscussion;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          AppTheme.screenPadding,
-          20,
-          AppTheme.screenPadding,
-          32,
-        ),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         children: [
           Text(
-            'Profile',
-            style: AppTheme.serif(fontSize: 28, fontWeight: FontWeight.w500),
+            'Menu',
+            style: AppTheme.serif(fontSize: 30, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 6),
           Text(
             '$neighborhood, $city',
             style: AppTheme.sans(fontSize: 14, color: AppColors.mutedText),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 24),
           _MenuRow(
+            icon: Icons.auto_stories_outlined,
             title: 'Feed',
             subtitle: 'Local stories',
             onTap: onOpenFeed,
           ),
           _MenuRow(
+            icon: Icons.event_outlined,
             title: 'Events',
             subtitle: 'What’s happening nearby',
             onTap: () {},
           ),
           _MenuRow(
+            icon: Icons.edit_outlined,
             title: 'Create Story',
             subtitle: 'Share with your community',
             onTap: () {},
           ),
           _MenuRow(
+            icon: Icons.bookmark_border_rounded,
             title: 'Saved',
             subtitle: 'Stories you saved',
             onTap: () {},
           ),
           _MenuRow(
+            icon: Icons.person_outline,
             title: 'Profile',
             subtitle: 'Your account',
             onTap: () {},
-          ),
-          const SizedBox(height: 8),
-          _MenuRow(
-            title: 'Discussion',
-            subtitle: 'Talk with neighbors',
-            onTap: onOpenDiscussion,
           ),
         ],
       ),
@@ -167,11 +158,13 @@ class _ProfileMenu extends StatelessWidget {
 
 class _MenuRow extends StatelessWidget {
   const _MenuRow({
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
   });
 
+  final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
@@ -187,7 +180,16 @@ class _MenuRow extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.softWarm,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 20),
+        ),
         title: Text(
           title,
           style: AppTheme.serif(fontSize: 16, fontWeight: FontWeight.w500),

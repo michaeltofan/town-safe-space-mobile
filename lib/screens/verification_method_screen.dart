@@ -31,11 +31,11 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.screenPadding),
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               IconButton(
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
@@ -43,12 +43,12 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
                 'How would you like to verify?',
                 style: AppTheme.serif(fontSize: 28, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 24),
               VerificationCard(
                 title: 'Government ID',
                 subtitle: 'Fast & secure',

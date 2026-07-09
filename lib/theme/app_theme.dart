@@ -10,7 +10,7 @@ class AppColors {
   static const Color border = Color(0x332B1F12);
   static const Color softWarm = Color(0xFFE8DFD0);
   static const Color softAccent = Color(0xFFC4B5A0);
-  static const Color previewBackdrop = Color(0xFF1A1612);
+  static const Color previewBackdrop = Color(0xFF2A241E);
 }
 
 class AppTheme {
