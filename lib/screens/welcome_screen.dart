@@ -5,86 +5,96 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'find_community_screen.dart';
 
-/// Strict storyboard Welcome: brand upper third, street card lower,
-/// Welcome pill overlapping the image, Learn more beneath.
+/// Welcome screen rebuilt to match storyboard phone “1. Welcome Screen”.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8F3EA),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final h = constraints.maxHeight;
             final w = constraints.maxWidth;
+            final side = (w * 0.085).clamp(22.0, 32.0);
 
-            // Storyboard proportions on a ~390×844 canvas.
-            final titleTop = h * 0.11;
-            final imageTop = h * 0.42;
-            final imageHeight = h * 0.34;
-            final buttonBottom = 28.0;
-            final horizontal = 28.0;
-            final imageWidth = w - horizontal * 2;
+            // Storyboard composition on a tall phone canvas.
+            final titleTop = h * 0.095;
+            final imageTop = h * 0.385;
+            final imageHeight = (h * 0.305).clamp(170.0, 236.0);
+            // Welcome sits on the lower edge of the street card.
+            final welcomeTop = imageTop + imageHeight - 26;
 
             return Stack(
               children: [
-                // Brand block — upper third
+                // 1) Title + subtitle — upper third
                 Positioned(
                   top: titleTop,
-                  left: horizontal,
-                  right: horizontal,
+                  left: side,
+                  right: side,
                   child: Column(
                     children: [
                       Text(
                         'TOWN',
                         textAlign: TextAlign.center,
-                        style: AppTheme.serif(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 6.5,
+                        style: const TextStyle(
+                          fontFamily: 'Georgia',
+                          fontFamilyFallback: [
+                            'Times New Roman',
+                            'Times',
+                            'serif',
+                          ],
+                          fontSize: 44,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 7,
                           height: 1.0,
-                          color: AppColors.text,
+                          color: Color(0xFF24221F),
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      Text(
+                      const SizedBox(height: 16),
+                      const Text(
                         'Real communities.\nReal stories.\nNo noise.',
                         textAlign: TextAlign.center,
-                        style: AppTheme.serif(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontFamily: 'Helvetica Neue',
+                          fontFamilyFallback: [
+                            'Helvetica',
+                            'Arial',
+                            'sans-serif',
+                          ],
+                          fontSize: 16,
                           fontWeight: FontWeight.w400,
                           height: 1.55,
-                          color: AppColors.mutedText,
+                          color: Color(0xFF6F675D),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                // Soft Milano street card — lower half
+                // 2) Soft local street card — lower-middle
                 Positioned(
                   top: imageTop,
-                  left: horizontal,
-                  width: imageWidth,
+                  left: side,
+                  right: side,
                   height: imageHeight,
-                  child: const _MilanoStreetCard(),
+                  child: const _StreetPhotoCard(),
                 ),
 
-                // CTAs — over / just below the image, storyboard placement
+                // 3) Buttons — Welcome overlaps image bottom; Learn more below
                 Positioned(
-                  left: horizontal,
-                  right: horizontal,
-                  bottom: buttonBottom,
+                  top: welcomeTop,
+                  left: side,
+                  right: side,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Slight overlap onto the image area
-                      Transform.translate(
-                        offset: Offset(0, -(h * 0.02)),
-                        child: _WelcomePill(
-                          label: 'Welcome',
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute<void>(
@@ -92,11 +102,60 @@ class WelcomeScreen extends StatelessWidget {
                               ),
                             );
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2B1F12),
+                            foregroundColor: const Color(0xFFFFFCF6),
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          child: const Text(
+                            'Welcome',
+                            style: TextStyle(
+                              fontFamily: 'Helvetica Neue',
+                              fontFamilyFallback: [
+                                'Helvetica',
+                                'Arial',
+                                'sans-serif',
+                              ],
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFFFFFCF6),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),
-                      _LearnMorePill(
-                        onPressed: () => _showLearnMore(context),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: TextButton(
+                          onPressed: () => _showLearnMore(context),
+                          style: TextButton.styleFrom(
+                            backgroundColor: const Color(0xFFEDE6DA),
+                            foregroundColor: const Color(0xFF6F675D),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          child: const Text(
+                            'Learn more',
+                            style: TextStyle(
+                              fontFamily: 'Helvetica Neue',
+                              fontFamilyFallback: [
+                                'Helvetica',
+                                'Arial',
+                                'sans-serif',
+                              ],
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF6F675D),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -117,25 +176,33 @@ class WelcomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 36),
+        return const Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, 36),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Come back to your town',
-                style: AppTheme.serif(fontSize: 22, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontFamilyFallback: ['Times New Roman', 'Times', 'serif'],
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF24221F),
+                ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text(
                 'Town is a global civic app with local-only access. '
                 'You join the real community where you live — no worldwide feed, '
                 'no viral noise, no anonymous ghost accounts.',
-                style: AppTheme.sans(
+                style: TextStyle(
+                  fontFamily: 'Helvetica Neue',
+                  fontFamilyFallback: ['Helvetica', 'Arial', 'sans-serif'],
                   fontSize: 15,
-                  color: AppColors.mutedText,
                   height: 1.55,
+                  color: Color(0xFF6F675D),
                 ),
               ),
             ],
@@ -146,88 +213,20 @@ class WelcomeScreen extends StatelessWidget {
   }
 }
 
-class _WelcomePill extends StatelessWidget {
-  const _WelcomePill({required this.label, required this.onPressed});
-
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.card,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTheme.sans(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: AppColors.card,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LearnMorePill extends StatelessWidget {
-  const _LearnMorePill({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.text,
-          backgroundColor: AppColors.card.withValues(alpha: 0.55),
-          side: const BorderSide(color: AppColors.border),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-        child: Text(
-          'Learn more',
-          style: AppTheme.sans(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: AppColors.mutedText,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Soft-focus European street photo placeholder — warm, editorial, not iconic.
-class _MilanoStreetCard extends StatelessWidget {
-  const _MilanoStreetCard();
+/// Soft warm European street card — photo-like, not an icon.
+class _StreetPhotoCard extends StatelessWidget {
+  const _StreetPhotoCard();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -235,77 +234,61 @@ class _MilanoStreetCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Base warm photographic wash
+          // Warm golden-hour base
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFE8DCC8),
-                  Color(0xFFD2BFA5),
-                  Color(0xFFB89A7A),
-                  Color(0xFF8A6E55),
+                  Color(0xFFF0E4D0),
+                  Color(0xFFDCC7A8),
+                  Color(0xFFC4A484),
+                  Color(0xFF9A7A5A),
                 ],
-                stops: [0.0, 0.35, 0.68, 1.0],
+                stops: [0.0, 0.32, 0.65, 1.0],
               ),
             ),
           ),
-          // Late-afternoon light
+          // Soft afternoon light
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
-                center: const Alignment(0.15, -0.55),
-                radius: 1.15,
+                center: const Alignment(0.0, -0.7),
+                radius: 1.2,
                 colors: [
-                  const Color(0xFFFFF1D8).withValues(alpha: 0.55),
+                  const Color(0xFFFFF3DD).withValues(alpha: 0.55),
                   Colors.transparent,
                 ],
               ),
             ),
           ),
-          // Detailed street scene
-          const CustomPaint(painter: _MilanoStreetPainter()),
-          // Soft photographic haze
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.06),
-                  Colors.transparent,
-                  Colors.white.withValues(alpha: 0.05),
-                ],
-              ),
-            ),
-          ),
-          // Photographic vignette
+          const CustomPaint(painter: _LocalStreetPainter()),
+          // Soft vignette
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 center: Alignment.center,
-                radius: 1.05,
+                radius: 1.0,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withValues(alpha: 0.22),
+                  Colors.black.withValues(alpha: 0.18),
                 ],
-                stops: const [0.45, 1.0],
+                stops: const [0.5, 1.0],
               ),
             ),
           ),
-          // Bottom soft fade into canvas mood
+          // Bottom edge softness
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.white.withValues(alpha: 0.08),
                   Colors.transparent,
-                  Colors.black.withValues(alpha: 0.16),
+                  Colors.black.withValues(alpha: 0.12),
                 ],
-                stops: const [0.0, 0.4, 1.0],
+                stops: const [0.65, 1.0],
               ),
             ),
           ),
@@ -315,216 +298,160 @@ class _MilanoStreetCard extends StatelessWidget {
   }
 }
 
-class _MilanoStreetPainter extends CustomPainter {
-  const _MilanoStreetPainter();
+class _LocalStreetPainter extends CustomPainter {
+  const _LocalStreetPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
-    // Distant warm sky haze band
-    final sky = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(0, 0),
-        Offset(0, h * 0.42),
-        [
-          const Color(0xFFF4E8D6),
-          const Color(0xFFE2D0B6),
-        ],
-      );
-    canvas.drawRect(Rect.fromLTWH(0, 0, w, h * 0.42), sky);
-
-    // Left building row (closer facade)
-    _drawFacade(
-      canvas,
-      rect: Rect.fromLTWH(-w * 0.02, h * 0.18, w * 0.34, h * 0.7),
-      color: const Color(0xFF7A6350),
-      windowCols: 3,
-      windowRows: 5,
+    // Sky band
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, w, h * 0.38),
+      Paint()
+        ..shader = ui.Gradient.linear(
+          Offset.zero,
+          Offset(0, h * 0.38),
+          const [Color(0xFFF6EBDA), Color(0xFFE5D3B8)],
+        ),
     );
 
-    // Mid-left narrower building
-    _drawFacade(
+    // Left building mass
+    _building(
       canvas,
-      rect: Rect.fromLTWH(w * 0.26, h * 0.12, w * 0.18, h * 0.72),
-      color: const Color(0xFF6B5544),
-      windowCols: 2,
-      windowRows: 6,
+      Rect.fromLTWH(-w * 0.04, h * 0.16, w * 0.36, h * 0.72),
+      const Color(0xFF7A614C),
+      cols: 3,
+      rows: 5,
     );
 
-    // Center distant tower / church-like mass
-    final tower = Paint()..color = const Color(0xFF5E4A3B).withValues(alpha: 0.72);
+    // Mid-left
+    _building(
+      canvas,
+      Rect.fromLTWH(w * 0.26, h * 0.10, w * 0.18, h * 0.74),
+      const Color(0xFF6A5341),
+      cols: 2,
+      rows: 6,
+    );
+
+    // Distant center mass
+    final center = Paint()..color = const Color(0xFF5A4638).withValues(alpha: 0.7);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.44, h * 0.08, w * 0.14, h * 0.7),
-        const Radius.circular(3),
+        Rect.fromLTWH(w * 0.45, h * 0.08, w * 0.12, h * 0.68),
+        const Radius.circular(2),
       ),
-      tower,
+      center,
     );
-    // Tower top
-    final spire = Path()
-      ..moveTo(w * 0.44, h * 0.08)
-      ..lineTo(w * 0.51, h * 0.01)
-      ..lineTo(w * 0.58, h * 0.08)
-      ..close();
-    canvas.drawPath(spire, tower);
 
     // Right buildings
-    _drawFacade(
+    _building(
       canvas,
-      rect: Rect.fromLTWH(w * 0.58, h * 0.16, w * 0.22, h * 0.68),
-      color: const Color(0xFF745C49),
-      windowCols: 2,
-      windowRows: 5,
+      Rect.fromLTWH(w * 0.58, h * 0.14, w * 0.22, h * 0.7),
+      const Color(0xFF745C48),
+      cols: 2,
+      rows: 5,
     );
-    _drawFacade(
+    _building(
       canvas,
-      rect: Rect.fromLTWH(w * 0.76, h * 0.22, w * 0.28, h * 0.66),
-      color: const Color(0xFF826854),
-      windowCols: 3,
-      windowRows: 4,
+      Rect.fromLTWH(w * 0.78, h * 0.20, w * 0.28, h * 0.68),
+      const Color(0xFF836954),
+      cols: 3,
+      rows: 4,
     );
 
-    // Soft awnings
-    final awning = Paint()..color = const Color(0xFF4A382C).withValues(alpha: 0.35);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.04, h * 0.58, w * 0.2, h * 0.045),
-        const Radius.circular(3),
-      ),
-      awning,
+    // Soft trees / vertical foliage
+    final leaf = Paint()..color = const Color(0xFF3E342B).withValues(alpha: 0.28);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.1, h * 0.5), width: w * 0.2, height: h * 0.3),
+      leaf,
     );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.62, h * 0.56, w * 0.16, h * 0.04),
-        const Radius.circular(3),
-      ),
-      awning,
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.9, h * 0.48), width: w * 0.18, height: h * 0.28),
+      leaf,
     );
 
-    // Cobblestone street perspective
+    // Street perspective plane
     final street = Path()
       ..moveTo(0, h)
       ..lineTo(0, h * 0.78)
-      ..quadraticBezierTo(w * 0.5, h * 0.62, w, h * 0.76)
+      ..quadraticBezierTo(w * 0.5, h * 0.60, w, h * 0.76)
       ..lineTo(w, h)
       ..close();
     canvas.drawPath(
       street,
       Paint()
         ..shader = ui.Gradient.linear(
-          Offset(0, h * 0.62),
+          Offset(0, h * 0.6),
           Offset(0, h),
           [
-            const Color(0xFF9A8168).withValues(alpha: 0.55),
-            const Color(0xFF6E5744).withValues(alpha: 0.75),
+            const Color(0xFFA3886C).withValues(alpha: 0.55),
+            const Color(0xFF6E5743).withValues(alpha: 0.8),
           ],
         ),
     );
 
-    // Perspective lines on street
-    final linePaint = Paint()
-      ..color = const Color(0xFF4A3A2E).withValues(alpha: 0.12)
+    // Subtle perspective lines
+    final line = Paint()
+      ..color = const Color(0xFF3F3228).withValues(alpha: 0.1)
       ..strokeWidth = 1;
-    for (var i = 1; i <= 5; i++) {
-      final t = i / 6;
+    for (var i = 1; i < 5; i++) {
+      final t = i / 5;
       canvas.drawLine(
-        Offset(w * t, h * (0.72 + t * 0.04)),
-        Offset(w * (0.35 + t * 0.3), h),
-        linePaint,
+        Offset(w * t, h * (0.7 + 0.02 * t)),
+        Offset(w * 0.5, h),
+        line,
       );
     }
 
-    // Soft tree silhouettes left/right
-    final foliage = Paint()..color = const Color(0xFF3F342C).withValues(alpha: 0.28);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.08, h * 0.52),
-        width: w * 0.22,
-        height: h * 0.28,
-      ),
-      foliage,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.92, h * 0.5),
-        width: w * 0.2,
-        height: h * 0.26,
-      ),
-      foliage,
-    );
-
-    // Tiny warm window glows (late light)
-    final glow = Paint()..color = const Color(0xFFFFE2B0).withValues(alpha: 0.35);
-    for (var i = 0; i < 6; i++) {
-      final x = w * (0.3 + (i % 3) * 0.06);
-      final y = h * (0.28 + (i ~/ 3) * 0.12);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(x, y, w * 0.025, h * 0.035),
-          const Radius.circular(1.5),
-        ),
-        glow,
-      );
-    }
-
-    // Soft atmospheric haze mid-distance
+    // Soft atmospheric mid haze
     canvas.drawRect(
-      Rect.fromLTWH(0, h * 0.35, w, h * 0.25),
+      Rect.fromLTWH(0, h * 0.3, w, h * 0.28),
       Paint()
         ..shader = ui.Gradient.linear(
-          Offset(0, h * 0.35),
-          Offset(0, h * 0.6),
+          Offset(0, h * 0.3),
+          Offset(0, h * 0.58),
           [
-            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.1),
             Colors.transparent,
           ],
         ),
     );
   }
 
-  void _drawFacade(
-    Canvas canvas, {
-    required Rect rect,
-    required Color color,
-    required int windowCols,
-    required int windowRows,
+  void _building(
+    Canvas canvas,
+    Rect rect,
+    Color color, {
+    required int cols,
+    required int rows,
   }) {
-    final body = Paint()..color = color.withValues(alpha: 0.78);
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, const Radius.circular(2)),
-      body,
+      Paint()..color = color.withValues(alpha: 0.78),
     );
 
-    // Slight lighter face edge
-    canvas.drawRect(
-      Rect.fromLTWH(rect.left, rect.top, rect.width * 0.08, rect.height),
-      Paint()..color = Colors.white.withValues(alpha: 0.06),
-    );
+    final light = Paint()..color = const Color(0xFFEADCC8).withValues(alpha: 0.16);
+    final dark = Paint()..color = const Color(0xFF2A221B).withValues(alpha: 0.2);
 
-    final window = Paint()..color = const Color(0xFFE8D9C4).withValues(alpha: 0.18);
-    final darkWindow = Paint()..color = const Color(0xFF2C241C).withValues(alpha: 0.22);
-
-    final padX = rect.width * 0.14;
+    final padX = rect.width * 0.16;
     final padY = rect.height * 0.12;
     final usableW = rect.width - padX * 2;
     final usableH = rect.height - padY * 2;
-    final cellW = usableW / windowCols;
-    final cellH = usableH / windowRows;
+    final cellW = usableW / cols;
+    final cellH = usableH / rows;
 
-    for (var r = 0; r < windowRows; r++) {
-      for (var c = 0; c < windowCols; c++) {
-        final wx = rect.left + padX + c * cellW + cellW * 0.22;
-        final wy = rect.top + padY + r * cellH + cellH * 0.2;
-        final ww = cellW * 0.45;
-        final wh = cellH * 0.45;
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        final wx = rect.left + padX + c * cellW + cellW * 0.25;
+        final wy = rect.top + padY + r * cellH + cellH * 0.22;
         canvas.drawRRect(
           RRect.fromRectAndRadius(
-            Rect.fromLTWH(wx, wy, ww, wh),
-            const Radius.circular(1.5),
+            Rect.fromLTWH(wx, wy, cellW * 0.4, cellH * 0.42),
+            const Radius.circular(1.2),
           ),
-          (r + c).isEven ? window : darkWindow,
+          (r + c).isEven ? light : dark,
         );
       }
     }
