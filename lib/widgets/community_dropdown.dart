@@ -22,19 +22,12 @@ class CommunityDropdown extends StatelessWidget {
       initialValue: value,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(
-          color: AppColors.mutedText,
-          fontFamily: AppTheme.sansFallback,
-        ),
+        labelStyle: AppTheme.sans(fontSize: 14, color: AppColors.mutedText),
       ),
       dropdownColor: AppColors.card,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.mutedText),
-      style: const TextStyle(
-        color: AppColors.text,
-        fontFamily: AppTheme.sansFallback,
-        fontSize: 16,
-      ),
+      style: AppTheme.sans(fontSize: 15, color: AppColors.text),
       items: items
           .map(
             (item) => DropdownMenuItem<String>(

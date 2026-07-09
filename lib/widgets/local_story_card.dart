@@ -34,8 +34,8 @@ class LocalStoryCard extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.15),
-                    Colors.black.withValues(alpha: 0.55),
+                    Colors.black.withValues(alpha: 0.12),
+                    Colors.black.withValues(alpha: 0.58),
                   ],
                 ),
               ),
@@ -43,16 +43,15 @@ class LocalStoryCard extends StatelessWidget {
             SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 110),
+                padding: const EdgeInsets.fromLTRB(22, 22, 22, 96),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       story.locationLabel,
-                      style: TextStyle(
-                        fontFamily: AppTheme.sansFallback,
-                        fontSize: 13,
-                        letterSpacing: 1.2,
+                      style: AppTheme.sans(
+                        fontSize: 12,
+                        letterSpacing: 1.1,
                         fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: 0.85),
                       ),
@@ -60,50 +59,47 @@ class LocalStoryCard extends StatelessWidget {
                     const Spacer(),
                     Text(
                       story.headline,
-                      style: const TextStyle(
-                        fontFamily: AppTheme.serifFallback,
-                        fontSize: 32,
+                      style: AppTheme.serif(
+                        fontSize: 28,
                         height: 1.2,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Text(
                       story.summary,
-                      style: TextStyle(
-                        fontFamily: AppTheme.sansFallback,
-                        fontSize: 16,
+                      style: AppTheme.sans(
+                        fontSize: 15,
                         height: 1.5,
                         color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Container(
-                          width: 36,
-                          height: 36,
+                          width: 34,
+                          height: 34,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withValues(alpha: 0.18),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.35),
+                              color: Colors.white.withValues(alpha: 0.3),
                             ),
                           ),
                           child: const Icon(
                             Icons.person_outline,
                             color: Colors.white,
-                            size: 18,
+                            size: 16,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             '${story.authorName} · ${story.authorBadge}',
-                            style: TextStyle(
-                              fontFamily: AppTheme.sansFallback,
-                              fontSize: 13,
+                            style: AppTheme.sans(
+                              fontSize: 12,
                               color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
@@ -111,19 +107,19 @@ class LocalStoryCard extends StatelessWidget {
                         Icon(
                           Icons.bookmark_border_rounded,
                           color: Colors.white.withValues(alpha: 0.85),
-                          size: 22,
+                          size: 20,
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         Icon(
                           Icons.ios_share_rounded,
                           color: Colors.white.withValues(alpha: 0.85),
-                          size: 20,
+                          size: 18,
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         Icon(
                           Icons.flag_outlined,
                           color: Colors.white.withValues(alpha: 0.85),
-                          size: 20,
+                          size: 18,
                         ),
                       ],
                     ),

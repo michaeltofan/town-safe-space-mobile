@@ -12,27 +12,28 @@ class StoryDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                     color: AppColors.text,
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: () {},
-                    icon: const Icon(Icons.bookmark_border_rounded),
+                    icon: const Icon(Icons.bookmark_border_rounded, size: 22),
                     color: AppColors.text,
                   ),
                   IconButton(
                     onPressed: () {},
-                    icon: const Icon(Icons.ios_share_rounded),
+                    icon: const Icon(Icons.ios_share_rounded, size: 20),
                     color: AppColors.text,
                   ),
                 ],
@@ -40,31 +41,39 @@ class StoryDetailScreen extends StatelessWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(28, 8, 28, 40),
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.screenPadding,
+                  4,
+                  AppTheme.screenPadding,
+                  32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       story.locationLabel,
-                      style: const TextStyle(
-                        fontFamily: AppTheme.sansFallback,
-                        fontSize: 13,
-                        letterSpacing: 1.1,
+                      style: AppTheme.sans(
+                        fontSize: 12,
+                        letterSpacing: 1.0,
                         fontWeight: FontWeight.w500,
                         color: AppColors.mutedText,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Text(
                       story.headline,
-                      style: Theme.of(context).textTheme.headlineLarge,
+                      style: AppTheme.serif(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w500,
+                        height: 1.2,
+                      ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 18),
                     Row(
                       children: [
                         Container(
-                          width: 44,
-                          height: 44,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: AppColors.softWarm,
                             shape: BoxShape.circle,
@@ -73,17 +82,17 @@ class StoryDetailScreen extends StatelessWidget {
                           child: const Icon(
                             Icons.person_outline,
                             color: AppColors.primary,
+                            size: 20,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               story.authorName,
-                              style: const TextStyle(
-                                fontFamily: AppTheme.sansFallback,
-                                fontSize: 15,
+                              style: AppTheme.sans(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.text,
                               ),
@@ -91,9 +100,8 @@ class StoryDetailScreen extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               story.authorBadge,
-                              style: const TextStyle(
-                                fontFamily: AppTheme.sansFallback,
-                                fontSize: 13,
+                              style: AppTheme.sans(
+                                fontSize: 12,
                                 color: AppColors.mutedText,
                               ),
                             ),
@@ -101,21 +109,20 @@ class StoryDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Text(
                       '${story.dateLabel} · ${story.readTime}',
-                      style: const TextStyle(
-                        fontFamily: AppTheme.sansFallback,
-                        fontSize: 13,
+                      style: AppTheme.sans(
+                        fontSize: 12,
                         color: AppColors.mutedText,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     Container(
-                      height: 200,
+                      height: 180,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(22),
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -124,21 +131,22 @@ class StoryDetailScreen extends StatelessWidget {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 18,
+                            blurRadius: 16,
                             offset: const Offset(0, 8),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 22),
                     Text(
                       story.body,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            height: 1.7,
-                            fontSize: 17,
-                          ),
+                      style: AppTheme.sans(
+                        fontSize: 16,
+                        height: 1.65,
+                        color: AppColors.text,
+                      ),
                     ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 28),
                     Center(
                       child: TextButton(
                         onPressed: () {
@@ -150,13 +158,13 @@ class StoryDetailScreen extends StatelessWidget {
                             ),
                           );
                         },
-                        child: const Text(
+                        child: Text(
                           'Join the local discussion',
-                          style: TextStyle(
-                            fontFamily: AppTheme.serifFallback,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
+                          style: AppTheme.serif(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                             color: AppColors.primary,
+                          ).copyWith(
                             decoration: TextDecoration.underline,
                             decorationColor: AppColors.primary,
                           ),

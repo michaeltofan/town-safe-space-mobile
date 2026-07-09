@@ -28,26 +28,27 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 18),
+              const SizedBox(height: 8),
               IconButton(
                 onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                 color: AppColors.text,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 12),
               Text(
                 'How would you like to verify?',
-                style: Theme.of(context).textTheme.headlineLarge,
+                style: AppTheme.serif(fontSize: 28, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 22),
               VerificationCard(
                 title: 'Government ID',
                 subtitle: 'Fast & secure',
@@ -55,7 +56,7 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                 selected: _selected == 'id',
                 onTap: () => setState(() => _selected = 'id'),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               VerificationCard(
                 title: 'Utility Bill',
                 subtitle: 'Address confirmation',
@@ -63,7 +64,7 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                 selected: _selected == 'utility',
                 onTap: () => setState(() => _selected = 'utility'),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               VerificationCard(
                 title: 'Local Institution',
                 subtitle: 'e.g. University, Employer',
@@ -72,16 +73,17 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                 onTap: () => setState(() => _selected = 'institution'),
               ),
               const Spacer(),
-              const Text(
-                'We only verify. We don’t store documents.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTheme.sansFallback,
-                  fontSize: 13,
-                  color: AppColors.mutedText,
+              Center(
+                child: Text(
+                  'We only verify. We don’t store documents.',
+                  textAlign: TextAlign.center,
+                  style: AppTheme.sans(
+                    fontSize: 12,
+                    color: AppColors.mutedText,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               PrimaryButton(
                 label: 'Continue',
                 onPressed: _selected == null
@@ -97,7 +99,7 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                         );
                       },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
             ],
           ),
         ),

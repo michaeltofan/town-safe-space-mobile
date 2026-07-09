@@ -17,46 +17,48 @@ class AccessGrantedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.screenPadding),
           child: Column(
             children: [
               const Spacer(flex: 2),
               Container(
-                width: 104,
-                height: 104,
+                width: 92,
+                height: 92,
                 decoration: BoxDecoration(
                   color: AppColors.softWarm,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 20,
+                      blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
                   ],
                 ),
                 child: const Icon(
                   Icons.check_rounded,
-                  size: 52,
+                  size: 46,
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 28),
               Text(
                 'You’re in!',
-                style: Theme.of(context).textTheme.displayMedium,
+                style: AppTheme.serif(fontSize: 34, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               Text(
                 'You now have access to $neighborhood, $city.\n'
                 'Welcome to your community.',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.mutedText,
-                      height: 1.6,
-                    ),
+                style: AppTheme.sans(
+                  fontSize: 15,
+                  color: AppColors.mutedText,
+                  height: 1.55,
+                ),
               ),
               const Spacer(flex: 3),
               PrimaryButton(
@@ -73,7 +75,7 @@ class AccessGrantedScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
             ],
           ),
         ),

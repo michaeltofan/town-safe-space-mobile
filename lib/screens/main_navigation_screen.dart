@@ -47,6 +47,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: IndexedStack(
         index: _index,
         children: pages,
@@ -69,18 +70,22 @@ class _PlaceholderTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(AppTheme.screenPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
-            Text(title, style: Theme.of(context).textTheme.headlineLarge),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: AppTheme.serif(fontSize: 28, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 10),
             Text(
               subtitle,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.mutedText,
-                  ),
+              style: AppTheme.sans(
+                fontSize: 15,
+                color: AppColors.mutedText,
+              ),
             ),
           ],
         ),
@@ -106,19 +111,23 @@ class _ProfileMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(28, 28, 28, 40),
+        padding: const EdgeInsets.fromLTRB(
+          AppTheme.screenPadding,
+          20,
+          AppTheme.screenPadding,
+          32,
+        ),
         children: [
-          Text('Profile', style: Theme.of(context).textTheme.headlineLarge),
-          const SizedBox(height: 8),
+          Text(
+            'Profile',
+            style: AppTheme.serif(fontSize: 28, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 6),
           Text(
             '$neighborhood, $city',
-            style: const TextStyle(
-              fontFamily: AppTheme.sansFallback,
-              fontSize: 15,
-              color: AppColors.mutedText,
-            ),
+            style: AppTheme.sans(fontSize: 14, color: AppColors.mutedText),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 22),
           _MenuRow(
             title: 'Feed',
             subtitle: 'Local stories',
@@ -144,7 +153,7 @@ class _ProfileMenu extends StatelessWidget {
             subtitle: 'Your account',
             onTap: () {},
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _MenuRow(
             title: 'Discussion',
             subtitle: 'Talk with neighbors',
@@ -170,31 +179,22 @@ class _MenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         title: Text(
           title,
-          style: const TextStyle(
-            fontFamily: AppTheme.serifFallback,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: AppColors.text,
-          ),
+          style: AppTheme.serif(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            fontFamily: AppTheme.sansFallback,
-            fontSize: 13,
-            color: AppColors.mutedText,
-          ),
+          style: AppTheme.sans(fontSize: 12, color: AppColors.mutedText),
         ),
         trailing: const Icon(
           Icons.chevron_right_rounded,

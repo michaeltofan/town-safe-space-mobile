@@ -23,15 +23,15 @@ class BottomNav extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+            blurRadius: 12,
+            offset: const Offset(0, -3),
           ),
         ],
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 58,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -98,19 +98,18 @@ class _NavItem extends StatelessWidget {
     final color = selected ? AppColors.primary : AppColors.mutedText;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(selected ? selectedIcon : icon, color: color, size: 22),
-            const SizedBox(height: 4),
+            Icon(selected ? selectedIcon : icon, color: color, size: 20),
+            const SizedBox(height: 3),
             Text(
               label,
-              style: TextStyle(
-                fontFamily: AppTheme.sansFallback,
-                fontSize: 11,
+              style: AppTheme.sans(
+                fontSize: 10,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                 color: color,
               ),

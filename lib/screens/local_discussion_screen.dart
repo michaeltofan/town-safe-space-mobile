@@ -20,35 +20,33 @@ class LocalDiscussionScreen extends StatelessWidget {
         if (!showAppBar) ...[
           Text(
             'Discussion',
-            style: Theme.of(context).textTheme.headlineLarge,
+            style: AppTheme.serif(fontSize: 28, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
         ],
         Text(
           locationLabel,
-          style: const TextStyle(
-            fontFamily: AppTheme.sansFallback,
+          style: AppTheme.sans(
+            fontSize: 13,
+            color: AppColors.mutedText,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Share your perspective with your neighbors.',
+          style: AppTheme.sans(
             fontSize: 14,
             color: AppColors.mutedText,
-            letterSpacing: 0.4,
           ),
         ),
-        const SizedBox(height: 10),
-        const Text(
-          'Share your perspective with your neighbors.',
-          style: TextStyle(
-            fontFamily: AppTheme.sansFallback,
-            fontSize: 15,
-            color: AppColors.mutedText,
-          ),
-        ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 22),
         const _CommentCard(
           name: 'Marco B.',
           body:
               'I support more pedestrian space. It will help local shops and make the area more livable.',
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         const _CommentCard(
           name: 'Elena V.',
           body:
@@ -58,11 +56,12 @@ class LocalDiscussionScreen extends StatelessWidget {
     );
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: showAppBar
           ? AppBar(
               title: Text(
                 'Discussion',
-                style: Theme.of(context).textTheme.titleLarge,
+                style: AppTheme.serif(fontSize: 18, fontWeight: FontWeight.w500),
               ),
             )
           : null,
@@ -72,12 +71,17 @@ class LocalDiscussionScreen extends StatelessWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(28, showAppBar ? 8 : 24, 28, 16),
+                padding: EdgeInsets.fromLTRB(
+                  AppTheme.screenPadding,
+                  showAppBar ? 4 : 18,
+                  AppTheme.screenPadding,
+                  12,
+                ),
                 child: content,
               ),
             ),
             Container(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
               decoration: BoxDecoration(
                 color: AppColors.card,
                 border: const Border(
@@ -86,23 +90,23 @@ class LocalDiscussionScreen extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 12,
-                    offset: const Offset(0, -4),
+                    blurRadius: 10,
+                    offset: const Offset(0, -3),
                   ),
                 ],
               ),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Write your comment…',
-                  hintStyle: const TextStyle(
-                    fontFamily: AppTheme.sansFallback,
+                  hintStyle: AppTheme.sans(
+                    fontSize: 14,
                     color: AppColors.mutedText,
                   ),
                   filled: true,
                   fillColor: AppColors.background,
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
+                    horizontal: 16,
+                    vertical: 12,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(999),
@@ -136,16 +140,16 @@ class _CommentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.card,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -154,20 +158,14 @@ class _CommentCard extends StatelessWidget {
         children: [
           Text(
             name,
-            style: const TextStyle(
-              fontFamily: AppTheme.serifFallback,
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: AppColors.text,
-            ),
+            style: AppTheme.serif(fontSize: 16, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             body,
-            style: const TextStyle(
-              fontFamily: AppTheme.sansFallback,
-              fontSize: 15,
-              height: 1.55,
+            style: AppTheme.sans(
+              fontSize: 14,
+              height: 1.5,
               color: AppColors.text,
             ),
           ),

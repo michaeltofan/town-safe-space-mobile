@@ -19,7 +19,7 @@ class PrimaryButton extends StatelessWidget {
     if (isSecondary) {
       return SizedBox(
         width: double.infinity,
-        height: 54,
+        height: 52,
         child: TextButton(
           onPressed: onPressed,
           style: TextButton.styleFrom(
@@ -30,10 +30,10 @@ class PrimaryButton extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: const TextStyle(
-              fontFamily: AppTheme.sansFallback,
+            style: AppTheme.sans(
               fontSize: 15,
               fontWeight: FontWeight.w500,
+              color: AppColors.mutedText,
             ),
           ),
         ),
@@ -42,7 +42,7 @@ class PrimaryButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 52,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -51,16 +51,17 @@ class PrimaryButton extends StatelessWidget {
           disabledBackgroundColor: AppColors.softWarm,
           disabledForegroundColor: AppColors.mutedText,
           elevation: 0,
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontFamily: AppTheme.sansFallback,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+          style: AppTheme.sans(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: AppColors.card,
             letterSpacing: 0.2,
           ),
         ),
