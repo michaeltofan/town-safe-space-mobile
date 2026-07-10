@@ -78,6 +78,21 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Keep country flag + city thumbnail ready across the language switch.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final _CountryVisual country = _countryVisual;
+      final _CityData city = _availableCity;
+      precacheImage(AssetImage(country.flagAsset), context);
+      precacheImage(AssetImage(city.imageAsset), context);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bool canContinue = _selectedCity != null;
     final _CityData city = _availableCity;
@@ -434,9 +449,11 @@ class _SelectedCountryRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: Image.asset(
                 flagAsset,
+                key: ValueKey<String>('flag-$flagAsset'),
                 width: 34,
                 height: 24,
                 fit: BoxFit.cover,
+                gaplessPlayback: true,
                 semanticLabel: flagLabel,
                 filterQuality: FilterQuality.high,
               ),
@@ -510,9 +527,11 @@ class _CityOption extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: Image.asset(
                   imageAsset,
+                  key: ValueKey<String>('city-$imageAsset'),
                   width: 44,
                   height: 44,
                   fit: BoxFit.cover,
+                  gaplessPlayback: true,
                   semanticLabel: imageLabel,
                   filterQuality: FilterQuality.high,
                 ),

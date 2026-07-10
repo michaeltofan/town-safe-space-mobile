@@ -5,6 +5,13 @@ import 'package:town_safe_space_mobile/main.dart';
 import 'package:town_safe_space_mobile/screens/select_city_screen.dart';
 import 'package:town_safe_space_mobile/screens/select_country_screen.dart';
 
+bool _hasAssetImage(WidgetTester tester, String assetName) {
+  return tester.widgetList<Image>(find.byType(Image)).any((Image image) {
+    final ImageProvider<Object> provider = image.image;
+    return provider is AssetImage && provider.assetName == assetName;
+  });
+}
+
 void main() {
   testWidgets('Italy Continue opens Select City with Milano only in English',
       (WidgetTester tester) async {
@@ -105,6 +112,16 @@ void main() {
     expect(find.bySemanticsLabel('Milano landmark'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     expect(find.textContaining('Language'), findsNothing);
+    expect(
+      _hasAssetImage(tester, 'assets/flags/italy.png'),
+      isTrue,
+      reason: 'Italian flag must remain visible after language switch',
+    );
+    expect(
+      _hasAssetImage(tester, 'assets/cities/milano.png'),
+      isTrue,
+      reason: 'Milano thumbnail must remain visible after language switch',
+    );
   });
 
   testWidgets('Selecting Munich switches Screen 02B to German copy',
@@ -149,6 +166,16 @@ void main() {
     expect(find.bySemanticsLabel('Munich landmark'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
     expect(find.textContaining('Language'), findsNothing);
+    expect(
+      _hasAssetImage(tester, 'assets/flags/germany.png'),
+      isTrue,
+      reason: 'German flag must remain visible after language switch',
+    );
+    expect(
+      _hasAssetImage(tester, 'assets/cities/munich.png'),
+      isTrue,
+      reason: 'Munich thumbnail must remain visible after language switch',
+    );
   });
 
   testWidgets('Continue enabled after city selection and does not navigate',
