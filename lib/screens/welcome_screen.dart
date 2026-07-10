@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'select_country_screen.dart';
+
 /// Welcome / Manifest screen for TOWN.
 ///
-/// Static visual prototype only — no navigation or real interaction.
+/// Visual prototype — Welcome opens Select Country; Learn more stays inert.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -75,7 +77,13 @@ class WelcomeScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 54,
                     child: FilledButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const SelectCountryScreen(),
+                          ),
+                        );
+                      },
                       style: FilledButton.styleFrom(
                         backgroundColor: _charcoal,
                         foregroundColor: _ivory,
