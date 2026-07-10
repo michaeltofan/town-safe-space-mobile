@@ -1,0 +1,2 @@
+/* Italian localization for Info.plist usage descriptions */
+"NSLocationWhenInUseUsageDescription" = "TOWN utilizza la tua posizione solo mentre l’app è aperta, per confermare che ti trovi nella città selezionata durante la registrazione.";

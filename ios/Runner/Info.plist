@@ -45,5 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Foreground / when-in-use only. No always-permission or background location modes. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>TOWN uses your location only while the app is open to confirm you are in your selected city during registration.</string>
 </dict>
 </plist>

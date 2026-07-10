@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../services/location_permission_service.dart';
+
 /// Location Confirmation rationale screen.
 ///
-/// Explains why location is required before any native permission request.
-/// Visual/navigational prototype only — no GPS, permissions, or maps.
-class LocationConfirmationScreen extends StatelessWidget {
+/// Explains why location is required, then checks/requests foreground
+/// location permission only. Does not read coordinates or navigate away.
+class LocationConfirmationScreen extends StatefulWidget {
   const LocationConfirmationScreen({
     super.key,
     required this.selectedCountry,
     required this.selectedCity,
+    this.permissionService = const LocationPermissionService(),
   });
 
   /// Canonical country from Select City (`Italy` or `Germany`).
@@ -17,6 +20,16 @@ class LocationConfirmationScreen extends StatelessWidget {
   /// Canonical city id (`Milano` or `Munich`).
   final String selectedCity;
 
+  /// Injectable permission helper for tests.
+  final LocationPermissionService permissionService;
+
+  @override
+  State<LocationConfirmationScreen> createState() =>
+      _LocationConfirmationScreenState();
+}
+
+class _LocationConfirmationScreenState
+    extends State<LocationConfirmationScreen> {
   static const Color _background = Color(0xFF000000);
   static const Color _white = Color(0xFFFFFFFF);
   static const Color _lightGrey = Color(0xFFB0B0B0);
@@ -24,21 +37,74 @@ class LocationConfirmationScreen extends StatelessWidget {
 
   static const double _maxContentWidth = 410;
 
+  ForegroundLocationState? _permissionState;
+  bool _isChecking = false;
+
   _LocationConfirmationCopy get _copy {
     assert(
-      (selectedCountry == 'Italy' && selectedCity == 'Milano') ||
-          (selectedCountry == 'Germany' && selectedCity == 'Munich'),
-      'Unsupported country/city pair: $selectedCountry / $selectedCity',
+      (widget.selectedCountry == 'Italy' && widget.selectedCity == 'Milano') ||
+          (widget.selectedCountry == 'Germany' &&
+              widget.selectedCity == 'Munich'),
+      'Unsupported country/city pair: ${widget.selectedCountry} / ${widget.selectedCity}',
     );
-    if (selectedCountry == 'Italy') {
+    if (widget.selectedCountry == 'Italy') {
       return const _LocationConfirmationCopy.italian();
     }
     return const _LocationConfirmationCopy.german();
   }
 
+  Future<void> _onConfirmPosition() async {
+    if (_isChecking) {
+      return;
+    }
+    setState(() {
+      _isChecking = true;
+    });
+    try {
+      final ForegroundLocationState state =
+          await widget.permissionService.ensureForegroundPermission();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _permissionState = state;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isChecking = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _onOpenAppSettings() async {
+    await widget.permissionService.openAppSettings();
+  }
+
+  Future<void> _onOpenLocationSettings() async {
+    await widget.permissionService.openLocationSettings();
+  }
+
+  String? _statusMessage(_LocationConfirmationCopy copy) {
+    switch (_permissionState) {
+      case null:
+        return null;
+      case ForegroundLocationState.serviceDisabled:
+        return copy.serviceDisabled;
+      case ForegroundLocationState.denied:
+        return copy.denied;
+      case ForegroundLocationState.permanentlyDenied:
+        return copy.permanentlyDenied;
+      case ForegroundLocationState.granted:
+        return copy.granted;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final _LocationConfirmationCopy copy = _copy;
+    final String? statusMessage = _statusMessage(copy);
 
     return Scaffold(
       backgroundColor: _background,
@@ -103,15 +169,85 @@ class LocationConfirmationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (statusMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      statusMessage,
+                      key: const Key('location_permission_status'),
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        height: 1.45,
+                        letterSpacing: 0.05,
+                        color: _white,
+                      ),
+                    ),
+                    if (_permissionState == ForegroundLocationState.denied) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          key: const Key('location_try_again'),
+                          onPressed: _isChecking ? null : _onConfirmPosition,
+                          style: TextButton.styleFrom(
+                            foregroundColor: _gold,
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(copy.tryAgain),
+                        ),
+                      ),
+                    ],
+                    if (_permissionState ==
+                        ForegroundLocationState.permanentlyDenied) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          key: const Key('location_open_settings'),
+                          onPressed: _onOpenAppSettings,
+                          style: TextButton.styleFrom(
+                            foregroundColor: _gold,
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(copy.openSettings),
+                        ),
+                      ),
+                    ],
+                    if (_permissionState ==
+                        ForegroundLocationState.serviceDisabled) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          key: const Key('location_open_location_settings'),
+                          onPressed: _onOpenLocationSettings,
+                          style: TextButton.styleFrom(
+                            foregroundColor: _gold,
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(copy.openLocationSettings),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                  ],
                   SizedBox(
                     width: double.infinity,
                     height: 54,
                     child: FilledButton(
-                      // Visual only — no permission request or navigation.
-                      onPressed: () {},
+                      onPressed: _isChecking ? null : _onConfirmPosition,
                       style: FilledButton.styleFrom(
                         backgroundColor: _gold,
                         foregroundColor: _background,
+                        disabledBackgroundColor: _gold.withValues(alpha: 0.45),
+                        disabledForegroundColor: _background,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
@@ -122,7 +258,16 @@ class LocationConfirmationScreen extends StatelessWidget {
                           letterSpacing: 0.2,
                         ),
                       ),
-                      child: Text(copy.primaryButton),
+                      child: _isChecking
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: _background,
+                              ),
+                            )
+                          : Text(copy.primaryButton),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -168,6 +313,13 @@ class _LocationConfirmationCopy {
     required this.point2,
     required this.primaryButton,
     required this.secondaryAction,
+    required this.serviceDisabled,
+    required this.denied,
+    required this.permanentlyDenied,
+    required this.granted,
+    required this.tryAgain,
+    required this.openSettings,
+    required this.openLocationSettings,
   });
 
   const _LocationConfirmationCopy.italian()
@@ -180,7 +332,15 @@ class _LocationConfirmationCopy {
             'Utilizziamo la tua posizione solo durante la registrazione.',
         point2 = 'Non monitoriamo la tua posizione in background.',
         primaryButton = 'Conferma posizione',
-        secondaryAction = 'Non ora';
+        secondaryAction = 'Non ora',
+        serviceDisabled = 'Servizi di localizzazione disattivati.',
+        denied = 'Autorizzazione alla posizione negata.',
+        permanentlyDenied =
+            'Autorizzazione negata in modo permanente. Apri le impostazioni per modificarla.',
+        granted = 'Autorizzazione alla posizione concessa.',
+        tryAgain = 'Riprova',
+        openSettings = 'Apri le impostazioni',
+        openLocationSettings = 'Apri impostazioni di localizzazione';
 
   const _LocationConfirmationCopy.german()
       : title = 'Bestätige deinen Standort',
@@ -193,7 +353,15 @@ class _LocationConfirmationCopy {
         point2 =
             'Wir verfolgen deinen Standort nicht im Hintergrund.',
         primaryButton = 'Standort bestätigen',
-        secondaryAction = 'Nicht jetzt';
+        secondaryAction = 'Nicht jetzt',
+        serviceDisabled = 'Ortungsdienste sind deaktiviert.',
+        denied = 'Standortberechtigung wurde verweigert.',
+        permanentlyDenied =
+            'Standortberechtigung wurde dauerhaft verweigert. Öffne die Einstellungen, um sie zu ändern.',
+        granted = 'Standortberechtigung wurde erteilt.',
+        tryAgain = 'Erneut versuchen',
+        openSettings = 'Einstellungen öffnen',
+        openLocationSettings = 'Ortungseinstellungen öffnen';
 
   final String title;
   final String introduction;
@@ -203,6 +371,13 @@ class _LocationConfirmationCopy {
   final String point2;
   final String primaryButton;
   final String secondaryAction;
+  final String serviceDisabled;
+  final String denied;
+  final String permanentlyDenied;
+  final String granted;
+  final String tryAgain;
+  final String openSettings;
+  final String openLocationSettings;
 }
 
 class _InfoCard extends StatelessWidget {
