@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 /// Screen 02B — Select City.
 ///
 /// Visual prototype: single-select city for the country chosen on Screen 02A.
-/// Continue does not navigate further yet.
+/// Selecting a city immediately switches the interface to the official language
+/// of that country/city pair. Continue does not navigate further yet.
 class SelectCityScreen extends StatefulWidget {
   const SelectCityScreen({
     super.key,
@@ -29,12 +30,12 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
 
   static const Map<String, _CityData> _cityByCountry = {
     'Italy': _CityData(
-      name: 'Milano',
+      id: 'Milano',
       imageAsset: 'assets/cities/milano.png',
       imageLabel: 'Milano landmark',
     ),
     'Germany': _CityData(
-      name: 'Munich',
+      id: 'Munich',
       imageAsset: 'assets/cities/munich.png',
       imageLabel: 'Munich landmark',
     ),
@@ -51,6 +52,7 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
     ),
   };
 
+  /// Canonical city id (`Milano` / `Munich`), independent of display language.
   String? _selectedCity;
 
   _CityData get _availableCity {
@@ -65,11 +67,37 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
     return visual!;
   }
 
+  _SelectCityCopy get _copy {
+    if (_selectedCity == null) {
+      return _SelectCityCopy.english(widget.selectedCountry);
+    }
+    return _SelectCityCopy.official(
+      country: widget.selectedCountry,
+      cityId: _selectedCity!,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Keep country flag + city thumbnail ready across the language switch.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final _CountryVisual country = _countryVisual;
+      final _CityData city = _availableCity;
+      precacheImage(AssetImage(country.flagAsset), context);
+      precacheImage(AssetImage(city.imageAsset), context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool canContinue = _selectedCity != null;
     final _CityData city = _availableCity;
     final _CountryVisual country = _countryVisual;
+    final _SelectCityCopy copy = _copy;
 
     return Scaffold(
       backgroundColor: _background,
@@ -105,10 +133,10 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
                             ),
                           ),
                           const SizedBox(height: 18),
-                          const Text(
-                            'Select your city',
+                          Text(
+                            copy.title,
                             textAlign: TextAlign.left,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.2,
@@ -117,10 +145,10 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          const Text(
-                            'Choose your city to continue.',
+                          Text(
+                            copy.supportingText,
                             textAlign: TextAlign.left,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
                               height: 1.4,
@@ -129,11 +157,11 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
                             ),
                           ),
                           const SizedBox(height: 22),
-                          const _LanguageNoticeCard(),
+                          _LanguageNoticeCard(notice: copy.notice),
                           const SizedBox(height: 28),
-                          const Text(
-                            'Country',
-                            style: TextStyle(
+                          Text(
+                            copy.countrySectionLabel,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               letterSpacing: 0.2,
@@ -142,15 +170,16 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
                           ),
                           const SizedBox(height: 12),
                           _SelectedCountryRow(
-                            countryName: widget.selectedCountry,
+                            countryName: copy.countryName,
+                            changeLabel: copy.changeLabel,
                             flagAsset: country.flagAsset,
                             flagLabel: country.flagLabel,
                             onChange: () => Navigator.of(context).pop(),
                           ),
                           const SizedBox(height: 24),
-                          const Text(
-                            'Select city',
-                            style: TextStyle(
+                          Text(
+                            copy.citySectionLabel,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               letterSpacing: 0.2,
@@ -159,16 +188,16 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
                           ),
                           const SizedBox(height: 12),
                           _CityOption(
-                            label: city.name,
+                            label: copy.cityName,
                             imageAsset: city.imageAsset,
                             imageLabel: city.imageLabel,
-                            selected: _selectedCity == city.name,
+                            selected: _selectedCity == city.id,
                             onTap: () {
-                              setState(() => _selectedCity = city.name);
+                              setState(() => _selectedCity = city.id);
                             },
                           ),
                           const SizedBox(height: 12),
-                          const _LockedCitiesRow(),
+                          _LockedCitiesRow(label: copy.lockedCitiesLabel),
                         ],
                       ),
                     ),
@@ -193,7 +222,7 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
                           letterSpacing: 0.2,
                         ),
                       ),
-                      child: const Text('Continue'),
+                      child: Text(copy.continueLabel),
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -207,14 +236,101 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
   }
 }
 
+/// Interface copy for Screen 02B.
+///
+/// English before city selection; official language of the selected
+/// country/city pair immediately after selection. No manual language choice.
+class _SelectCityCopy {
+  const _SelectCityCopy({
+    required this.title,
+    required this.supportingText,
+    required this.notice,
+    required this.countrySectionLabel,
+    required this.countryName,
+    required this.changeLabel,
+    required this.citySectionLabel,
+    required this.cityName,
+    required this.lockedCitiesLabel,
+    required this.continueLabel,
+  });
+
+  final String title;
+  final String supportingText;
+  final String notice;
+  final String countrySectionLabel;
+  final String countryName;
+  final String changeLabel;
+  final String citySectionLabel;
+  final String cityName;
+  final String lockedCitiesLabel;
+  final String continueLabel;
+
+  factory _SelectCityCopy.english(String country) {
+    return _SelectCityCopy(
+      title: 'Select your city',
+      supportingText: 'Choose your city to continue.',
+      notice:
+          'TOWN is available only in the official language of the selected country and city.',
+      countrySectionLabel: 'Country',
+      countryName: country,
+      changeLabel: 'Change',
+      citySectionLabel: 'Select city',
+      cityName: country == 'Germany' ? 'Munich' : 'Milano',
+      lockedCitiesLabel: 'Other cities coming soon',
+      continueLabel: 'Continue',
+    );
+  }
+
+  factory _SelectCityCopy.official({
+    required String country,
+    required String cityId,
+  }) {
+    assert(
+      (country == 'Italy' && cityId == 'Milano') ||
+          (country == 'Germany' && cityId == 'Munich'),
+      'Unsupported country/city pair: $country / $cityId',
+    );
+
+    if (country == 'Italy') {
+      return const _SelectCityCopy(
+        title: 'Seleziona la tua città',
+        supportingText: 'Scegli la tua città per continuare.',
+        notice:
+            'TOWN è disponibile solo nella lingua ufficiale del paese e della città selezionati.',
+        countrySectionLabel: 'Paese',
+        countryName: 'Italia',
+        changeLabel: 'Cambia',
+        citySectionLabel: 'Seleziona città',
+        cityName: 'Milano',
+        lockedCitiesLabel: 'Altre città in arrivo',
+        continueLabel: 'Continua',
+      );
+    }
+
+    return const _SelectCityCopy(
+      title: 'Wähle deine Stadt',
+      supportingText: 'Wähle deine Stadt, um fortzufahren.',
+      notice:
+          'TOWN ist nur in der Amtssprache des ausgewählten Landes und der ausgewählten Stadt verfügbar.',
+      countrySectionLabel: 'Land',
+      countryName: 'Deutschland',
+      changeLabel: 'Ändern',
+      citySectionLabel: 'Stadt auswählen',
+      cityName: 'München',
+      lockedCitiesLabel: 'Weitere Städte folgen',
+      continueLabel: 'Weiter',
+    );
+  }
+}
+
 class _CityData {
   const _CityData({
-    required this.name,
+    required this.id,
     required this.imageAsset,
     required this.imageLabel,
   });
 
-  final String name;
+  final String id;
   final String imageAsset;
   final String imageLabel;
 }
@@ -230,7 +346,9 @@ class _CountryVisual {
 }
 
 class _LanguageNoticeCard extends StatelessWidget {
-  const _LanguageNoticeCard();
+  const _LanguageNoticeCard({required this.notice});
+
+  final String notice;
 
   static const Color _card = Color(0xFF1A1A1A);
   static const Color _white = Color(0xFFFFFFFF);
@@ -242,17 +360,17 @@ class _LanguageNoticeCard extends StatelessWidget {
         color: _card,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Padding(
-        padding: EdgeInsets.fromLTRB(14, 14, 16, 14),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 16, 14),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _GoldInfoIcon(),
-            SizedBox(width: 12),
+            const _GoldInfoIcon(),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'TOWN is available only in the official language of the selected country and city.',
-                style: TextStyle(
+                notice,
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
                   height: 1.45,
@@ -300,12 +418,14 @@ class _GoldInfoIcon extends StatelessWidget {
 class _SelectedCountryRow extends StatelessWidget {
   const _SelectedCountryRow({
     required this.countryName,
+    required this.changeLabel,
     required this.flagAsset,
     required this.flagLabel,
     required this.onChange,
   });
 
   final String countryName;
+  final String changeLabel;
   final String flagAsset;
   final String flagLabel;
   final VoidCallback onChange;
@@ -329,9 +449,11 @@ class _SelectedCountryRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: Image.asset(
                 flagAsset,
+                key: ValueKey<String>('flag-$flagAsset'),
                 width: 34,
                 height: 24,
                 fit: BoxFit.cover,
+                gaplessPlayback: true,
                 semanticLabel: flagLabel,
                 filterQuality: FilterQuality.high,
               ),
@@ -361,7 +483,7 @@ class _SelectedCountryRow extends StatelessWidget {
                   letterSpacing: 0.1,
                 ),
               ),
-              child: const Text('Change'),
+              child: Text(changeLabel),
             ),
           ],
         ),
@@ -405,9 +527,11 @@ class _CityOption extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: Image.asset(
                   imageAsset,
+                  key: ValueKey<String>('city-$imageAsset'),
                   width: 44,
                   height: 44,
                   fit: BoxFit.cover,
+                  gaplessPlayback: true,
                   semanticLabel: imageLabel,
                   filterQuality: FilterQuality.high,
                 ),
@@ -459,7 +583,9 @@ class _CityOption extends StatelessWidget {
 }
 
 class _LockedCitiesRow extends StatelessWidget {
-  const _LockedCitiesRow();
+  const _LockedCitiesRow({required this.label});
+
+  final String label;
 
   static const Color _card = Color(0xFF1A1A1A);
   static const Color _lightGrey = Color(0xFFB0B0B0);
@@ -471,14 +597,14 @@ class _LockedCitiesRow extends StatelessWidget {
         color: _card,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         child: Row(
           children: [
             Expanded(
               child: Text(
-                'Other cities coming soon',
-                style: TextStyle(
+                label,
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.1,
@@ -486,7 +612,7 @@ class _LockedCitiesRow extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(
+            const Icon(
               Icons.lock_outline_rounded,
               size: 20,
               color: _lightGrey,
