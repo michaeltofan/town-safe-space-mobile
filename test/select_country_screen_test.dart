@@ -23,6 +23,7 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.text('Country'), findsOneWidget);
     expect(find.text('Italy'), findsOneWidget);
     expect(find.text('Germany'), findsOneWidget);
     expect(find.text('Continue'), findsOneWidget);
