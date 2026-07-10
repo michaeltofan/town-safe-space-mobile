@@ -8,7 +8,6 @@ enum ForegroundLocationState {
   granted,
   denied,
   permanentlyDenied,
-  restricted,
   serviceDisabled,
 }
 
@@ -66,9 +65,10 @@ class LocationPermissionService {
 
   /// Maps a [LocationPermission] returned after a request attempt.
   ///
-  /// On iOS, geolocator maps `kCLAuthorizationStatusRestricted` to
-  /// [LocationPermission.denied], while a user denial maps to
-  /// [LocationPermission.deniedForever].
+  /// Mapping:
+  /// - whileInUse / always → granted (never requests Always)
+  /// - deniedForever → permanentlyDenied
+  /// - denied / unableToDetermine → denied
   @visibleForTesting
   ForegroundLocationState mapPermissionAfterRequest(
     LocationPermission permission,
@@ -79,11 +79,8 @@ class LocationPermissionService {
     if (permission == LocationPermission.deniedForever) {
       return ForegroundLocationState.permanentlyDenied;
     }
-    if (permission == LocationPermission.denied &&
-        !kIsWeb &&
-        defaultTargetPlatform == TargetPlatform.iOS) {
-      return ForegroundLocationState.restricted;
-    }
+    // denied and unableToDetermine both surface as a normal denial after
+    // the request result. Do not infer a restricted state.
     return ForegroundLocationState.denied;
   }
 

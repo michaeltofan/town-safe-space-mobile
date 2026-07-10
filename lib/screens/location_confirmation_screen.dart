@@ -96,8 +96,6 @@ class _LocationConfirmationScreenState
         return copy.denied;
       case ForegroundLocationState.permanentlyDenied:
         return copy.permanentlyDenied;
-      case ForegroundLocationState.restricted:
-        return copy.restricted;
       case ForegroundLocationState.granted:
         return copy.granted;
     }
@@ -318,7 +316,6 @@ class _LocationConfirmationCopy {
     required this.serviceDisabled,
     required this.denied,
     required this.permanentlyDenied,
-    required this.restricted,
     required this.granted,
     required this.tryAgain,
     required this.openSettings,
@@ -340,7 +337,6 @@ class _LocationConfirmationCopy {
         denied = 'Autorizzazione alla posizione negata.',
         permanentlyDenied =
             'Autorizzazione negata in modo permanente. Apri le impostazioni per modificarla.',
-        restricted = 'Autorizzazione alla posizione limitata.',
         granted = 'Autorizzazione alla posizione concessa.',
         tryAgain = 'Riprova',
         openSettings = 'Apri le impostazioni',
@@ -362,7 +358,6 @@ class _LocationConfirmationCopy {
         denied = 'Standortberechtigung wurde verweigert.',
         permanentlyDenied =
             'Standortberechtigung wurde dauerhaft verweigert. Öffne die Einstellungen, um sie zu ändern.',
-        restricted = 'Standortberechtigung ist eingeschränkt.',
         granted = 'Standortberechtigung wurde erteilt.',
         tryAgain = 'Erneut versuchen',
         openSettings = 'Einstellungen öffnen',
@@ -379,7 +374,6 @@ class _LocationConfirmationCopy {
   final String serviceDisabled;
   final String denied;
   final String permanentlyDenied;
-  final String restricted;
   final String granted;
   final String tryAgain;
   final String openSettings;

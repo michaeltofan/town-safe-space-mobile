@@ -345,32 +345,6 @@ void main() {
     expect(find.text('Standortberechtigung wurde erteilt.'), findsOneWidget);
   });
 
-  testWidgets('Restricted state shows localized message without navigation',
-      (WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final _FakeLocationPermissionService fake = _FakeLocationPermissionService(
-      state: ForegroundLocationState.restricted,
-    );
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: LocationConfirmationScreen(
-          selectedCountry: 'Italy',
-          selectedCity: 'Milano',
-          permissionService: fake,
-        ),
-      ),
-    );
-
-    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Autorizzazione alla posizione limitata.'), findsOneWidget);
-    expect(find.byType(LocationConfirmationScreen), findsOneWidget);
-  });
-
   testWidgets('Secondary action stays local', (WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -412,6 +386,10 @@ void main() {
       service.mapPermissionAfterRequest(LocationPermission.denied),
       ForegroundLocationState.denied,
     );
+    expect(
+      service.mapPermissionAfterRequest(LocationPermission.unableToDetermine),
+      ForegroundLocationState.denied,
+    );
   });
 
   test('Foreground permission config is present without background keys', () {
@@ -448,6 +426,47 @@ void main() {
 
     final String podfile = File('ios/Podfile').readAsStringSync();
     expect(podfile.contains('BYPASS_PERMISSION_LOCATION_ALWAYS=1'), isTrue);
+
+    final String itUsage = File('ios/Runner/it.lproj/InfoPlist.strings')
+        .readAsStringSync();
+    expect(
+      itUsage.contains('NSLocationWhenInUseUsageDescription'),
+      isTrue,
+    );
+    expect(
+      itUsage.contains(
+        'TOWN utilizza la tua posizione solo mentre l’app è aperta, per confermare che ti trovi nella città selezionata durante la registrazione.',
+      ),
+      isTrue,
+    );
+
+    final String deUsage = File('ios/Runner/de.lproj/InfoPlist.strings')
+        .readAsStringSync();
+    expect(
+      deUsage.contains('NSLocationWhenInUseUsageDescription'),
+      isTrue,
+    );
+    expect(
+      deUsage.contains(
+        'TOWN verwendet deinen Standort nur, während die App geöffnet ist, um bei der Registrierung zu bestätigen, dass du dich in der ausgewählten Stadt befindest.',
+      ),
+      isTrue,
+    );
+
+    final String pbxproj =
+        File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+    expect(pbxproj.contains('it.lproj/InfoPlist.strings'), isTrue);
+    expect(pbxproj.contains('de.lproj/InfoPlist.strings'), isTrue);
+    expect(
+      RegExp(r'knownRegions\s*=\s*\([^)]*\bit\b', multiLine: true, dotAll: true)
+          .hasMatch(pbxproj),
+      isTrue,
+    );
+    expect(
+      RegExp(r'knownRegions\s*=\s*\([^)]*\bde\b', multiLine: true, dotAll: true)
+          .hasMatch(pbxproj),
+      isTrue,
+    );
   });
 
   test('No coordinate-reading APIs are called from app lib sources', () {
