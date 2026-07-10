@@ -59,6 +59,18 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  const Text(
+                    'TOWN accepts accounts only with registration, confirmed location, and an active membership.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      height: 1.45,
+                      color: _footerText,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     height: 54,

@@ -10,6 +10,12 @@ void main() {
     expect(find.textContaining('Real communities.'), findsOneWidget);
     expect(find.textContaining('Real stories.'), findsOneWidget);
     expect(find.textContaining('No noise.'), findsOneWidget);
+    expect(
+      find.text(
+        'TOWN accepts accounts only with registration, confirmed location, and an active membership.',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Welcome'), findsOneWidget);
     expect(find.text('Learn more'), findsOneWidget);
   });
