@@ -21,7 +21,18 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
 
   static const double _maxContentWidth = 410;
 
-  static const List<String> _countries = ['Italy', 'Germany'];
+  static const List<_CountryData> _countries = [
+    _CountryData(
+      name: 'Italy',
+      flagAsset: 'assets/flags/italy.png',
+      flagLabel: 'Flag of Italy',
+    ),
+    _CountryData(
+      name: 'Germany',
+      flagAsset: 'assets/flags/germany.png',
+      flagLabel: 'Flag of Germany',
+    ),
+  ];
 
   String? _selectedCountry;
 
@@ -99,12 +110,14 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          for (final String country in _countries) ...[
+                          for (final _CountryData country in _countries) ...[
                             _CountryOption(
-                              label: country,
-                              selected: _selectedCountry == country,
+                              label: country.name,
+                              flagAsset: country.flagAsset,
+                              flagLabel: country.flagLabel,
+                              selected: _selectedCountry == country.name,
                               onTap: () {
-                                setState(() => _selectedCountry = country);
+                                setState(() => _selectedCountry = country.name);
                               },
                             ),
                             const SizedBox(height: 12),
@@ -215,14 +228,30 @@ class _GoldInfoIcon extends StatelessWidget {
   }
 }
 
+class _CountryData {
+  const _CountryData({
+    required this.name,
+    required this.flagAsset,
+    required this.flagLabel,
+  });
+
+  final String name;
+  final String flagAsset;
+  final String flagLabel;
+}
+
 class _CountryOption extends StatelessWidget {
   const _CountryOption({
     required this.label,
+    required this.flagAsset,
+    required this.flagLabel,
     required this.selected,
     required this.onTap,
   });
 
   final String label;
+  final String flagAsset;
+  final String flagLabel;
   final bool selected;
   final VoidCallback onTap;
 
@@ -239,9 +268,21 @@ class _CountryOption extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Row(
             children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.asset(
+                  flagAsset,
+                  width: 34,
+                  height: 24,
+                  fit: BoxFit.cover,
+                  semanticLabel: flagLabel,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+              const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   label,
@@ -268,7 +309,14 @@ class _CountryOption extends StatelessWidget {
                   ),
                 )
               else
-                const SizedBox(width: 24, height: 24),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _white.withValues(alpha: 0.55), width: 1.5),
+                  ),
+                ),
             ],
           ),
         ),
