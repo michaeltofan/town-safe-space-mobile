@@ -61,6 +61,8 @@ flutter:
     - assets/images/welcome_screen.png
     - assets/flags/italy.png
     - assets/flags/germany.png
+    - assets/cities/milano.png
+    - assets/cities/munich.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

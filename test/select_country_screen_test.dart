@@ -54,8 +54,9 @@ void main() {
     await tester.tap(continueButton);
     await tester.pumpAndSettle();
 
-    // Select City is not built — Continue must not navigate away.
-    expect(find.byType(SelectCountryScreen), findsOneWidget);
+    // Continue opens Select City after a country is selected.
+    expect(find.text('Select your city'), findsOneWidget);
+    expect(find.text('Munich'), findsOneWidget);
   });
 
   testWidgets('Back returns to Welcome', (WidgetTester tester) async {

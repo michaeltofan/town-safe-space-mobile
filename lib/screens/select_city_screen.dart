@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 
-import 'select_city_screen.dart';
-
-/// Screen 02A — Select Country.
+/// Screen 02B — Select City.
 ///
-/// Visual prototype: single-select country choice before city selection.
-class SelectCountryScreen extends StatefulWidget {
-  const SelectCountryScreen({super.key});
+/// Visual prototype: single-select city for the country chosen on Screen 02A.
+/// Continue does not navigate further yet.
+class SelectCityScreen extends StatefulWidget {
+  const SelectCityScreen({
+    super.key,
+    required this.selectedCountry,
+  });
+
+  /// Country name passed from Screen 02A (`Italy` or `Germany`).
+  final String selectedCountry;
 
   @override
-  State<SelectCountryScreen> createState() => _SelectCountryScreenState();
+  State<SelectCityScreen> createState() => _SelectCityScreenState();
 }
 
-class _SelectCountryScreenState extends State<SelectCountryScreen> {
+class _SelectCityScreenState extends State<SelectCityScreen> {
   static const Color _background = Color(0xFF000000);
   static const Color _white = Color(0xFFFFFFFF);
   static const Color _lightGrey = Color(0xFFB0B0B0);
@@ -22,24 +27,49 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
 
   static const double _maxContentWidth = 410;
 
-  static const List<_CountryData> _countries = [
-    _CountryData(
-      name: 'Italy',
+  static const Map<String, _CityData> _cityByCountry = {
+    'Italy': _CityData(
+      name: 'Milano',
+      imageAsset: 'assets/cities/milano.png',
+      imageLabel: 'Milano landmark',
+    ),
+    'Germany': _CityData(
+      name: 'Munich',
+      imageAsset: 'assets/cities/munich.png',
+      imageLabel: 'Munich landmark',
+    ),
+  };
+
+  static const Map<String, _CountryVisual> _countryVisuals = {
+    'Italy': _CountryVisual(
       flagAsset: 'assets/flags/italy.png',
       flagLabel: 'Flag of Italy',
     ),
-    _CountryData(
-      name: 'Germany',
+    'Germany': _CountryVisual(
       flagAsset: 'assets/flags/germany.png',
       flagLabel: 'Flag of Germany',
     ),
-  ];
+  };
 
-  String? _selectedCountry;
+  String? _selectedCity;
+
+  _CityData get _availableCity {
+    final _CityData? city = _cityByCountry[widget.selectedCountry];
+    assert(city != null, 'Unsupported country: ${widget.selectedCountry}');
+    return city!;
+  }
+
+  _CountryVisual get _countryVisual {
+    final _CountryVisual? visual = _countryVisuals[widget.selectedCountry];
+    assert(visual != null, 'Unsupported country: ${widget.selectedCountry}');
+    return visual!;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bool canContinue = _selectedCountry != null;
+    final bool canContinue = _selectedCity != null;
+    final _CityData city = _availableCity;
+    final _CountryVisual country = _countryVisual;
 
     return Scaffold(
       backgroundColor: _background,
@@ -76,7 +106,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                           ),
                           const SizedBox(height: 18),
                           const Text(
-                            'Where is your TOWN?',
+                            'Select your city',
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               fontSize: 32,
@@ -88,7 +118,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                           ),
                           const SizedBox(height: 10),
                           const Text(
-                            'Select your country to continue.',
+                            'Choose your city to continue.',
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               fontSize: 15,
@@ -111,18 +141,34 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          for (final _CountryData country in _countries) ...[
-                            _CountryOption(
-                              label: country.name,
-                              flagAsset: country.flagAsset,
-                              flagLabel: country.flagLabel,
-                              selected: _selectedCountry == country.name,
-                              onTap: () {
-                                setState(() => _selectedCountry = country.name);
-                              },
+                          _SelectedCountryRow(
+                            countryName: widget.selectedCountry,
+                            flagAsset: country.flagAsset,
+                            flagLabel: country.flagLabel,
+                            onChange: () => Navigator.of(context).pop(),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Select city',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
+                              color: _lightGrey,
                             ),
-                            const SizedBox(height: 12),
-                          ],
+                          ),
+                          const SizedBox(height: 12),
+                          _CityOption(
+                            label: city.name,
+                            imageAsset: city.imageAsset,
+                            imageLabel: city.imageLabel,
+                            selected: _selectedCity == city.name,
+                            onTap: () {
+                              setState(() => _selectedCity = city.name);
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          const _LockedCitiesRow(),
                         ],
                       ),
                     ),
@@ -131,17 +177,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                     width: double.infinity,
                     height: 54,
                     child: FilledButton(
-                      onPressed: canContinue
-                          ? () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => SelectCityScreen(
-                                    selectedCountry: _selectedCountry!,
-                                  ),
-                                ),
-                              );
-                            }
-                          : null,
+                      onPressed: canContinue ? () {} : null,
                       style: FilledButton.styleFrom(
                         backgroundColor: _gold,
                         foregroundColor: _background,
@@ -169,6 +205,28 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
       ),
     );
   }
+}
+
+class _CityData {
+  const _CityData({
+    required this.name,
+    required this.imageAsset,
+    required this.imageLabel,
+  });
+
+  final String name;
+  final String imageAsset;
+  final String imageLabel;
+}
+
+class _CountryVisual {
+  const _CountryVisual({
+    required this.flagAsset,
+    required this.flagLabel,
+  });
+
+  final String flagAsset;
+  final String flagLabel;
 }
 
 class _LanguageNoticeCard extends StatelessWidget {
@@ -239,30 +297,91 @@ class _GoldInfoIcon extends StatelessWidget {
   }
 }
 
-class _CountryData {
-  const _CountryData({
-    required this.name,
+class _SelectedCountryRow extends StatelessWidget {
+  const _SelectedCountryRow({
+    required this.countryName,
     required this.flagAsset,
     required this.flagLabel,
+    required this.onChange,
   });
 
-  final String name;
+  final String countryName;
   final String flagAsset;
   final String flagLabel;
+  final VoidCallback onChange;
+
+  static const Color _card = Color(0xFF1A1A1A);
+  static const Color _white = Color(0xFFFFFFFF);
+  static const Color _gold = Color(0xFFE8C547);
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.asset(
+                flagAsset,
+                width: 34,
+                height: 24,
+                fit: BoxFit.cover,
+                semanticLabel: flagLabel,
+                filterQuality: FilterQuality.high,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                countryName,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.15,
+                  color: _white,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onChange,
+              style: TextButton.styleFrom(
+                foregroundColor: _gold,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                ),
+              ),
+              child: const Text('Change'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _CountryOption extends StatelessWidget {
-  const _CountryOption({
+class _CityOption extends StatelessWidget {
+  const _CityOption({
     required this.label,
-    required this.flagAsset,
-    required this.flagLabel,
+    required this.imageAsset,
+    required this.imageLabel,
     required this.selected,
     required this.onTap,
   });
 
   final String label;
-  final String flagAsset;
-  final String flagLabel;
+  final String imageAsset;
+  final String imageLabel;
   final bool selected;
   final VoidCallback onTap;
 
@@ -279,17 +398,17 @@ class _CountryOption extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(10),
                 child: Image.asset(
-                  flagAsset,
-                  width: 34,
-                  height: 24,
+                  imageAsset,
+                  width: 44,
+                  height: 44,
                   fit: BoxFit.cover,
-                  semanticLabel: flagLabel,
+                  semanticLabel: imageLabel,
                   filterQuality: FilterQuality.high,
                 ),
               ),
@@ -325,11 +444,54 @@ class _CountryOption extends StatelessWidget {
                   height: 24,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: _white.withValues(alpha: 0.55), width: 1.5),
+                    border: Border.all(
+                      color: _white.withValues(alpha: 0.55),
+                      width: 1.5,
+                    ),
                   ),
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LockedCitiesRow extends StatelessWidget {
+  const _LockedCitiesRow();
+
+  static const Color _card = Color(0xFF1A1A1A);
+  static const Color _lightGrey = Color(0xFFB0B0B0);
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Other cities coming soon',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.1,
+                  color: _lightGrey,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.lock_outline_rounded,
+              size: 20,
+              color: _lightGrey,
+            ),
+          ],
         ),
       ),
     );
