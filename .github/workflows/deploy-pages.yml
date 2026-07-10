@@ -24,7 +24,7 @@ jobs:
 
       - name: Install Flutter
         run: |
-          git clone --depth 1 --branch 3.32.8 https://github.com/flutter/flutter.git "$HOME/flutter"
+          git clone --depth 1 --branch 3.44.6 https://github.com/flutter/flutter.git "$HOME/flutter"
           echo "$HOME/flutter/bin" >> "$GITHUB_PATH"
 
       - name: Verify Flutter
