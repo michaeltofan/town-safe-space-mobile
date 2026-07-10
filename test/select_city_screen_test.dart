@@ -183,6 +183,9 @@ void main() {
 
   testWidgets('Back and Change return to Select Country preserving Italy',
       (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(const MyApp());
 
     await tester.tap(find.text('Welcome'));
@@ -210,6 +213,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SelectCityScreen), findsOneWidget);
 
+    // Change works in English before city selection.
+    await tester.tap(find.text('Change'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SelectCountryScreen), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SelectCityScreen), findsOneWidget);
+
+    // After Milano selection, localized Cambia still returns to Select Country.
+    await tester.ensureVisible(find.text('Milano'));
     await tester.tap(find.text('Milano'));
     await tester.pump();
     expect(find.text('Cambia'), findsOneWidget);
@@ -228,6 +242,9 @@ void main() {
 
   testWidgets('German Change returns to Select Country',
       (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(
       const MaterialApp(home: SelectCountryScreen()),
     );
@@ -237,6 +254,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Munich'));
     await tester.tap(find.text('Munich'));
     await tester.pump();
     expect(find.text('Ändern'), findsOneWidget);
