@@ -6,16 +6,20 @@ This document records the **approved official** geographic boundary datasets for
 
 It is a provenance and attribution register only.
 
-**No boundary geometry files are bundled in this repository yet.**
+Prepared source and derived GeoJSON files are stored under `data/boundaries/` for offline review. **They are not bundled into the Flutter app runtime** (`bundled_status: NOT YET BUNDLED`).
 
-Do not add GeoJSON, Shapefile, or other boundary assets until source, licence, checksum, date, and internal version are recorded for that version (see [Provenance template](#provenance-template)).
+Do not wire boundary assets into `pubspec.yaml` / `assets/` until source, licence, checksum, date, and internal version are recorded for that version (see [Provenance template](#provenance-template)) **and** bundling is explicitly approved.
 
 ## Current status
 
-| City | Approved dataset | Bundled status |
-| --- | --- | --- |
-| Milano | Confini Amministrativi del Comune di Milano (DS2841) | **NOT YET BUNDLED** |
-| Munich | Official Stadtbezirke, dissolved from the 25 unique districts | **NOT YET BUNDLED** |
+| City | Approved dataset | Internal boundary version | Bundled status |
+| --- | --- | --- | --- |
+| Milano | Confini Amministrativi del Comune di Milano (DS2841) | `milano-admin-2024-11-04-v1` | **NOT YET BUNDLED** |
+| Munich | Official Stadtbezirke, dissolved from the 25 unique districts | `munich-admin-2026-05-27-v1` | **NOT YET BUNDLED** |
+
+Prepared geometry files live under `data/boundaries/` (source + derived). They are **not** wired into `pubspec.yaml`, `assets/`, or app runtime code.
+
+Checksum register: `data/boundaries/CHECKSUMS.sha256`.
 
 ---
 
@@ -47,6 +51,51 @@ When the dataset is shared or redistributed (including as an app asset), credit 
 Transformation and geometry simplification are allowed under CC BY 4.0.
 
 If the published GeoJSON is transformed, simplified, or otherwise modified before bundling, those modifications **must be declared** in attribution and in the provenance record for that internal boundary version.
+
+### Provenance record — `milano-admin-2024-11-04-v1`
+
+| Field | Value |
+| --- | --- |
+| authority | Comune di Milano |
+| dataset title | Confini Amministrativi del Comune di Milano (DS2841) |
+| dataset URL | https://dati.comune.milano.it/dataset/ds2841-confini-amministrativi-del-comune-di-milano |
+| download URL | https://dati.comune.milano.it/dataset/e75d91fa-eca6-4ee5-b96e-08bcdbb8d6f0/resource/f56cb432-83e6-48de-ae30-d39b4be61e85/download/confine_comune_milano_layer_0_confine_comune_milano.geojson |
+| licence | Creative Commons Attribution 4.0 International (CC BY 4.0) |
+| licence URL | https://creativecommons.org/licenses/by/4.0/ |
+| official update date | 2024-11-04 |
+| official update date source | CKAN package field `modified` = `04-11-2024`; GeoJSON resource `last_modified` = `2024-11-04T08:00:05.300155`; temporal coverage end = `2024-11-04` |
+| download date | 2026-07-10 |
+| source file | `data/boundaries/source/milano_ds2841_source.geojson` |
+| source SHA-256 checksum | `7417f88f3e584b690e4d3a0426e42fced44a5846175967b19444ca267a0f3ec1` |
+| source CRS | EPSG:4326 |
+| target CRS | EPSG:4326 (no transform) |
+| geometry type | Polygon (1 feature; no holes; no MultiPolygon parts) |
+| source feature count | 1 |
+| source vertex count | 19553 |
+| source approx. area | ≈ 181 763 617 m² (computed in EPSG:32632) |
+| source bbox (lon/lat) | `[9.040613060914325, 45.38672482115768, 9.277997093231479, 45.53594676003435]` |
+| geometry validity | Valid; non-empty; no repair applied |
+| transformation notes | No CRS transform. Official whole-city boundary preserved as a single Polygon. No neighbourhood/NIL/election boundaries used. |
+| simplification notes | Full boundary: none. Simplified boundary: `shapely.simplify` (Douglas-Peucker) with `preserve_topology=True`; tolerance **10 m** in EPSG:32632; vertices 19553 → 826; area change ≈ −0.0035%; file size 744 015 → 32 432 bytes. |
+| derived full file | `data/boundaries/derived/milano_boundary_full.geojson` |
+| derived full SHA-256 | `037e3f7c3363354315dddc564311b6493a289dddbd0669b5028335873b2e4a61` |
+| derived simplified file | `data/boundaries/derived/milano_boundary_simplified.geojson` |
+| derived simplified SHA-256 | `6f4e7c0b68afad26fe5de137929a4162b2495f9bb402c8876f36eee2a2d18a6b` |
+| internal boundary version | `milano-admin-2024-11-04-v1` |
+| intended use | city_access (future whole-city verification only) |
+| bundled status | **NOT YET BUNDLED** |
+
+#### Milano processing record
+
+1. Downloaded official DS2841 GeoJSON (2026-07-10).
+2. Validated JSON/GeoJSON, CRS EPSG:4326, 1 feature, valid Polygon, 19553 vertices.
+3. Wrote unsimplified derived boundary (geometry preserved; metadata normalised).
+4. Wrote topology-preserving simplified boundary at 10 m tolerance.
+5. Recorded SHA-256 checksums in `data/boundaries/CHECKSUMS.sha256`.
+
+Attribution for redistribution (declare modifications when using the simplified file):
+
+> Boundary data: Comune di Milano — Confini Amministrativi del Comune di Milano (DS2841), https://dati.comune.milano.it/dataset/ds2841-confini-amministrativi-del-comune-di-milano, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Simplified derivative uses topology-preserving 10 m simplification where applicable.
 
 ---
 
@@ -97,9 +146,64 @@ Written confirmation from GeodatenService München is recommended before shippin
 
 Contact recorded in portal metadata: `geoportal@muenchen.de`.
 
+**Unresolved:** written confirmation from GeodatenService has **not** been obtained for this prepared derivative. Do not ship in the membership app until that confirmation is recorded.
+
 ### Optional official cross-check (not primary)
 
 Bayerische Vermessungsverwaltung ALKIS® Verwaltungsgebiete — Gemeinde München (AGS 09162000) may be used later as a cross-check only. It is not the primary municipal source for this register.
+
+### Provenance record — `munich-admin-2026-05-27-v1`
+
+| Field | Value |
+| --- | --- |
+| authority | Landeshauptstadt München — GeodatenService |
+| dataset title | Stadtbezirke (`vablock_stadtbezirke_opendata`) |
+| dataset URL | https://opendata.muenchen.de/dataset/vablock_stadtbezirke_opendata |
+| download URL | https://geoportal.muenchen.de/geoserver/gsm_wfs/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gsm_wfs:vablock_stadtbezirk&outputFormat=application/json |
+| licence | Datenlizenz Deutschland – Namensnennung – Version 2.0 (dl-de/by-2.0) |
+| licence URL | https://www.govdata.de/dl-de/by-2-0 |
+| official update date | 2026-05-27 |
+| official update date source | CKAN extras `GeoPortal Last Modified Date` = `2026-05-27T14:38:27` |
+| download date | 2026-07-10 |
+| source file | `data/boundaries/source/munich_stadtbezirke_source.geojson` |
+| source SHA-256 checksum | `f3552067a0e06c83efcafa2d01aebbba456385862a0d0b719bb11256fb571e19` |
+| source CRS | EPSG:25832 (confirmed from GeoJSON CRS) |
+| target CRS | EPSG:4326 |
+| district identifier field | `sb_nummer` |
+| raw source feature count | 27 |
+| district numbers found | 01–25 (all present); duplicates for **18** and **19** |
+| duplicate records | District 18: 2 features (8 verts low-detail, 577 verts high-detail). District 19: 2 features (15 verts low-detail, 1007 verts high-detail). |
+| duplicate selection method | Prefer higher vertex count (higher-detail geometry); tie-break by larger area in EPSG:25832. Retained district 18 index with 577 verts; district 19 index with 1007 verts. |
+| unique districts before dissolve | **25** (exactly 01–25) |
+| geometry type (derived) | Polygon (1 feature after dissolve; no holes) |
+| dissolve result | `shapely.ops.unary_union` of 25 districts → Polygon. Area difference vs combined district areas in EPSG:25832 ≈ −7.15×10⁻⁷ m² (numerical noise). |
+| transformation notes | **Modified derivative:** (1) deduplicate `sb_nummer` 18/19; (2) dissolve 25 Stadtbezirke; (3) reproject EPSG:25832 → EPSG:4326 via geopandas/pyproj. No electoral districts used. |
+| simplification notes | Full boundary: none after dissolve+reproject. Simplified: `shapely.simplify` with `preserve_topology=True`; tolerance **10 m** in EPSG:32632; vertices 4146 → 596; area change ≈ −0.0078%; file size 163 182 → 24 854 bytes. |
+| derived full file | `data/boundaries/derived/munich_boundary_full.geojson` |
+| derived full SHA-256 | `85e1ba80296325eba6a37c2862e4f4089b9d9a65afa1ef64ed695081ea138f40` |
+| derived simplified file | `data/boundaries/derived/munich_boundary_simplified.geojson` |
+| derived simplified SHA-256 | `b6c0b97cc9979742e45ab19219fcf5fd03bdf7cce6758b1de1b6f2533f0f2918` |
+| derived approx. area (EPSG:4326, via EPSG:32632) | ≈ 310 721 370 m² |
+| derived bbox (lon/lat) | `[11.360778275906402, 48.06162443606122, 11.722909698518494, 48.24811837376852]` |
+| geometry validity | Source districts valid; dissolve valid; reprojected valid; simplified valid. No repair applied. |
+| internal boundary version | `munich-admin-2026-05-27-v1` |
+| intended use | city_access (future whole-city verification only) |
+| bundled status | **NOT YET BUNDLED** |
+| modified derivative | **Yes** — must be marked in attribution |
+| GeodatenService written confirmation | **Not yet obtained** (recommended before app shipping) |
+
+#### Munich processing record
+
+1. Downloaded official WFS GeoJSON (2026-07-10); CRS EPSG:25832; 27 features.
+2. Identified district field `sb_nummer`; listed duplicates for 18 and 19; selected higher-detail geometries.
+3. Confirmed exactly 25 unique districts covering 01–25.
+4. Dissolved to one Polygon; reprojected to EPSG:4326; validated area against combined source area.
+5. Wrote full and 10 m topology-preserving simplified derived boundaries.
+6. Recorded SHA-256 checksums in `data/boundaries/CHECKSUMS.sha256`.
+
+Required attribution text for the modified derivative:
+
+> Landeshauptstadt München - GeodatenService, www.muenchen.de/rathaus/Stadtverwaltung/Kommunalreferat/geodatenservice. Datenlizenz Deutschland – Namensnennung – Version 2.0 (dl-de/by-2.0), https://www.govdata.de/dl-de/by-2-0. Dataset: https://opendata.muenchen.de/dataset/vablock_stadtbezirke_opendata. Modified: deduplicated duplicate Stadtbezirke 18/19 (kept higher-detail geometries), dissolved the 25 unique Stadtbezirke into one whole-city boundary, reprojected from EPSG:25832 to EPSG:4326, and (for the simplified file) applied topology-preserving 10 m simplification.
 
 ---
 
@@ -202,5 +306,6 @@ bundled_status:        # NOT YET BUNDLED | BUNDLED
 | Item | Value |
 | --- | --- |
 | Document type | Provenance and attribution register |
-| Geometry bundled | No |
+| Geometry prepared under `data/boundaries/` | Yes (source + derived) |
+| Geometry bundled in app runtime | **No** (`NOT YET BUNDLED`) |
 | Code / packages changed by this document | None |
