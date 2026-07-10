@@ -35,8 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
-  # Foreground location permission / service-state checks only.
-  # Do not use this package to read coordinates in this stage.
+  # Foreground location permission checks and one-time position reading.
+  # Do not use streams, last-known position, or background location.
   geolocator: ^14.0.3
 
 dev_dependencies:

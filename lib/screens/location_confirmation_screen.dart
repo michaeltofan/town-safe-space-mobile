@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 
+import '../services/foreground_position_reader.dart';
 import '../services/location_permission_service.dart';
 
 /// Location Confirmation rationale screen.
 ///
-/// Explains why location is required, then checks/requests foreground
-/// location permission only. Does not read coordinates or navigate away.
+/// Checks/requests foreground permission, then performs exactly one
+/// foreground position read. Does not verify city membership, store
+/// coordinates, or navigate away.
 class LocationConfirmationScreen extends StatefulWidget {
   const LocationConfirmationScreen({
     super.key,
     required this.selectedCountry,
     required this.selectedCity,
     this.permissionService = const LocationPermissionService(),
+    this.positionReader = const ForegroundPositionReader(),
   });
 
   /// Canonical country from Select City (`Italy` or `Germany`).
@@ -22,6 +25,9 @@ class LocationConfirmationScreen extends StatefulWidget {
 
   /// Injectable permission helper for tests.
   final LocationPermissionService permissionService;
+
+  /// Injectable one-time position reader for tests.
+  final ForegroundPositionReader positionReader;
 
   @override
   State<LocationConfirmationScreen> createState() =>
@@ -38,7 +44,9 @@ class _LocationConfirmationScreenState
   static const double _maxContentWidth = 410;
 
   ForegroundLocationState? _permissionState;
-  bool _isChecking = false;
+  ForegroundPositionReadResult? _readResult;
+  ForegroundPositionReadState _flowState = ForegroundPositionReadState.idle;
+  bool _isBusy = false;
 
   _LocationConfirmationCopy get _copy {
     assert(
@@ -54,25 +62,68 @@ class _LocationConfirmationScreenState
   }
 
   Future<void> _onConfirmPosition() async {
-    if (_isChecking) {
+    if (_isBusy) {
       return;
     }
     setState(() {
-      _isChecking = true;
+      _isBusy = true;
+      _flowState = ForegroundPositionReadState.requestingPermission;
+      _permissionState = null;
+      _readResult = null;
     });
+
     try {
-      final ForegroundLocationState state =
+      final ForegroundLocationState permission =
           await widget.permissionService.ensureForegroundPermission();
       if (!mounted) {
         return;
       }
+
+      if (permission != ForegroundLocationState.granted) {
+        setState(() {
+          _permissionState = permission;
+          _flowState = ForegroundPositionReadState.idle;
+        });
+        return;
+      }
+
       setState(() {
-        _permissionState = state;
+        _permissionState = ForegroundLocationState.granted;
+        _flowState = ForegroundPositionReadState.reading;
+      });
+
+      final ForegroundPositionReadResult result =
+          await widget.positionReader.readOnce();
+      if (!mounted) {
+        return;
+      }
+
+      // Map mid-read service/permission loss onto existing permission UI.
+      if (result.state == ForegroundPositionReadState.serviceDisabled) {
+        setState(() {
+          _permissionState = ForegroundLocationState.serviceDisabled;
+          _readResult = null;
+          _flowState = ForegroundPositionReadState.idle;
+        });
+        return;
+      }
+      if (result.state == ForegroundPositionReadState.permissionLost) {
+        setState(() {
+          _permissionState = ForegroundLocationState.denied;
+          _readResult = null;
+          _flowState = ForegroundPositionReadState.idle;
+        });
+        return;
+      }
+
+      setState(() {
+        _readResult = result;
+        _flowState = result.state;
       });
     } finally {
       if (mounted) {
         setState(() {
-          _isChecking = false;
+          _isBusy = false;
         });
       }
     }
@@ -86,25 +137,79 @@ class _LocationConfirmationScreenState
     await widget.permissionService.openLocationSettings();
   }
 
-  String? _statusMessage(_LocationConfirmationCopy copy) {
+  List<String> _statusLines(_LocationConfirmationCopy copy) {
+    if (_flowState == ForegroundPositionReadState.reading) {
+      return <String>[copy.reading];
+    }
+
+    final ForegroundPositionReadResult? read = _readResult;
+    if (read != null) {
+      switch (read.state) {
+        case ForegroundPositionReadState.successGood:
+          return <String>[
+            copy.successGood(read.accuracyMeters!),
+            copy.notVerified,
+          ];
+        case ForegroundPositionReadState.successLimited:
+          return <String>[
+            copy.successLimited(read.accuracyMeters!),
+            copy.notVerified,
+          ];
+        case ForegroundPositionReadState.insufficientAccuracy:
+          return <String>[
+            copy.insufficient(read.accuracyMeters!),
+            copy.notVerified,
+          ];
+        case ForegroundPositionReadState.timeout:
+          return <String>[copy.timeout];
+        case ForegroundPositionReadState.error:
+          return <String>[copy.genericError];
+        case ForegroundPositionReadState.idle:
+        case ForegroundPositionReadState.requestingPermission:
+        case ForegroundPositionReadState.reading:
+        case ForegroundPositionReadState.permissionLost:
+        case ForegroundPositionReadState.serviceDisabled:
+          break;
+      }
+    }
+
     switch (_permissionState) {
       case null:
-        return null;
+        return const <String>[];
       case ForegroundLocationState.serviceDisabled:
-        return copy.serviceDisabled;
+        return <String>[copy.serviceDisabled];
       case ForegroundLocationState.denied:
-        return copy.denied;
+        return <String>[copy.denied];
       case ForegroundLocationState.permanentlyDenied:
-        return copy.permanentlyDenied;
+        return <String>[copy.permanentlyDenied];
       case ForegroundLocationState.granted:
-        return copy.granted;
+        // Granted alone is transitional; reading follows immediately.
+        return const <String>[];
     }
   }
+
+  bool get _showPermissionTryAgain =>
+      _permissionState == ForegroundLocationState.denied &&
+      _readResult == null &&
+      _flowState == ForegroundPositionReadState.idle;
+
+  bool get _showOpenSettings =>
+      _permissionState == ForegroundLocationState.permanentlyDenied &&
+      _readResult == null;
+
+  bool get _showOpenLocationSettings =>
+      _permissionState == ForegroundLocationState.serviceDisabled &&
+      _readResult == null;
+
+  bool get _showReadRetry =>
+      _readResult != null && (_readResult!.canRetry);
 
   @override
   Widget build(BuildContext context) {
     final _LocationConfirmationCopy copy = _copy;
-    final String? statusMessage = _statusMessage(copy);
+    final List<String> statusLines = _statusLines(copy);
+    final bool showStatus = statusLines.isNotEmpty ||
+        _flowState == ForegroundPositionReadState.reading;
 
     return Scaffold(
       backgroundColor: _background,
@@ -169,27 +274,34 @@ class _LocationConfirmationScreenState
                       ),
                     ),
                   ),
-                  if (statusMessage != null) ...[
+                  if (showStatus) ...[
                     const SizedBox(height: 12),
-                    Text(
-                      statusMessage,
-                      key: const Key('location_permission_status'),
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        height: 1.45,
-                        letterSpacing: 0.05,
-                        color: _white,
+                    ...statusLines.map(
+                      (String line) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                          line,
+                          key: statusLines.first == line
+                              ? const Key('location_permission_status')
+                              : null,
+                          textAlign: TextAlign.left,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            height: 1.45,
+                            letterSpacing: 0.05,
+                            color: _white,
+                          ),
+                        ),
                       ),
                     ),
-                    if (_permissionState == ForegroundLocationState.denied) ...[
-                      const SizedBox(height: 8),
+                    if (_showPermissionTryAgain || _showReadRetry) ...[
+                      const SizedBox(height: 2),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton(
                           key: const Key('location_try_again'),
-                          onPressed: _isChecking ? null : _onConfirmPosition,
+                          onPressed: _isBusy ? null : _onConfirmPosition,
                           style: TextButton.styleFrom(
                             foregroundColor: _gold,
                             padding: EdgeInsets.zero,
@@ -200,9 +312,8 @@ class _LocationConfirmationScreenState
                         ),
                       ),
                     ],
-                    if (_permissionState ==
-                        ForegroundLocationState.permanentlyDenied) ...[
-                      const SizedBox(height: 8),
+                    if (_showOpenSettings) ...[
+                      const SizedBox(height: 2),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton(
@@ -218,9 +329,8 @@ class _LocationConfirmationScreenState
                         ),
                       ),
                     ],
-                    if (_permissionState ==
-                        ForegroundLocationState.serviceDisabled) ...[
-                      const SizedBox(height: 8),
+                    if (_showOpenLocationSettings) ...[
+                      const SizedBox(height: 2),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton(
@@ -242,7 +352,7 @@ class _LocationConfirmationScreenState
                     width: double.infinity,
                     height: 54,
                     child: FilledButton(
-                      onPressed: _isChecking ? null : _onConfirmPosition,
+                      onPressed: _isBusy ? null : _onConfirmPosition,
                       style: FilledButton.styleFrom(
                         backgroundColor: _gold,
                         foregroundColor: _background,
@@ -258,7 +368,7 @@ class _LocationConfirmationScreenState
                           letterSpacing: 0.2,
                         ),
                       ),
-                      child: _isChecking
+                      child: _isBusy
                           ? const SizedBox(
                               width: 22,
                               height: 22,
@@ -320,6 +430,13 @@ class _LocationConfirmationCopy {
     required this.tryAgain,
     required this.openSettings,
     required this.openLocationSettings,
+    required this.reading,
+    required this.successGoodTemplate,
+    required this.successLimitedTemplate,
+    required this.insufficientTemplate,
+    required this.notVerified,
+    required this.timeout,
+    required this.genericError,
   });
 
   const _LocationConfirmationCopy.italian()
@@ -340,7 +457,18 @@ class _LocationConfirmationCopy {
         granted = 'Autorizzazione alla posizione concessa.',
         tryAgain = 'Riprova',
         openSettings = 'Apri le impostazioni',
-        openLocationSettings = 'Apri impostazioni di localizzazione';
+        openLocationSettings = 'Apri impostazioni di localizzazione',
+        reading = 'Lettura della posizione in corso…',
+        successGoodTemplate =
+            'Posizione rilevata con una precisione di circa {accuracy} m.',
+        successLimitedTemplate =
+            'Posizione rilevata, ma la precisione è limitata: circa {accuracy} m.',
+        insufficientTemplate =
+            'La posizione è stata rilevata con una precisione insufficiente: circa {accuracy} m. Riprova in uno spazio aperto.',
+        notVerified = 'La città non è ancora stata verificata.',
+        timeout = 'Impossibile rilevare la posizione in tempo. Riprova.',
+        genericError =
+            'Non è stato possibile rilevare la posizione. Riprova.';
 
   const _LocationConfirmationCopy.german()
       : title = 'Bestätige deinen Standort',
@@ -361,7 +489,19 @@ class _LocationConfirmationCopy {
         granted = 'Standortberechtigung wurde erteilt.',
         tryAgain = 'Erneut versuchen',
         openSettings = 'Einstellungen öffnen',
-        openLocationSettings = 'Ortungseinstellungen öffnen';
+        openLocationSettings = 'Ortungseinstellungen öffnen',
+        reading = 'Standort wird ermittelt…',
+        successGoodTemplate =
+            'Standort mit einer Genauigkeit von ungefähr {accuracy} m ermittelt.',
+        successLimitedTemplate =
+            'Standort ermittelt, aber die Genauigkeit ist eingeschränkt: ungefähr {accuracy} m.',
+        insufficientTemplate =
+            'Der Standort wurde nur mit unzureichender Genauigkeit ermittelt: ungefähr {accuracy} m. Versuche es erneut im Freien.',
+        notVerified = 'Die Stadt wurde noch nicht verifiziert.',
+        timeout =
+            'Der Standort konnte nicht rechtzeitig ermittelt werden. Versuche es erneut.',
+        genericError =
+            'Der Standort konnte nicht ermittelt werden. Versuche es erneut.';
 
   final String title;
   final String introduction;
@@ -378,6 +518,22 @@ class _LocationConfirmationCopy {
   final String tryAgain;
   final String openSettings;
   final String openLocationSettings;
+  final String reading;
+  final String successGoodTemplate;
+  final String successLimitedTemplate;
+  final String insufficientTemplate;
+  final String notVerified;
+  final String timeout;
+  final String genericError;
+
+  String successGood(int accuracyMeters) =>
+      successGoodTemplate.replaceAll('{accuracy}', '$accuracyMeters');
+
+  String successLimited(int accuracyMeters) =>
+      successLimitedTemplate.replaceAll('{accuracy}', '$accuracyMeters');
+
+  String insufficient(int accuracyMeters) =>
+      insufficientTemplate.replaceAll('{accuracy}', '$accuracyMeters');
 }
 
 class _InfoCard extends StatelessWidget {
