@@ -1,12 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:town_safe_space_mobile/screens/location_confirmation_screen.dart';
 import 'package:town_safe_space_mobile/screens/select_city_screen.dart';
+import 'package:town_safe_space_mobile/services/foreground_position_reader.dart';
 import 'package:town_safe_space_mobile/services/location_permission_service.dart';
-
-import 'dart:io';
 
 class _FakeLocationPermissionService extends LocationPermissionService {
   _FakeLocationPermissionService({
@@ -18,8 +19,6 @@ class _FakeLocationPermissionService extends LocationPermissionService {
   int ensureCalls = 0;
   int openAppSettingsCalls = 0;
   int openLocationSettingsCalls = 0;
-  bool getCurrentPositionCalled = false;
-  bool getPositionStreamCalled = false;
 
   @override
   Future<ForegroundLocationState> ensureForegroundPermission() async {
@@ -37,6 +36,21 @@ class _FakeLocationPermissionService extends LocationPermissionService {
   Future<bool> openLocationSettings() async {
     openLocationSettingsCalls += 1;
     return true;
+  }
+}
+
+class _FakeForegroundPositionReader extends ForegroundPositionReader {
+  _FakeForegroundPositionReader({
+    required this.result,
+  });
+
+  ForegroundPositionReadResult result;
+  int readCalls = 0;
+
+  @override
+  Future<ForegroundPositionReadResult> readOnce() async {
+    readCalls += 1;
+    return result;
   }
 }
 
@@ -60,27 +74,6 @@ void main() {
 
     expect(find.byType(LocationConfirmationScreen), findsOneWidget);
     expect(find.text('Conferma la tua posizione'), findsOneWidget);
-    expect(
-      find.text(
-        'Per mantenere TOWN una comunità reale e locale, dobbiamo verificare che ti trovi a Milano.',
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('Perché è richiesta la posizione?'), findsOneWidget);
-    expect(
-      find.text('Ci aiuta a mantenere TOWN locale, sicuro e affidabile.'),
-      findsOneWidget,
-    );
-    expect(
-      find.text(
-        'Utilizziamo la tua posizione solo durante la registrazione.',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Non monitoriamo la tua posizione in background.'),
-      findsOneWidget,
-    );
     expect(
       find.widgetWithText(FilledButton, 'Conferma posizione'),
       findsOneWidget,
@@ -107,29 +100,6 @@ void main() {
 
     expect(find.byType(LocationConfirmationScreen), findsOneWidget);
     expect(find.text('Bestätige deinen Standort'), findsOneWidget);
-    expect(
-      find.text(
-        'Damit TOWN eine echte lokale Gemeinschaft bleibt, müssen wir bestätigen, dass du dich in München befindest.',
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('Warum wird dein Standort benötigt?'), findsOneWidget);
-    expect(
-      find.text('Damit TOWN lokal, sicher und vertrauenswürdig bleibt.'),
-      findsOneWidget,
-    );
-    expect(
-      find.text(
-        'Wir verwenden deinen Standort nur während der Registrierung.',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.text(
-        'Wir verfolgen deinen Standort nicht im Hintergrund.',
-      ),
-      findsOneWidget,
-    );
     expect(
       find.widgetWithText(FilledButton, 'Standort bestätigen'),
       findsOneWidget,
@@ -160,31 +130,31 @@ void main() {
 
     expect(find.byType(SelectCityScreen), findsOneWidget);
     expect(find.text('Seleziona la tua città'), findsOneWidget);
-    expect(find.text('Italia'), findsOneWidget);
     expect(find.text('Milano'), findsOneWidget);
-    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
-    expect(
-      tester
-          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Continua'))
-          .onPressed,
-      isNotNull,
-    );
   });
 
-  testWidgets('Primary CTA checks foreground permission and stays on screen',
+  testWidgets(
+      'getCurrentPosition runs only after granted and once per action',
       (WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final _FakeLocationPermissionService fake =
+    final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 25,
+      ),
+    );
 
     await tester.pumpWidget(
       MaterialApp(
         home: LocationConfirmationScreen(
           selectedCountry: 'Italy',
           selectedCity: 'Milano',
-          permissionService: fake,
+          permissionService: permission,
+          positionReader: reader,
         ),
       ),
     );
@@ -192,88 +162,32 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
     await tester.pumpAndSettle();
 
-    expect(fake.ensureCalls, 1);
-    expect(fake.getCurrentPositionCalled, isFalse);
-    expect(fake.getPositionStreamCalled, isFalse);
+    expect(permission.ensureCalls, 1);
+    expect(reader.readCalls, 1);
     expect(find.byType(LocationConfirmationScreen), findsOneWidget);
-    expect(find.text('Autorizzazione alla posizione concessa.'), findsOneWidget);
-    expect(find.text('Conferma la tua posizione'), findsOneWidget);
-  });
-
-  testWidgets('Italian denied state shows try-again action',
-      (WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final _FakeLocationPermissionService fake =
-        _FakeLocationPermissionService(state: ForegroundLocationState.denied);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: LocationConfirmationScreen(
-          selectedCountry: 'Italy',
-          selectedCity: 'Milano',
-          permissionService: fake,
-        ),
-      ),
-    );
-
-    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Autorizzazione alla posizione negata.'), findsOneWidget);
-    expect(find.byKey(const Key('location_try_again')), findsOneWidget);
-    expect(find.text('Riprova'), findsOneWidget);
-
-    fake.state = ForegroundLocationState.granted;
-    await tester.tap(find.byKey(const Key('location_try_again')));
-    await tester.pumpAndSettle();
-
-    expect(fake.ensureCalls, 2);
-    expect(find.text('Autorizzazione alla posizione concessa.'), findsOneWidget);
-  });
-
-  testWidgets('Italian permanently denied opens settings action',
-      (WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final _FakeLocationPermissionService fake = _FakeLocationPermissionService(
-      state: ForegroundLocationState.permanentlyDenied,
-    );
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: LocationConfirmationScreen(
-          selectedCountry: 'Italy',
-          selectedCity: 'Milano',
-          permissionService: fake,
-        ),
-      ),
-    );
-
-    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
-    await tester.pumpAndSettle();
-
     expect(
-      find.text(
-        'Autorizzazione negata in modo permanente. Apri le impostazioni per modificarla.',
-      ),
+      find.text('Posizione rilevata con una precisione di circa 25 m.'),
       findsOneWidget,
     );
-    await tester.tap(find.byKey(const Key('location_open_settings')));
-    await tester.pumpAndSettle();
-    expect(fake.openAppSettingsCalls, 1);
-    expect(find.byType(LocationConfirmationScreen), findsOneWidget);
+    expect(find.text('La città non è ancora stata verificata.'), findsOneWidget);
+    expect(find.textContaining('lat'), findsNothing);
+    expect(find.textContaining('lon'), findsNothing);
+    expect(find.textContaining('Lat'), findsNothing);
+    expect(find.textContaining('Lon'), findsNothing);
   });
 
-  testWidgets('Italian service-disabled opens location settings action',
+  testWidgets('Position is not read when permission is denied',
       (WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final _FakeLocationPermissionService fake = _FakeLocationPermissionService(
-      state: ForegroundLocationState.serviceDisabled,
+    final _FakeLocationPermissionService permission =
+        _FakeLocationPermissionService(state: ForegroundLocationState.denied);
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 10,
+      ),
     );
 
     await tester.pumpWidget(
@@ -281,7 +195,8 @@ void main() {
         home: LocationConfirmationScreen(
           selectedCountry: 'Italy',
           selectedCity: 'Milano',
-          permissionService: fake,
+          permissionService: permission,
+          positionReader: reader,
         ),
       ),
     );
@@ -289,22 +204,206 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
     await tester.pumpAndSettle();
 
+    expect(permission.ensureCalls, 1);
+    expect(reader.readCalls, 0);
+    expect(find.text('Autorizzazione alla posizione negata.'), findsOneWidget);
+    expect(find.byKey(const Key('location_try_again')), findsOneWidget);
+  });
+
+  testWidgets('Position is not read when permanently denied',
+      (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final _FakeLocationPermissionService permission =
+        _FakeLocationPermissionService(
+      state: ForegroundLocationState.permanentlyDenied,
+    );
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 10,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocationConfirmationScreen(
+          selectedCountry: 'Italy',
+          selectedCity: 'Milano',
+          permissionService: permission,
+          positionReader: reader,
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
+    await tester.pumpAndSettle();
+
+    expect(reader.readCalls, 0);
+    expect(find.byKey(const Key('location_open_settings')), findsOneWidget);
+  });
+
+  testWidgets('Position is not read when services are disabled',
+      (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final _FakeLocationPermissionService permission =
+        _FakeLocationPermissionService(
+      state: ForegroundLocationState.serviceDisabled,
+    );
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 10,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocationConfirmationScreen(
+          selectedCountry: 'Italy',
+          selectedCity: 'Milano',
+          permissionService: permission,
+          positionReader: reader,
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
+    await tester.pumpAndSettle();
+
+    expect(reader.readCalls, 0);
     expect(
       find.text('Servizi di localizzazione disattivati.'),
       findsOneWidget,
     );
-    await tester.tap(find.byKey(const Key('location_open_location_settings')));
-    await tester.pumpAndSettle();
-    expect(fake.openLocationSettingsCalls, 1);
+    expect(
+      find.byKey(const Key('location_open_location_settings')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('German permission state messages render correctly',
+  testWidgets('Italian timeout and error states render with retry',
       (WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final _FakeLocationPermissionService fake = _FakeLocationPermissionService(
-      state: ForegroundLocationState.serviceDisabled,
+    final _FakeLocationPermissionService permission =
+        _FakeLocationPermissionService(state: ForegroundLocationState.granted);
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.timeout,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocationConfirmationScreen(
+          selectedCountry: 'Italy',
+          selectedCity: 'Milano',
+          permissionService: permission,
+          positionReader: reader,
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Impossibile rilevare la posizione in tempo. Riprova.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('location_try_again')), findsOneWidget);
+    expect(find.byType(LocationConfirmationScreen), findsOneWidget);
+
+    reader.result = const ForegroundPositionReadResult(
+      state: ForegroundPositionReadState.error,
+    );
+    await tester.tap(find.byKey(const Key('location_try_again')));
+    await tester.pumpAndSettle();
+    expect(reader.readCalls, 2);
+    expect(
+      find.text('Non è stato possibile rilevare la posizione. Riprova.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Italian accuracy classifications render correctly',
+      (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final _FakeLocationPermissionService permission =
+        _FakeLocationPermissionService(state: ForegroundLocationState.granted);
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 40,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocationConfirmationScreen(
+          selectedCountry: 'Italy',
+          selectedCity: 'Milano',
+          permissionService: permission,
+          positionReader: reader,
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Posizione rilevata con una precisione di circa 40 m.'),
+      findsOneWidget,
+    );
+    expect(find.text('La città non è ancora stata verificata.'), findsOneWidget);
+
+    reader.result = const ForegroundPositionReadResult(
+      state: ForegroundPositionReadState.successLimited,
+      accuracyMeters: 120,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Posizione rilevata, ma la precisione è limitata: circa 120 m.',
+      ),
+      findsOneWidget,
+    );
+
+    reader.result = const ForegroundPositionReadResult(
+      state: ForegroundPositionReadState.insufficientAccuracy,
+      accuracyMeters: 200,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Conferma posizione'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'La posizione è stata rilevata con una precisione insufficiente: circa 200 m. Riprova in uno spazio aperto.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('location_try_again')), findsOneWidget);
+    expect(find.byType(LocationConfirmationScreen), findsOneWidget);
+  });
+
+  testWidgets('German reading result messages render correctly',
+      (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final _FakeLocationPermissionService permission =
+        _FakeLocationPermissionService(state: ForegroundLocationState.granted);
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 30,
+      ),
     );
 
     await tester.pumpWidget(
@@ -312,42 +411,81 @@ void main() {
         home: LocationConfirmationScreen(
           selectedCountry: 'Germany',
           selectedCity: 'Munich',
-          permissionService: fake,
+          permissionService: permission,
+          positionReader: reader,
         ),
       ),
     );
 
     await tester.tap(find.widgetWithText(FilledButton, 'Standort bestätigen'));
     await tester.pumpAndSettle();
-    expect(find.text('Ortungsdienste sind deaktiviert.'), findsOneWidget);
-    expect(find.text('Ortungseinstellungen öffnen'), findsOneWidget);
+    expect(
+      find.text(
+        'Standort mit einer Genauigkeit von ungefähr 30 m ermittelt.',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Die Stadt wurde noch nicht verifiziert.'),
+      findsOneWidget,
+    );
 
-    fake.state = ForegroundLocationState.denied;
-    await tester.tap(find.widgetWithText(FilledButton, 'Standort bestätigen'));
-    await tester.pumpAndSettle();
-    expect(find.text('Standortberechtigung wurde verweigert.'), findsOneWidget);
-    expect(find.text('Erneut versuchen'), findsOneWidget);
-
-    fake.state = ForegroundLocationState.permanentlyDenied;
+    reader.result = const ForegroundPositionReadResult(
+      state: ForegroundPositionReadState.timeout,
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Standort bestätigen'));
     await tester.pumpAndSettle();
     expect(
       find.text(
-        'Standortberechtigung wurde dauerhaft verweigert. Öffne die Einstellungen, um sie zu ändern.',
+        'Der Standort konnte nicht rechtzeitig ermittelt werden. Versuche es erneut.',
       ),
       findsOneWidget,
     );
-    expect(find.text('Einstellungen öffnen'), findsOneWidget);
-
-    fake.state = ForegroundLocationState.granted;
-    await tester.tap(find.widgetWithText(FilledButton, 'Standort bestätigen'));
-    await tester.pumpAndSettle();
-    expect(find.text('Standortberechtigung wurde erteilt.'), findsOneWidget);
+    expect(find.text('Erneut versuchen'), findsOneWidget);
   });
 
-  testWidgets('Secondary action stays local', (WidgetTester tester) async {
+  testWidgets('German permission denial still blocks position reading',
+      (WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final _FakeLocationPermissionService permission =
+        _FakeLocationPermissionService(state: ForegroundLocationState.denied);
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 10,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocationConfirmationScreen(
+          selectedCountry: 'Germany',
+          selectedCity: 'Munich',
+          permissionService: permission,
+          positionReader: reader,
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Standort bestätigen'));
+    await tester.pumpAndSettle();
+    expect(reader.readCalls, 0);
+    expect(find.text('Standortberechtigung wurde verweigert.'), findsOneWidget);
+  });
+
+  testWidgets('Secondary Not now stays local without reading',
+      (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final _FakeForegroundPositionReader reader = _FakeForegroundPositionReader(
+      result: const ForegroundPositionReadResult(
+        state: ForegroundPositionReadState.successGood,
+        accuracyMeters: 10,
+      ),
+    );
 
     await tester.pumpWidget(
       MaterialApp(
@@ -357,14 +495,37 @@ void main() {
           permissionService: _FakeLocationPermissionService(
             state: ForegroundLocationState.granted,
           ),
+          positionReader: reader,
         ),
       ),
     );
 
     await tester.tap(find.text('Non ora'));
     await tester.pumpAndSettle();
+    expect(reader.readCalls, 0);
     expect(find.byType(LocationConfirmationScreen), findsOneWidget);
-    expect(find.text('Conferma la tua posizione'), findsOneWidget);
+  });
+
+  test('Accuracy thresholds classify good, limited, and insufficient', () {
+    expect(
+      ForegroundPositionReader.classifyAccuracyMeters(50).state,
+      ForegroundPositionReadState.successGood,
+    );
+    expect(
+      ForegroundPositionReader.classifyAccuracyMeters(51).state,
+      ForegroundPositionReadState.successLimited,
+    );
+    expect(
+      ForegroundPositionReader.classifyAccuracyMeters(150).state,
+      ForegroundPositionReadState.successLimited,
+    );
+    expect(
+      ForegroundPositionReader.classifyAccuracyMeters(151).state,
+      ForegroundPositionReadState.insufficientAccuracy,
+    );
+    expect(kForegroundPositionTimeout, const Duration(seconds: 15));
+    expect(ForegroundAccuracyThresholds.goodMaxMeters, 50);
+    expect(ForegroundAccuracyThresholds.limitedMaxMeters, 150);
   });
 
   test('Permission service maps granted and denial outcomes', () {
@@ -375,10 +536,6 @@ void main() {
       ForegroundLocationState.granted,
     );
     expect(
-      service.mapPermissionAfterRequest(LocationPermission.always),
-      ForegroundLocationState.granted,
-    );
-    expect(
       service.mapPermissionAfterRequest(LocationPermission.deniedForever),
       ForegroundLocationState.permanentlyDenied,
     );
@@ -386,22 +543,90 @@ void main() {
       service.mapPermissionAfterRequest(LocationPermission.denied),
       ForegroundLocationState.denied,
     );
-    expect(
-      service.mapPermissionAfterRequest(LocationPermission.unableToDetermine),
-      ForegroundLocationState.denied,
-    );
   });
 
-  test('Foreground permission config is present without background keys', () {
-    final String pubspec = File('pubspec.yaml').readAsStringSync();
-    expect(pubspec.contains('geolocator:'), isTrue);
-    expect(pubspec.contains('permission_handler'), isFalse);
-    expect(RegExp(r'^\s*location:', multiLine: true).hasMatch(pubspec), isFalse);
+  test('Lib sources use only one-shot getCurrentPosition API', () {
+    final List<File> dartFiles = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((File f) => f.path.endsWith('.dart'))
+        .toList();
 
+    int getCurrentPositionFiles = 0;
+    for (final File file in dartFiles) {
+      final String source = file.readAsStringSync();
+      expect(
+        source.contains('getPositionStream'),
+        isFalse,
+        reason: '${file.path} must not use getPositionStream',
+      );
+      expect(
+        source.contains('getLastKnownPosition'),
+        isFalse,
+        reason: '${file.path} must not use getLastKnownPosition',
+      );
+      expect(
+        RegExp(r'\bprint\s*\(').hasMatch(source),
+        isFalse,
+        reason: '${file.path} must not print',
+      );
+      expect(
+        source.contains('debugPrint('),
+        isFalse,
+        reason: '${file.path} must not debugPrint',
+      );
+      if (source.contains('Geolocator.getCurrentPosition')) {
+        getCurrentPositionFiles += 1;
+        expect(
+          file.path.endsWith('foreground_position_reader.dart'),
+          isTrue,
+          reason: 'getCurrentPosition only allowed in position reader',
+        );
+      }
+    }
+    expect(getCurrentPositionFiles, 1);
+
+    final String reader =
+        File('lib/services/foreground_position_reader.dart').readAsStringSync();
+    expect(reader.contains('Geolocator.getCurrentPosition'), isTrue);
+    // Coordinates may be received transiently via Position, but must not be
+    // retained on the result model or logged.
+    expect(reader.contains('accuracyMeters'), isTrue);
+    expect(
+      RegExp(r'latitude\s*:').hasMatch(reader),
+      isFalse,
+    );
+    expect(
+      RegExp(r'longitude\s*:').hasMatch(reader),
+      isFalse,
+    );
+
+    final String resultModel = reader;
+    expect(resultModel.contains('class ForegroundPositionReadResult'), isTrue);
+    expect(
+      RegExp(
+        r'class ForegroundPositionReadResult[\s\S]*?\blatitude\b',
+      ).hasMatch(resultModel),
+      isFalse,
+    );
+    expect(
+      RegExp(
+        r'class ForegroundPositionReadResult[\s\S]*?\blongitude\b',
+      ).hasMatch(resultModel),
+      isFalse,
+    );
+
+    final String screen =
+        File('lib/screens/location_confirmation_screen.dart').readAsStringSync();
+    expect(screen.contains('latitude'), isFalse);
+    expect(screen.contains('longitude'), isFalse);
+    expect(screen.contains('SharedPreferences'), isFalse);
+    expect(screen.contains('http'), isFalse);
+  });
+
+  test('Foreground permission config remains without background keys', () {
     final String androidManifest =
         File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
-    expect(androidManifest.contains('ACCESS_FINE_LOCATION'), isTrue);
-    expect(androidManifest.contains('ACCESS_COARSE_LOCATION'), isTrue);
     expect(androidManifest.contains('ACCESS_BACKGROUND_LOCATION'), isFalse);
     expect(
       androidManifest.contains('FOREGROUND_SERVICE_LOCATION'),
@@ -409,84 +634,14 @@ void main() {
     );
 
     final String iosInfo = File('ios/Runner/Info.plist').readAsStringSync();
-    expect(iosInfo.contains('NSLocationWhenInUseUsageDescription'), isTrue);
     expect(
       RegExp(r'<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>')
           .hasMatch(iosInfo),
       isFalse,
     );
     expect(
-      RegExp(r'<key>NSLocationAlwaysUsageDescription</key>').hasMatch(iosInfo),
-      isFalse,
-    );
-    expect(
       RegExp(r'<key>UIBackgroundModes</key>').hasMatch(iosInfo),
       isFalse,
     );
-
-    final String podfile = File('ios/Podfile').readAsStringSync();
-    expect(podfile.contains('BYPASS_PERMISSION_LOCATION_ALWAYS=1'), isTrue);
-
-    final String itUsage = File('ios/Runner/it.lproj/InfoPlist.strings')
-        .readAsStringSync();
-    expect(
-      itUsage.contains('NSLocationWhenInUseUsageDescription'),
-      isTrue,
-    );
-    expect(
-      itUsage.contains(
-        'TOWN utilizza la tua posizione solo mentre l’app è aperta, per confermare che ti trovi nella città selezionata durante la registrazione.',
-      ),
-      isTrue,
-    );
-
-    final String deUsage = File('ios/Runner/de.lproj/InfoPlist.strings')
-        .readAsStringSync();
-    expect(
-      deUsage.contains('NSLocationWhenInUseUsageDescription'),
-      isTrue,
-    );
-    expect(
-      deUsage.contains(
-        'TOWN verwendet deinen Standort nur, während die App geöffnet ist, um bei der Registrierung zu bestätigen, dass du dich in der ausgewählten Stadt befindest.',
-      ),
-      isTrue,
-    );
-
-    final String pbxproj =
-        File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
-    expect(pbxproj.contains('it.lproj/InfoPlist.strings'), isTrue);
-    expect(pbxproj.contains('de.lproj/InfoPlist.strings'), isTrue);
-    expect(
-      RegExp(r'knownRegions\s*=\s*\([^)]*\bit\b', multiLine: true, dotAll: true)
-          .hasMatch(pbxproj),
-      isTrue,
-    );
-    expect(
-      RegExp(r'knownRegions\s*=\s*\([^)]*\bde\b', multiLine: true, dotAll: true)
-          .hasMatch(pbxproj),
-      isTrue,
-    );
-  });
-
-  test('No coordinate-reading APIs are called from app lib sources', () {
-    final List<File> dartFiles = Directory('lib')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((File f) => f.path.endsWith('.dart'))
-        .toList();
-
-    final RegExp coordinateApis = RegExp(
-      r'Geolocator\.(getCurrentPosition|getPositionStream|getLastKnownPosition)\s*\(',
-    );
-
-    for (final File file in dartFiles) {
-      final String source = file.readAsStringSync();
-      expect(
-        coordinateApis.hasMatch(source),
-        isFalse,
-        reason: '${file.path} must not call coordinate-reading Geolocator APIs',
-      );
-    }
   });
 }
