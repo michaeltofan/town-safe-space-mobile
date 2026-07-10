@@ -178,7 +178,7 @@ void main() {
     );
   });
 
-  testWidgets('Continue enabled after city selection and does not navigate',
+  testWidgets('Continue enabled after city selection opens Location Confirmation',
       (WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -204,8 +204,8 @@ void main() {
     await tester.tap(continuaButton);
     await tester.pumpAndSettle();
 
-    expect(find.byType(SelectCityScreen), findsOneWidget);
-    expect(find.text('Seleziona la tua città'), findsOneWidget);
+    expect(find.text('Conferma la tua posizione'), findsOneWidget);
+    expect(find.text('Seleziona la tua città'), findsNothing);
   });
 
   testWidgets('Back and Change return to Select Country preserving Italy',

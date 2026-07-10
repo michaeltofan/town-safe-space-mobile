@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'location_confirmation_screen.dart';
+
 /// Screen 02B — Select City.
 ///
 /// Visual prototype: single-select city for the country chosen on Screen 02A.
 /// Selecting a city immediately switches the interface to the official language
-/// of that country/city pair. Continue does not navigate further yet.
+/// of that country/city pair. Continue opens Location Confirmation.
 class SelectCityScreen extends StatefulWidget {
   const SelectCityScreen({
     super.key,
@@ -206,7 +208,18 @@ class _SelectCityScreenState extends State<SelectCityScreen> {
                     width: double.infinity,
                     height: 54,
                     child: FilledButton(
-                      onPressed: canContinue ? () {} : null,
+                      onPressed: canContinue
+                          ? () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => LocationConfirmationScreen(
+                                    selectedCountry: widget.selectedCountry,
+                                    selectedCity: _selectedCity!,
+                                  ),
+                                ),
+                              );
+                            }
+                          : null,
                       style: FilledButton.styleFrom(
                         backgroundColor: _gold,
                         foregroundColor: _background,
