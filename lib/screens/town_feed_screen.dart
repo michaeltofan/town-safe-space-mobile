@@ -198,8 +198,10 @@ class _TownFeedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool compact = MediaQuery.sizeOf(context).height < 640;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 6, 18, 4),
+      padding: EdgeInsets.fromLTRB(18, compact ? 4 : 6, 18, compact ? 2 : 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -212,34 +214,17 @@ class _TownFeedHeader extends StatelessWidget {
                 child: Text(
                   positionLabel,
                   key: const Key('town_feed_position'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: TownFeedScreen.muted,
-                    fontSize: 12,
+                    fontSize: compact ? 11 : 12,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.3,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              // Static shell icons — non-functional in Feed V1.
-              IgnorePointer(
-                child: Icon(
-                  Icons.search,
-                  size: 20,
-                  color: TownFeedScreen.muted.withValues(alpha: 0.55),
-                ),
-              ),
-              const SizedBox(width: 12),
-              IgnorePointer(
-                child: Icon(
-                  Icons.notifications_none_rounded,
-                  size: 20,
-                  color: TownFeedScreen.muted.withValues(alpha: 0.55),
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: compact ? 6 : 10),
           const Text(
             'Milano · Community Signals',
             key: Key('town_feed_city_context'),
@@ -248,24 +233,6 @@ class _TownFeedHeader extends StatelessWidget {
               fontSize: 12.5,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Static category chips — visual shell only.
-          IgnorePointer(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: const [
-                  _ShellChip(label: 'Per te', active: true),
-                  SizedBox(width: 8),
-                  _ShellChip(label: 'Milano'),
-                  SizedBox(width: 8),
-                  _ShellChip(label: 'Spazio pubblico'),
-                  SizedBox(width: 8),
-                  _ShellChip(label: 'Illuminazione'),
-                ],
-              ),
             ),
           ),
         ],
@@ -316,140 +283,43 @@ class _TownWordmark extends StatelessWidget {
   }
 }
 
-class _ShellChip extends StatelessWidget {
-  const _ShellChip({required this.label, this.active = false});
-
-  final String label;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: active ? TownFeedScreen.orange : const Color(0xFF2A2A2A),
-        ),
-        color: active ? const Color(0x14FF5A1F) : Colors.transparent,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: active ? TownFeedScreen.orange : TownFeedScreen.muted,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
+/// Minimal Feed V1 shell: Home is the only destination shown.
+/// Unfinished destinations are omitted so they cannot look interactive.
 class _TownFeedBottomShell extends StatelessWidget {
   const _TownFeedBottomShell();
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 4, 6, 8),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          IgnorePointer(
-            child: Row(
-              children: const [
-                Expanded(
-                  child: _NavItem(
-                    icon: Icons.home_rounded,
-                    label: 'Home',
-                    active: true,
-                  ),
-                ),
-                Expanded(
-                  child: _NavItem(
-                    icon: Icons.explore_outlined,
-                    label: 'Esplora',
-                  ),
-                ),
-                Expanded(
-                  child: _NavItem(
-                    icon: Icons.forum_outlined,
-                    label: 'Attività',
-                  ),
-                ),
-                Expanded(
-                  child: _NavItem(
-                    icon: Icons.bookmark_border,
-                    label: 'Salvati',
-                  ),
-                ),
-                Expanded(
-                  child: _NavItem(icon: Icons.person_outline, label: 'Profilo'),
-                ),
-              ],
+    final bool compact = MediaQuery.sizeOf(context).height < 640;
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFF222222))),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, compact ? 6 : 8, 16, compact ? 6 : 8),
+        child: Row(
+          key: const Key('town_feed_home_shell'),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.home_rounded,
+              size: compact ? 18 : 20,
+              color: TownFeedScreen.orange,
             ),
-          ),
-          Positioned(
-            right: 4,
-            top: -16,
-            child: IgnorePointer(
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: TownFeedScreen.orange,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.add,
-                  size: 22,
-                  color: Color(0xFF111111),
-                ),
+            const SizedBox(width: 8),
+            Text(
+              'Home',
+              key: const Key('town_feed_home_label'),
+              style: TextStyle(
+                color: TownFeedScreen.orange,
+                fontSize: compact ? 11 : 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    this.active = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color color = active
-        ? TownFeedScreen.orange
-        : TownFeedScreen.muted.withValues(alpha: 0.7);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(height: 2),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            label,
-            maxLines: 1,
-            style: TextStyle(
-              color: color,
-              fontSize: 9.5,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

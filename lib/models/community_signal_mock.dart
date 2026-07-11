@@ -1,7 +1,8 @@
 /// Immutable mock content for TOWN Feed V1 Community Signal cards.
 ///
 /// **FICTIONAL PROTOTYPE CONTENT** — authors and incidents are not real.
-/// Images are neutral local prototype visuals, not verified real events.
+/// Images are fictional photorealistic prototype civic-evidence visuals,
+/// not verified real events.
 library;
 
 /// Civic issue status labels approved for Feed V1.
@@ -64,7 +65,7 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
     headline: 'Marciapiede danneggiato davanti alla scuola di via Padova',
     summary:
         'Le radici degli alberi hanno sollevato il marciapiede. Bambini, anziani e passeggini sono costretti a scendere sulla carreggiata.',
-    imageAsset: 'assets/images/feed/signal_citta_studi_pavement.png',
+    imageAsset: 'assets/images/feed/signal_citta_studi_pavement.jpg',
     placeLabel: 'Via Padova · Città Studi · Milano',
     initialConfirmationCount: 18,
   ),
@@ -79,7 +80,7 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
     headline: 'Il percorso vicino alla scuola resta al buio la sera',
     summary:
         'Diversi lampioni non funzionano lungo il tratto pedonale. Famiglie e residenti hanno già inviato una segnalazione al Comune.',
-    imageAsset: 'assets/images/feed/signal_porta_romana_lighting.png',
+    imageAsset: 'assets/images/feed/signal_porta_romana_lighting.jpg',
     placeLabel: 'Porta Romana · Milano',
     initialConfirmationCount: 11,
   ),
@@ -95,7 +96,7 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
         'Il cantiere restringe il passaggio pedonale senza indicazioni chiare',
     summary:
         'Il percorso temporaneo è stretto e poco segnalato. I residenti chiedono tempi chiari e una sistemazione più sicura durante i lavori.',
-    imageAsset: 'assets/images/feed/signal_lorenteggio_works.png',
+    imageAsset: 'assets/images/feed/signal_lorenteggio_works.jpg',
     placeLabel: 'Lorenteggio · Milano',
     initialConfirmationCount: 7,
   ),

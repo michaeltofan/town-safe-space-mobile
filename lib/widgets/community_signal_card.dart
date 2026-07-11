@@ -34,7 +34,12 @@ class CommunitySignalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
     final bool compact = size.height < 700;
-    final double imageMax = compact ? size.height * 0.18 : size.height * 0.22;
+    final bool tiny = size.height < 600 || size.width < 340;
+    final double imageMax = tiny
+        ? size.height * 0.16
+        : compact
+        ? size.height * 0.18
+        : size.height * 0.22;
 
     return Semantics(
       container: true,
@@ -42,10 +47,18 @@ class CommunitySignalCard extends StatelessWidget {
           'Community Signal. ${signal.headline}. $positionLabel. Status ${signal.status.label}.',
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          14,
-          compact ? 6 : 10,
-          14,
-          compact ? 6 : 10,
+          tiny ? 10 : 14,
+          tiny
+              ? 4
+              : compact
+              ? 6
+              : 10,
+          tiny ? 10 : 14,
+          tiny
+              ? 4
+              : compact
+              ? 6
+              : 10,
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
@@ -55,54 +68,102 @@ class CommunitySignalCard extends StatelessWidget {
           ),
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-              14,
-              compact ? 10 : 14,
-              14,
-              compact ? 10 : 14,
+              tiny ? 10 : 14,
+              tiny
+                  ? 8
+                  : compact
+                  ? 10
+                  : 14,
+              tiny ? 10 : 14,
+              tiny
+                  ? 8
+                  : compact
+                  ? 10
+                  : 14,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _AuthorRow(signal: signal, compact: compact),
-                SizedBox(height: compact ? 8 : 10),
+                _AuthorRow(signal: signal, compact: compact || tiny),
+                SizedBox(
+                  height: tiny
+                      ? 6
+                      : compact
+                      ? 8
+                      : 10,
+                ),
                 Text(
                   signal.category,
                   key: Key('signal_category_${signal.id}'),
                   style: TextStyle(
                     color: orange,
-                    fontSize: compact ? 11 : 12,
+                    fontSize: tiny
+                        ? 10.5
+                        : compact
+                        ? 11
+                        : 12,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.1,
                   ),
                 ),
-                SizedBox(height: compact ? 4 : 6),
+                SizedBox(
+                  height: tiny
+                      ? 3
+                      : compact
+                      ? 4
+                      : 6,
+                ),
                 Text(
                   signal.headline,
                   key: Key('signal_headline_${signal.id}'),
-                  maxLines: 2,
+                  maxLines: tiny ? 2 : 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: white,
-                    fontSize: compact ? 17 : 19,
+                    fontSize: tiny
+                        ? 15.5
+                        : compact
+                        ? 17
+                        : 19,
                     fontWeight: FontWeight.w700,
                     height: 1.2,
                     letterSpacing: -0.2,
                   ),
                 ),
-                SizedBox(height: compact ? 4 : 6),
+                SizedBox(
+                  height: tiny
+                      ? 3
+                      : compact
+                      ? 4
+                      : 6,
+                ),
                 Text(
                   signal.summary,
                   key: Key('signal_summary_${signal.id}'),
-                  maxLines: compact ? 2 : 3,
+                  maxLines: tiny
+                      ? 3
+                      : compact
+                      ? 2
+                      : 3,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: muted,
-                    fontSize: compact ? 12.5 : 13.5,
-                    height: 1.35,
+                    fontSize: tiny
+                        ? 12
+                        : compact
+                        ? 12.5
+                        : 13.5,
+                    height: 1.3,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-                SizedBox(height: compact ? 8 : 10),
+                SizedBox(
+                  height: tiny
+                      ? 6
+                      : compact
+                      ? 8
+                      : 10,
+                ),
                 Expanded(
                   child: Align(
                     alignment: Alignment.topCenter,
@@ -112,25 +173,49 @@ class CommunitySignalCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: compact ? 8 : 10),
-                _StatusRow(signal: signal, compact: compact),
-                SizedBox(height: compact ? 6 : 8),
+                SizedBox(
+                  height: tiny
+                      ? 6
+                      : compact
+                      ? 8
+                      : 10,
+                ),
+                _StatusRow(signal: signal, compact: compact || tiny),
+                SizedBox(
+                  height: tiny
+                      ? 4
+                      : compact
+                      ? 6
+                      : 8,
+                ),
                 _ConfirmationLine(
                   count: confirmationCount,
                   signalId: signal.id,
                 ),
-                SizedBox(height: compact ? 8 : 10),
+                SizedBox(
+                  height: tiny
+                      ? 6
+                      : compact
+                      ? 8
+                      : 10,
+                ),
                 _SeeThisTooButton(
                   signalId: signal.id,
                   hasConfirmed: hasConfirmed,
                   onConfirm: onConfirm,
-                  compact: compact,
+                  compact: compact || tiny,
                 ),
-                SizedBox(height: compact ? 6 : 8),
+                SizedBox(
+                  height: tiny
+                      ? 4
+                      : compact
+                      ? 6
+                      : 8,
+                ),
                 _OpenSignalButton(
                   signalId: signal.id,
                   onOpen: onOpenSignal,
-                  compact: compact,
+                  compact: compact || tiny,
                 ),
               ],
             ),

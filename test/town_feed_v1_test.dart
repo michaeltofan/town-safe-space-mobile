@@ -361,5 +361,91 @@ void main() {
       find.text('Marciapiede danneggiato davanti alla scuola di via Padova'),
       findsOneWidget,
     );
+    expect(
+      find.byKey(const Key('signal_summary_milano-signal-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('signal_image_milano-signal-1')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('feed image assets are local photorealistic jpgs', (
+    WidgetTester tester,
+  ) async {
+    expect(kMilanoFeedV1MockSignals.map((s) => s.imageAsset).toList(), <String>[
+      'assets/images/feed/signal_citta_studi_pavement.jpg',
+      'assets/images/feed/signal_porta_romana_lighting.jpg',
+      'assets/images/feed/signal_lorenteggio_works.jpg',
+    ]);
+    await _pumpFeed(tester);
+    expect(
+      find.byKey(const Key('signal_image_milano-signal-1')),
+      findsOneWidget,
+    );
+    final Image image = tester.widget<Image>(
+      find.byKey(const Key('signal_image_milano-signal-1')),
+    );
+    expect(image.image, isA<AssetImage>());
+    expect(
+      (image.image as AssetImage).assetName,
+      'assets/images/feed/signal_citta_studi_pavement.jpg',
+    );
+  });
+
+  testWidgets('shell shows only Home as active destination', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+
+    expect(find.byKey(const Key('town_feed_home_shell')), findsOneWidget);
+    expect(find.byKey(const Key('town_feed_home_label')), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+
+    // Unfinished shell controls must not appear as functional UI.
+    expect(find.byIcon(Icons.search), findsNothing);
+    expect(find.byIcon(Icons.notifications_none_rounded), findsNothing);
+    expect(find.byIcon(Icons.add), findsNothing);
+    expect(find.text('Esplora'), findsNothing);
+    expect(find.text('Attività'), findsNothing);
+    expect(find.text('Salvati'), findsNothing);
+    expect(find.text('Profilo'), findsNothing);
+    expect(find.text('Per te'), findsNothing);
+    expect(find.text('Spazio pubblico'), findsNothing);
+    expect(find.text('Illuminazione'), findsNothing);
+  });
+
+  testWidgets('removed unfinished shell controls expose no interactions', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byType(IconButton), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('town_feed_home_shell')),
+        matching: find.byType(GestureDetector),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('town_feed_home_shell')),
+        matching: find.byType(InkWell),
+      ),
+      findsNothing,
+    );
+
+    // Civic actions remain interactive.
+    expect(
+      find.byKey(const Key('signal_confirm_milano-signal-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('signal_open_milano-signal-1')),
+      findsOneWidget,
+    );
   });
 }
