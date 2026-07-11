@@ -67,6 +67,8 @@ flutter:
     - assets/flags/germany.png
     - assets/cities/milano.png
     - assets/cities/munich.png
+    - assets/boundaries/milano_boundary_simplified.geojson
+    - assets/boundaries/munich_boundary_simplified.geojson
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
