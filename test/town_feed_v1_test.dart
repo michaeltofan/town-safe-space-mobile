@@ -519,7 +519,13 @@ void main() {
     );
     // Portrait must remain visually substantial, not a token thumbnail.
     expect(
-      tester.getSize(find.byKey(const Key('signal_media_frame_milano-signal-2_portrait'))).height,
+      tester
+          .getSize(
+            find.byKey(
+              const Key('signal_media_frame_milano-signal-2_portrait'),
+            ),
+          )
+          .height,
       greaterThan(120),
     );
 
@@ -561,5 +567,101 @@ void main() {
         }
       }
     }
+  });
+
+  testWidgets(
+    'full-viewport composition anchors Open signal near card bottom',
+    (WidgetTester tester) async {
+      await _pumpFeed(tester);
+      final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+
+      Future<void> expectFullViewport(String id) async {
+        final Finder surface = find.byKey(Key('signal_card_surface_$id'));
+        final Finder open = find.byKey(Key('signal_open_$id'));
+        final Finder lower = find.byKey(Key('signal_lower_civic_zone_$id'));
+        expect(surface, findsOneWidget);
+        expect(open, findsOneWidget);
+        expect(lower, findsOneWidget);
+
+        final Rect cardRect = tester.getRect(surface);
+        final Rect openRect = tester.getRect(open);
+        final Rect lowerRect = tester.getRect(lower);
+
+        // Lower civic zone lives inside the card surface.
+        expect(cardRect.contains(lowerRect.topLeft), isTrue);
+        expect(cardRect.contains(lowerRect.bottomRight), isTrue);
+
+        // Open signal sits close to the lower internal boundary (≤ 24px gap).
+        final double gapBelowOpen = cardRect.bottom - openRect.bottom;
+        expect(gapBelowOpen, greaterThanOrEqualTo(0));
+        expect(gapBelowOpen, lessThanOrEqualTo(24));
+
+        // Card content consumes the available page slot — no large unused band.
+        final Finder pageSlot = find.byKey(const Key('town_feed_page_view'));
+        final Rect pageRect = tester.getRect(pageSlot);
+        expect(cardRect.height / pageRect.height, greaterThan(0.88));
+      }
+
+      await expectFullViewport('milano-signal-1');
+      final Size landscapeSize = tester.getSize(
+        find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
+      );
+      // Landscape stays 16:9 and width-led; must use nearly full card width.
+      expect(landscapeSize.width / landscapeSize.height, closeTo(16 / 9, 0.05));
+      final double cardWidth = tester
+          .getSize(find.byKey(const Key('signal_card_surface_milano-signal-1')))
+          .width;
+      expect(landscapeSize.width / cardWidth, greaterThan(0.88));
+      expect(landscapeSize.height, greaterThan(170));
+
+      await tester.fling(pageView, const Offset(0, -500), 2000);
+      await tester.pumpAndSettle();
+      await expectFullViewport('milano-signal-2');
+      expect(
+        tester
+            .getSize(
+              find.byKey(
+                const Key('signal_media_frame_milano-signal-2_portrait'),
+              ),
+            )
+            .height,
+        greaterThan(200),
+      );
+
+      await tester.fling(pageView, const Offset(0, -500), 2000);
+      await tester.pumpAndSettle();
+      await expectFullViewport('milano-signal-3');
+      expect(
+        tester
+            .getSize(
+              find.byKey(
+                const Key('signal_media_frame_milano-signal-3_square'),
+              ),
+            )
+            .height,
+        greaterThan(180),
+      );
+    },
+  );
+
+  testWidgets('full-viewport composition holds at 320×568', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester, size: const Size(320, 568));
+    expect(tester.takeException(), isNull);
+
+    final Finder surface = find.byKey(
+      const Key('signal_card_surface_milano-signal-1'),
+    );
+    final Finder open = find.byKey(const Key('signal_open_milano-signal-1'));
+    final Rect cardRect = tester.getRect(surface);
+    final Rect openRect = tester.getRect(open);
+    expect(cardRect.bottom - openRect.bottom, lessThanOrEqualTo(24));
+    expect(find.text('I SEE THIS TOO'), findsOneWidget);
+    expect(find.text('Open signal'), findsOneWidget);
+    expect(
+      find.byKey(const Key('signal_lower_civic_zone_milano-signal-1')),
+      findsOneWidget,
+    );
   });
 }
