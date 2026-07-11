@@ -226,6 +226,52 @@ void main() {
       );
     });
 
+    test('invalid feature count is rejected', () {
+      final Map<String, dynamic> emptyFeatures = _validMinimalBoundary();
+      emptyFeatures['features'] = <dynamic>[];
+      expect(
+        () => loader.decodeAndValidate(jsonEncode(emptyFeatures)),
+        throwsA(
+          isA<BoundaryAssetException>().having(
+            (BoundaryAssetException e) => e.message,
+            'message',
+            contains('exactly one feature'),
+          ),
+        ),
+      );
+
+      final Map<String, dynamic> twoFeatures = _validMinimalBoundary();
+      final List<dynamic> features =
+          twoFeatures['features'] as List<dynamic>;
+      features.add(Map<String, dynamic>.from(features.first as Map<String, dynamic>));
+      expect(features.length, 2);
+      expect(
+        () => loader.decodeAndValidate(jsonEncode(twoFeatures)),
+        throwsA(
+          isA<BoundaryAssetException>().having(
+            (BoundaryAssetException e) => e.message,
+            'message',
+            contains('exactly one feature'),
+          ),
+        ),
+      );
+    });
+
+    test('missing coordinates is rejected', () {
+      final Map<String, dynamic> payload =
+          _validMinimalBoundary(includeCoordinates: false);
+      expect(
+        () => loader.decodeAndValidate(jsonEncode(payload)),
+        throwsA(
+          isA<BoundaryAssetException>().having(
+            (BoundaryAssetException e) => e.message,
+            'message',
+            contains('missing coordinates'),
+          ),
+        ),
+      );
+    });
+
     test('invalid geometry type is rejected', () {
       final Map<String, dynamic> payload =
           _validMinimalBoundary(geometryType: 'Point');
