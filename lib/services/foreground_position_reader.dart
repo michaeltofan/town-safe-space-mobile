@@ -62,6 +62,32 @@ class ForegroundPositionReadResult {
       state == ForegroundPositionReadState.serviceDisabled;
 }
 
+/// Failure during a one-time transient coordinate read.
+///
+/// Messages never include latitude, longitude, device location objects, or
+/// accuracy values.
+enum ForegroundCoordinateReadFailure {
+  locationServicesDisabled,
+  permissionDenied,
+  permissionPermanentlyDenied,
+  timeout,
+  positionReadFailed,
+}
+
+/// Typed failure for [ForegroundPositionReader.readCoordinatesOnce].
+class ForegroundCoordinateReadException implements Exception {
+  const ForegroundCoordinateReadException(
+    this.failure, [
+    this.message = 'Coordinate read failed.',
+  ]);
+
+  final ForegroundCoordinateReadFailure failure;
+  final String message;
+
+  @override
+  String toString() => 'ForegroundCoordinateReadException($failure): $message';
+}
+
 /// Reads exactly one current device position for foreground registration.
 ///
 /// Uses [Geolocator.getCurrentPosition] only. Does not use position streams
@@ -73,31 +99,31 @@ class ForegroundPositionReader {
   /// Performs one foreground position request with [kForegroundPositionTimeout].
   Future<ForegroundPositionReadResult> readOnce() async {
     try {
-      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return const ForegroundPositionReadResult(
-          state: ForegroundPositionReadState.serviceDisabled,
-        );
+      return await _withCurrentPositionOnce((Position position) async {
+        // Read accuracy only; discard the Position (and its coordinates) after.
+        final int accuracyMeters = position.accuracy.round();
+        return classifyAccuracyMeters(accuracyMeters);
+      });
+    } on ForegroundCoordinateReadException catch (e) {
+      switch (e.failure) {
+        case ForegroundCoordinateReadFailure.locationServicesDisabled:
+          return const ForegroundPositionReadResult(
+            state: ForegroundPositionReadState.serviceDisabled,
+          );
+        case ForegroundCoordinateReadFailure.permissionDenied:
+        case ForegroundCoordinateReadFailure.permissionPermanentlyDenied:
+          return const ForegroundPositionReadResult(
+            state: ForegroundPositionReadState.permissionLost,
+          );
+        case ForegroundCoordinateReadFailure.timeout:
+          return const ForegroundPositionReadResult(
+            state: ForegroundPositionReadState.timeout,
+          );
+        case ForegroundCoordinateReadFailure.positionReadFailed:
+          return const ForegroundPositionReadResult(
+            state: ForegroundPositionReadState.error,
+          );
       }
-
-      final LocationPermission permission = await Geolocator.checkPermission();
-      if (!_isGranted(permission)) {
-        return const ForegroundPositionReadResult(
-          state: ForegroundPositionReadState.permissionLost,
-        );
-      }
-
-      final Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          // One-time registration check — not navigation-grade tracking.
-          accuracy: LocationAccuracy.high,
-          timeLimit: kForegroundPositionTimeout,
-        ),
-      );
-
-      // Read accuracy only; discard the Position (and its coordinates) after.
-      final int accuracyMeters = position.accuracy.round();
-      return classifyAccuracyMeters(accuracyMeters);
     } on TimeoutException {
       return const ForegroundPositionReadResult(
         state: ForegroundPositionReadState.timeout,
@@ -108,6 +134,81 @@ class ForegroundPositionReader {
         state: ForegroundPositionReadState.error,
       );
     }
+  }
+
+  /// Performs exactly one [Geolocator.getCurrentPosition] and passes only
+  /// longitude, latitude, and accuracy into [use].
+  ///
+  /// The raw [Position] exists only as a local variable for this call and is
+  /// discarded when [use] completes. Does not request permission.
+  Future<T> readCoordinatesOnce<T>(
+    Future<T> Function({
+      required double longitude,
+      required double latitude,
+      required double accuracy,
+    }) use,
+  ) {
+    return _withCurrentPositionOnce((Position position) {
+      return use(
+        longitude: position.longitude,
+        latitude: position.latitude,
+        accuracy: position.accuracy,
+      );
+    });
+  }
+
+  /// Single shared production call site for [Geolocator.getCurrentPosition].
+  ///
+  /// Prerequisite and position-read failures are wrapped as
+  /// [ForegroundCoordinateReadException]. Failures raised by [use] propagate
+  /// unchanged so callers can keep classification / bridge errors distinct.
+  Future<T> _withCurrentPositionOnce<T>(
+    Future<T> Function(Position position) use,
+  ) async {
+    final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw const ForegroundCoordinateReadException(
+        ForegroundCoordinateReadFailure.locationServicesDisabled,
+        'Location services are disabled.',
+      );
+    }
+
+    final LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.deniedForever) {
+      throw const ForegroundCoordinateReadException(
+        ForegroundCoordinateReadFailure.permissionPermanentlyDenied,
+        'Location permission permanently denied.',
+      );
+    }
+    if (!_isGranted(permission)) {
+      throw const ForegroundCoordinateReadException(
+        ForegroundCoordinateReadFailure.permissionDenied,
+        'Location permission not granted.',
+      );
+    }
+
+    final Position position;
+    try {
+      position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          // One-time registration check — not navigation-grade tracking.
+          accuracy: LocationAccuracy.high,
+          timeLimit: kForegroundPositionTimeout,
+        ),
+      );
+    } on TimeoutException {
+      throw const ForegroundCoordinateReadException(
+        ForegroundCoordinateReadFailure.timeout,
+        'Location request timed out.',
+      );
+    } on Object {
+      throw const ForegroundCoordinateReadException(
+        ForegroundCoordinateReadFailure.positionReadFailed,
+        'Location request failed.',
+      );
+    }
+
+    return await use(position);
   }
 
   /// Classifies a rounded accuracy value using [ForegroundAccuracyThresholds].

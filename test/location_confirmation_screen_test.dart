@@ -589,32 +589,21 @@ void main() {
     final String reader =
         File('lib/services/foreground_position_reader.dart').readAsStringSync();
     expect(reader.contains('Geolocator.getCurrentPosition'), isTrue);
-    // Coordinates may be received transiently via Position, but must not be
-    // retained on the result model or logged.
+    // Coordinates may be received transiently via Position and passed into a
+    // one-shot callback. They must not be retained on the result model.
     expect(reader.contains('accuracyMeters'), isTrue);
-    expect(
-      RegExp(r'latitude\s*:').hasMatch(reader),
-      isFalse,
-    );
-    expect(
-      RegExp(r'longitude\s*:').hasMatch(reader),
-      isFalse,
-    );
+    expect(reader.contains('position.latitude'), isTrue);
+    expect(reader.contains('position.longitude'), isTrue);
 
-    final String resultModel = reader;
-    expect(resultModel.contains('class ForegroundPositionReadResult'), isTrue);
-    expect(
-      RegExp(
-        r'class ForegroundPositionReadResult[\s\S]*?\blatitude\b',
-      ).hasMatch(resultModel),
-      isFalse,
+    final RegExp resultClass = RegExp(
+      r'class ForegroundPositionReadResult \{[\s\S]*?\n\}',
     );
-    expect(
-      RegExp(
-        r'class ForegroundPositionReadResult[\s\S]*?\blongitude\b',
-      ).hasMatch(resultModel),
-      isFalse,
-    );
+    final String resultBody = resultClass.firstMatch(reader)!.group(0)!;
+    expect(resultBody.contains('latitude'), isFalse);
+    expect(resultBody.contains('longitude'), isFalse);
+    expect(resultBody.contains('final Position'), isFalse);
+    expect(resultBody.contains('Position?'), isFalse);
+    expect(resultBody.contains('GeoPoint'), isFalse);
 
     final String screen =
         File('lib/screens/location_confirmation_screen.dart').readAsStringSync();
