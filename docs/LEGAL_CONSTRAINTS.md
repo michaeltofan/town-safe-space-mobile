@@ -7,22 +7,29 @@ This document defines legal and platform constraints that must shape the TOWN ap
 This is not final legal advice.
 This is a product and technical constraint document for building the prototype and future MVP safely.
 
+This document does **not** certify legal compliance.
+
 ## Current stage
 
-The current project is a Flutter visual prototype only.
+**LOCAL ACCESS FOUNDATION V1 — IMPLEMENTED**
 
-At this stage, the prototype must not implement:
+The implemented local-access phase includes:
+- Welcome / country / city / official city language;
+- one-time foreground location permission and GPS read;
+- local offline city-boundary classification for Milano and Munich;
+- visible verification results;
+- privacy rule that raw coordinates are not retained, transmitted, logged, or displayed.
+
+The implemented phase does **not** include:
 - real accounts;
 - real payments;
-- real GPS;
 - backend storage;
 - user-generated content submission;
 - public comments;
 - moderation backend;
-- personal data collection.
-
-Mock screens are allowed.
-Real data flows are not allowed until explicitly approved.
+- persisted city membership or access entitlement;
+- neighbourhood access;
+- legal compliance certification.
 
 ## Core legal-by-design principle
 
@@ -37,12 +44,13 @@ Future MVP design must follow:
 
 ## GDPR / EU privacy constraints
 
-For future real implementation:
+For current and future implementation:
 
 1. Location must be minimal.
-   - If GPS is used, it should verify local eligibility.
-   - Raw GPS coordinates should not be stored unless legally reviewed and explicitly approved.
-   - Prefer storing only a derived result, such as verified_local_area_id or is_verified_local.
+   - LOCAL ACCESS FOUNDATION V1 uses GPS only for one-time local eligibility classification.
+   - Raw GPS coordinates must not be retained, transmitted, logged, or displayed.
+   - Prefer storing only a derived result later, such as verified_local_area_id or is_verified_local, if a future approved task adds persistence.
+   - Continuous tracking and background location are not approved.
 
 2. Personal data must be limited.
    - Do not collect unnecessary profile fields.
@@ -53,10 +61,12 @@ For future real implementation:
 3. Account deletion must exist.
    - If the app allows account creation, users must be able to request or initiate account deletion.
    - The deletion flow must be clear, accessible, and not hidden.
+   - Accounts are not implemented in LOCAL ACCESS FOUNDATION V1.
 
 4. Privacy information must be available before payment.
    - Privacy Policy and Terms links must be visible before subscription purchase.
    - Users must understand what data is collected and why.
+   - Payment is not implemented in LOCAL ACCESS FOUNDATION V1.
 
 ## App Store / Google Play user-generated-content constraints
 
@@ -87,17 +97,20 @@ For future implementation:
 - no misleading free trial language;
 - Privacy Policy and Terms must be visible before purchase.
 
-The current visual prototype must not integrate RevenueCat, Apple payments, Google payments, or real purchase logic.
+Do not integrate RevenueCat, Apple payments, Google payments, or real purchase logic until explicitly approved.
 
 ## Local verification constraints
 
-Future local verification must be designed carefully.
+LOCAL ACCESS FOUNDATION V1 implements:
+- selected city;
+- one-time foreground location check;
+- local offline classification against city boundaries;
+- visible verification result.
 
-The app may use:
-- selected town/neighbourhood;
-- one-time location check;
+It does **not** yet implement:
 - payment membership status;
-- local access status.
+- persisted local access entitlement;
+- neighbourhood verification.
 
 The app must not:
 - continuously track users without a specific approved purpose;
@@ -124,23 +137,27 @@ Future moderation may include:
 
 ## Prototype boundary
 
-The prototype may show legal and safety concepts as mock UI only.
+Allowed now in LOCAL ACCESS FOUNDATION V1:
+- Welcome Learn more bottom sheet with approved static copy;
+- country / city selection;
+- one-time foreground location verification;
+- local classification result UI.
 
-Allowed in prototype:
+Allowed later as mock UI only until separately approved:
 - mock Privacy Policy link;
 - mock Terms link;
 - mock Report button;
 - mock Block button;
 - mock Delete Account button;
-- mock subscription explanation;
-- mock local verification explanation.
+- mock subscription explanation.
 
-Not allowed in prototype:
+Not allowed until explicitly approved:
 - real payment;
 - real account deletion;
-- real personal data collection;
-- real location access;
-- real backend moderation.
+- real personal data retention beyond transient location classification;
+- continuous or background location access;
+- real backend moderation;
+- civic feed with user-generated content.
 
 ## Cursor rule
 
@@ -149,7 +166,8 @@ Cursor must not implement legal-sensitive functionality unless a future task exp
 Legal-sensitive functionality includes:
 - payments;
 - subscriptions;
-- location permission;
+- continuous or background location;
+- expanding location persistence beyond the approved one-time local classification;
 - user accounts;
 - real names;
 - personal data storage;
@@ -160,6 +178,8 @@ Legal-sensitive functionality includes:
 - moderation actions;
 - account deletion;
 - backend integrations.
+
+One-time foreground location verification for LOCAL ACCESS FOUNDATION V1 is already approved and implemented.
 
 ## Sources checked by product controller
 

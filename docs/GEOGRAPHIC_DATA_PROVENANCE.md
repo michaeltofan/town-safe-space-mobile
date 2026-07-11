@@ -2,24 +2,32 @@
 
 ## Purpose
 
-This document records the **approved official** geographic boundary datasets for future TOWN city-access verification.
+This document records the **approved official** geographic boundary datasets used for TOWN city-access verification in **LOCAL ACCESS FOUNDATION V1**.
 
 It is a provenance and attribution register only.
+It does **not** certify legal compliance.
 
-Prepared source and derived GeoJSON files are stored under `data/boundaries/` for offline review. **They are not bundled into the Flutter app runtime** (`bundled_status: NOT YET BUNDLED`).
+Prepared source and derived GeoJSON files are stored under `data/boundaries/` for offline review.
 
-Do not wire boundary assets into `pubspec.yaml` / `assets/` until source, licence, checksum, date, and internal version are recorded for that version (see [Provenance template](#provenance-template)) **and** bundling is explicitly approved.
+Simplified runtime derivatives used by LOCAL ACCESS FOUNDATION V1 are bundled as Flutter assets:
+
+- `assets/boundaries/milano_boundary_simplified.geojson`
+- `assets/boundaries/munich_boundary_simplified.geojson`
+
+declared in `pubspec.yaml`.
 
 ## Current status
 
 | City | Approved dataset | Internal boundary version | Bundled status |
 | --- | --- | --- | --- |
-| Milano | Confini Amministrativi del Comune di Milano (DS2841) | `milano-admin-2024-11-04-v1` | **NOT YET BUNDLED** |
-| Munich | Official Stadtbezirke, dissolved from the 25 unique districts | `munich-admin-2026-05-27-v1` | **NOT YET BUNDLED** |
+| Milano | Confini Amministrativi del Comune di Milano (DS2841) | `milano-admin-2024-11-04-v1` | **BUNDLED** (simplified runtime asset) |
+| Munich | Official Stadtbezirke, dissolved from the 25 unique districts | `munich-admin-2026-05-27-v1` | **BUNDLED** (simplified runtime asset) |
 
-Prepared geometry files live under `data/boundaries/` (source + derived). They are **not** wired into `pubspec.yaml`, `assets/`, or app runtime code.
+Prepared geometry files also live under `data/boundaries/` (source + derived).
 
 Checksum register: `data/boundaries/CHECKSUMS.sha256`.
+
+LOCAL ACCESS FOUNDATION V1 uses these boundaries for one-time local offline classification only. Raw coordinates are not retained, transmitted, logged, or displayed.
 
 ---
 
@@ -38,7 +46,7 @@ Checksum register: `data/boundaries/CHECKSUMS.sha256`.
 | Official dataset URL | https://dati.comune.milano.it/dataset/ds2841-confini-amministrativi-del-comune-di-milano |
 | Official resource / download URL | https://dati.comune.milano.it/dataset/e75d91fa-eca6-4ee5-b96e-08bcdbb8d6f0/resource/f56cb432-83e6-48de-ae30-d39b4be61e85/download/confine_comune_milano_layer_0_confine_comune_milano.geojson |
 | Resource metadata page | https://dati.comune.milano.it/dataset/e75d91fa-eca6-4ee5-b96e-08bcdbb8d6f0/resource/f56cb432-83e6-48de-ae30-d39b4be61e85 |
-| Status | **NOT YET BUNDLED** |
+| Status | **BUNDLED** (simplified runtime asset for LOCAL ACCESS FOUNDATION V1) |
 
 ### Attribution requirement
 
@@ -82,8 +90,8 @@ If the published GeoJSON is transformed, simplified, or otherwise modified befor
 | derived simplified file | `data/boundaries/derived/milano_boundary_simplified.geojson` |
 | derived simplified SHA-256 | `6f4e7c0b68afad26fe5de137929a4162b2495f9bb402c8876f36eee2a2d18a6b` |
 | internal boundary version | `milano-admin-2024-11-04-v1` |
-| intended use | city_access (future whole-city verification only) |
-| bundled status | **NOT YET BUNDLED** |
+| intended use | city_access (LOCAL ACCESS FOUNDATION V1 whole-city verification) |
+| bundled status | **BUNDLED** as `assets/boundaries/milano_boundary_simplified.geojson` |
 
 #### Milano processing record
 
@@ -113,7 +121,7 @@ Attribution for redistribution (declare modifications when using the simplified 
 | Licence URL | https://www.govdata.de/dl-de/by-2-0 |
 | Official dataset URL | https://opendata.muenchen.de/dataset/vablock_stadtbezirke_opendata |
 | Official WFS / resource URL | https://geoportal.muenchen.de/geoserver/gsm_wfs/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=gsm_wfs:vablock_stadtbezirk&outputFormat=application/json |
-| Status | **NOT YET BUNDLED** |
+| Status | **BUNDLED** (simplified runtime asset for LOCAL ACCESS FOUNDATION V1) |
 
 ### Required attribution wording
 
@@ -187,10 +195,10 @@ Bayerische Vermessungsverwaltung ALKIS® Verwaltungsgebiete — Gemeinde Münche
 | derived bbox (lon/lat) | `[11.360778275906402, 48.06162443606122, 11.722909698518494, 48.24811837376852]` |
 | geometry validity | Source districts valid; dissolve valid; reprojected valid; simplified valid. No repair applied. |
 | internal boundary version | `munich-admin-2026-05-27-v1` |
-| intended use | city_access (future whole-city verification only) |
-| bundled status | **NOT YET BUNDLED** |
+| intended use | city_access (LOCAL ACCESS FOUNDATION V1 whole-city verification) |
+| bundled status | **BUNDLED** as `assets/boundaries/munich_boundary_simplified.geojson` |
 | modified derivative | **Yes** — must be marked in attribution |
-| GeodatenService written confirmation | **Not yet obtained** (recommended before app shipping) |
+| GeodatenService written confirmation | **Not yet obtained** (recommended before membership/production shipping; not a certification of legal compliance) |
 
 #### Munich processing record
 
@@ -307,5 +315,6 @@ bundled_status:        # NOT YET BUNDLED | BUNDLED
 | --- | --- |
 | Document type | Provenance and attribution register |
 | Geometry prepared under `data/boundaries/` | Yes (source + derived) |
-| Geometry bundled in app runtime | **No** (`NOT YET BUNDLED`) |
+| Geometry bundled in app runtime | **Yes** — simplified Milano and Munich assets for LOCAL ACCESS FOUNDATION V1 |
 | Code / packages changed by this document | None |
+| Legal compliance certified | **No** |

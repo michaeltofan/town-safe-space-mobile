@@ -2,18 +2,31 @@
 
 ## Product identity
 
-TOWN is a hyper-local civic mobile app.
+TOWN is local civic infrastructure for real people, useful information, and community.
 
+It is not social media.
 It is not a global social network.
 It is not a generic town bulletin board.
 It is not a TikTok clone.
 It is not a Substack clone.
 
+Substack is only a benchmark for elegance and clarity, never branding or replication.
+TikTok is only a benchmark for fluid navigation, never addiction mechanics.
+
 TOWN combines:
-- the vertical discovery mechanics of TikTok;
-- the editorial depth and calm reading experience of Substack;
+- the vertical discovery mechanics of TikTok as a navigation benchmark only;
+- the editorial depth and calm reading experience of Substack as a clarity benchmark only;
 - strict local-only civic focus;
 - anti-bot, anti-ghost-account, anti-hate-engagement principles.
+
+Do not add:
+- follower mechanics;
+- vanity metrics;
+- trends;
+- engagement bait;
+- third-party branding;
+- Substack symbols;
+- social-media-style interaction.
 
 ## Core product idea
 
@@ -37,18 +50,18 @@ Users should feel:
 
 ## Main UX concept
 
-The future core experience is a vertical swipe feed.
+The future core experience is a vertical swipe feed of local civic cards.
 
-Each feed item is a full-screen "Substack Card".
+Each feed item is a full-screen civic card.
 
-A Substack Card contains:
+A civic card contains:
 - a strong local visual;
 - a civic/editorial headline;
 - a short summary;
 - a verified local author or source;
 - a tap-to-expand interaction into a clean long-form reading view.
 
-The feed should feel fast like TikTok, but the content should feel thoughtful like Substack.
+The feed should feel fluid to navigate, but the content should feel thoughtful and local.
 
 ## Local-only model
 
@@ -60,10 +73,11 @@ There is no global feed.
 There is no trending page.
 There is no cross-city outrage engine.
 
-Pilot context:
-- Italy
-- Milano
-- Brera
+Current pilot cities:
+- Milano (Italy)
+- Munich (Germany)
+
+Neighbourhood selection is not part of the current implemented phase.
 
 ## Anti-hate-engagement rules
 
@@ -78,34 +92,75 @@ The app must avoid:
 
 Future versions may use:
 - paid yearly membership;
-- local verification;
 - constructive comment formats;
 - report/block/moderation systems;
 - account deletion and privacy controls.
 
-## Prototype scope
+## LOCAL ACCESS FOUNDATION V1 — IMPLEMENTED
 
-The current project is only a Flutter visual prototype.
+Status: **IMPLEMENTED**
 
-For now, do not build:
+This phase provides the local-access foundation only.
+
+Completed flow:
+
+```text
+Welcome
+→ Country
+→ City
+→ Official city language
+→ One-time location verification
+→ Visible verification result
+```
+
+What this phase includes:
+
+- Welcome / Manifest screen;
+- Learn more bottom sheet on the Welcome screen (same screen, no navigation away);
+- country selection (Italy, Germany);
+- city selection (Milano, Munich);
+- official city-language behaviour after city selection;
+- one-time foreground location permission and GPS read;
+- local offline city-boundary classification;
+- visible verification result states;
+- privacy rule: raw coordinates are not retained, transmitted, logged, or displayed.
+
+What this phase does **not** include:
+
+- complete onboarding;
+- accounts, login, profile, or account deletion;
+- membership or payment;
+- persisted city membership or access entitlement;
+- local civic feed / civic cards / articles;
+- neighbourhood selection;
+- post-verification navigation into a product screen;
+- backend, Creator Studio, or moderation;
+- legal compliance certification;
+- full production readiness.
+
+## Current build stage
+
+The project has completed **LOCAL ACCESS FOUNDATION V1**.
+
+Later product work (civic cards, feed, accounts, membership, payment, backend, moderation) requires separate owner-approved tasks.
+
+Do not build until explicitly approved:
 - backend;
 - authentication;
 - payments;
 - RevenueCat;
-- real GPS;
 - Supabase;
 - Firebase;
 - moderation backend;
 - creator studio;
-- real user accounts.
-
-Use mock data only.
+- real user accounts;
+- civic card / feed screens.
 
 ## First prototype goal
 
-The first prototype must prove the visual and emotional direction of the app.
+Later prototype work must still prove the visual and emotional direction of the local civic product.
 
-The first screens should communicate:
+Screens should communicate:
 - premium civic calm;
 - real communities;
 - real stories;

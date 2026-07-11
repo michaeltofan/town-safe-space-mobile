@@ -4,7 +4,8 @@ import 'select_country_screen.dart';
 
 /// Welcome / Manifest screen for TOWN.
 ///
-/// Visual prototype — Welcome opens Select Country; Learn more stays inert.
+/// Welcome opens Select Country. Learn more opens an in-place bottom sheet
+/// and does not navigate away from this screen.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -16,6 +17,110 @@ class WelcomeScreen extends StatelessWidget {
 
   /// Phone-width content column for mobile-first layout on any viewport.
   static const double _maxContentWidth = 410;
+
+  static const String learnMoreTitle = 'What is TOWN?';
+
+  static const String learnMoreBody =
+      'TOWN is local civic infrastructure for real people, useful information, and community.\n'
+      '\n'
+      'It helps people access and share relevant information about the city they live in.\n'
+      '\n'
+      'TOWN is not social media. It has no global feed, no follower race, and no advertising-driven engagement.';
+
+  static const String learnMoreCloseLabel = 'Close';
+
+  Future<void> _openLearnMore(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _ivory,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 28,
+              right: 28,
+              top: 24,
+              bottom: 20 + MediaQuery.viewInsetsOf(sheetContext).bottom,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: _maxContentWidth,
+                maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.72,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            learnMoreTitle,
+                            key: const Key('learn_more_title'),
+                            textAlign: TextAlign.left,
+                            style: const TextStyle(
+                              fontFamily: 'serif',
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.2,
+                              height: 1.2,
+                              color: _charcoal,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            learnMoreBody,
+                            key: const Key('learn_more_body'),
+                            textAlign: TextAlign.left,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              height: 1.55,
+                              letterSpacing: 0.1,
+                              color: _bodyText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: FilledButton(
+                      key: const Key('learn_more_close'),
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _charcoal,
+                        foregroundColor: _ivory,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      child: const Text(learnMoreCloseLabel),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +160,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Expanded(
-                    child: Center(
-                      child: _WelcomeIllustration(),
-                    ),
-                  ),
+                  const Expanded(child: Center(child: _WelcomeIllustration())),
                   const SizedBox(height: 16),
                   const Text(
                     'TOWN accepts accounts only with registration, confirmed location, and an active membership.',
@@ -105,7 +206,8 @@ class WelcomeScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 54,
                     child: FilledButton(
-                      onPressed: () {},
+                      key: const Key('learn_more_button'),
+                      onPressed: () => _openLearnMore(context),
                       style: FilledButton.styleFrom(
                         backgroundColor: _secondaryButton,
                         foregroundColor: _charcoal,
