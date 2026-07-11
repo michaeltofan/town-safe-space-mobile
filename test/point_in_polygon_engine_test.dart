@@ -455,6 +455,173 @@ void main() {
         throwsA(isA<GeometryParseException>()),
       );
     });
+
+    test('18. closed degenerate ring with only two distinct vertices rejected',
+        () {
+      // [A, A, B, A] — closed, but only A and B are distinct.
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[0.0, 0.0],
+              <dynamic>[0.0, 0.0],
+              <dynamic>[1.0, 0.0],
+              <dynamic>[0.0, 0.0],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
+
+    test('19. unclosed degenerate ring with only two distinct vertices rejected',
+        () {
+      // [A, A, B] — unclosed, only A and B are distinct.
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[0.0, 0.0],
+              <dynamic>[0.0, 0.0],
+              <dynamic>[1.0, 0.0],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
+
+    test(
+        '20. repeated points with three distinct vertices remain accepted',
+        () {
+      // [A, A, B, C, A] — closed; A appears twice mid-ring but A,B,C are
+      // three distinct vertices, so the ring is structurally valid.
+      final BoundaryGeometry geometry = parser.parseGeometry(<String, dynamic>{
+        'type': 'Polygon',
+        'coordinates': <dynamic>[
+          <dynamic>[
+            <dynamic>[0.0, 0.0],
+            <dynamic>[0.0, 0.0],
+            <dynamic>[1.0, 0.0],
+            <dynamic>[0.0, 1.0],
+            <dynamic>[0.0, 0.0],
+          ],
+        ],
+      });
+      expect(geometry.polygons, hasLength(1));
+      expect(geometry.polygons.first.exterior, hasLength(5));
+      expect(
+        engine.classify(
+          geometry: geometry,
+          point: const GeoPoint(longitude: 0.25, latitude: 0.25),
+        ),
+        PointContainment.inside,
+      );
+    });
+
+    test('21. NaN longitude rejected', () {
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[double.nan, 0.0],
+              <dynamic>[1.0, 0.0],
+              <dynamic>[1.0, 1.0],
+              <dynamic>[double.nan, 0.0],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
+
+    test('22. NaN latitude rejected', () {
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[0.0, double.nan],
+              <dynamic>[1.0, 0.0],
+              <dynamic>[1.0, 1.0],
+              <dynamic>[0.0, double.nan],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
+
+    test('23. positive infinity longitude rejected', () {
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[double.infinity, 0.0],
+              <dynamic>[1.0, 0.0],
+              <dynamic>[1.0, 1.0],
+              <dynamic>[double.infinity, 0.0],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
+
+    test('24. positive infinity latitude rejected', () {
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[0.0, double.infinity],
+              <dynamic>[1.0, 0.0],
+              <dynamic>[1.0, 1.0],
+              <dynamic>[0.0, double.infinity],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
+
+    test('25. negative infinity longitude rejected', () {
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[double.negativeInfinity, 0.0],
+              <dynamic>[1.0, 0.0],
+              <dynamic>[1.0, 1.0],
+              <dynamic>[double.negativeInfinity, 0.0],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
+
+    test('26. negative infinity latitude rejected', () {
+      expect(
+        () => parser.parseGeometry(<String, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[0.0, double.negativeInfinity],
+              <dynamic>[1.0, 0.0],
+              <dynamic>[1.0, 1.0],
+              <dynamic>[0.0, double.negativeInfinity],
+            ],
+          ],
+        }),
+        throwsA(isA<GeometryParseException>()),
+      );
+    });
   });
 
   group('epsilon and determinism', () {

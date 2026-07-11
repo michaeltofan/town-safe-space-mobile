@@ -240,12 +240,18 @@ class BoundaryGeometryParser {
       points.add(_parsePosition(position));
     }
 
+    // Require ≥3 geometrically distinct vertices (exact lon/lat equality).
+    // The repeated closing coordinate is ignored when present; other
+    // duplicates still count only once. kBoundaryEpsilon is not used here.
     final bool closed = points.length >= 2 && points.first == points.last;
-    final int uniqueCount = closed ? points.length - 1 : points.length;
-    // A ring needs at least three distinct vertices to enclose an area.
-    if (uniqueCount < 3) {
+    final int end = closed ? points.length - 1 : points.length;
+    final Set<GeoPoint> distinct = <GeoPoint>{};
+    for (int i = 0; i < end; i++) {
+      distinct.add(points[i]);
+    }
+    if (distinct.length < 3) {
       throw const GeometryParseException(
-        'Ring does not have enough positions to form a polygon.',
+        'Ring must contain at least 3 distinct vertices.',
       );
     }
     return List<GeoPoint>.unmodifiable(points);
