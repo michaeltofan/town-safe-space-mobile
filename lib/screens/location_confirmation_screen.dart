@@ -157,13 +157,9 @@ class _LocationConfirmationScreenState
           return;
         }
         if (error.failure == ForegroundCityClassificationBridgeFailure.busy) {
-          // Keep progress semantics without surfacing a technical busy error.
-          setState(() {
-            _uiState = LocationVerificationUiState.idle;
-            _accuracyMeters = null;
-            _resultContainment = null;
-            _changeCityVisible = false;
-          });
+          // Do not surface busy as an error, do not reset to idle, and do not
+          // clear progress UI. Preserve requestingPermission /
+          // readingAndClassifying; finally clears _isBusy.
           return;
         }
         setState(() {
@@ -370,7 +366,10 @@ class _LocationConfirmationScreenState
 
   String? _primaryLabel(_LocationConfirmationCopy copy) {
     if (_isProgressState) {
-      return null;
+      // While in-flight, the filled button shows a spinner (no label).
+      // After settle without leaving progress (bridge busy), keep progress
+      // copy and allow a coherent re-verify without flashing idle.
+      return _isBusy ? null : copy.primaryIdle;
     }
     switch (_uiState) {
       case LocationVerificationUiState.idle:
@@ -412,10 +411,10 @@ class _LocationConfirmationScreenState
       case LocationVerificationUiState.permissionDenied:
       case LocationVerificationUiState.timeout:
       case LocationVerificationUiState.technicalError:
-        return _onVerifyLocation;
       case LocationVerificationUiState.requestingPermission:
       case LocationVerificationUiState.readingAndClassifying:
-        return null;
+        // Progress cases are only actionable after settle (e.g. bridge busy).
+        return _onVerifyLocation;
     }
   }
 

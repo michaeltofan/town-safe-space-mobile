@@ -871,13 +871,13 @@ void main() {
     );
   });
 
-  testWidgets('26. busy is not displayed as a technical error',
+  testWidgets(
+      '26. busy keeps progress, clears busy flag, and allows later retry',
       (WidgetTester tester) async {
+    final Completer<void> gate = Completer<void>();
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
-    final _FakeClassificationBridge bridge = _FakeClassificationBridge(
-      failure: ForegroundCityClassificationBridgeFailure.busy,
-    );
+    final _FakeClassificationBridge bridge = _GatedBusyBridge(gate: gate);
 
     await _pumpScreen(
       tester,
@@ -888,11 +888,49 @@ void main() {
     );
 
     await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
+    // Progress remains visible while the busy failure is still in-flight.
+    expect(find.text('Verifica della posizione in corso…'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Qualcosa non ha funzionato'), findsNothing);
     expect(find.textContaining('busy'), findsNothing);
-    expect(find.widgetWithText(FilledButton, 'Verifica posizione'), findsOneWidget);
+    expect(bridge.callCount, 1);
+
+    // Duplicate tap while busy must not start a second bridge call.
+    await tester.tap(find.byKey(const Key('location_primary_action')));
+    await tester.pump();
+    expect(bridge.callCount, 1);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    // After settle: no idle flash, progress copy kept, no technical error,
+    // spinner gone, primary re-enabled for a later retry.
+    expect(find.text('Verifica della posizione in corso…'), findsOneWidget);
+    expect(find.text('Qualcosa non ha funzionato'), findsNothing);
+    expect(find.textContaining('busy'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(
+      find.widgetWithText(FilledButton, 'Verifica posizione'),
+      findsOneWidget,
+    );
+    expect(bridge.callCount, 1);
+
+    // Later normal retry can proceed once busy is cleared.
+    bridge.failure = null;
+    bridge.result = _result(
+      city: 'Milano',
+      containment: PointContainment.inside,
+      accuracyMeters: 20,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
+    await tester.pumpAndSettle();
+
+    expect(bridge.callCount, 2);
+    expect(find.text('Posizione verificata'), findsOneWidget);
+    expect(find.text('Verifica della posizione in corso…'), findsNothing);
+    expect(find.byType(LocationConfirmationScreen), findsOneWidget);
   });
 
   testWidgets('27-28. Change city pops to Select City preserving selection',
@@ -1389,5 +1427,39 @@ class _GatedBridge extends _FakeClassificationBridge {
     cities.add(selectedCity);
     await gate.future;
     return result!;
+  }
+}
+
+class _GatedBusyBridge extends _FakeClassificationBridge {
+  _GatedBusyBridge({
+    required this.gate,
+  }) : super(failure: ForegroundCityClassificationBridgeFailure.busy);
+
+  final Completer<void> gate;
+  bool _busyEmitted = false;
+
+  @override
+  Future<CityBoundaryClassificationResult> readAndClassifyOnce({
+    required String selectedCity,
+  }) async {
+    callCount += 1;
+    cities.add(selectedCity);
+    if (!_busyEmitted) {
+      await gate.future;
+      _busyEmitted = true;
+      throw const ForegroundCityClassificationBridgeException(
+        ForegroundCityClassificationBridgeFailure.busy,
+      );
+    }
+    if (failure != null &&
+        failure != ForegroundCityClassificationBridgeFailure.busy) {
+      throw ForegroundCityClassificationBridgeException(failure!);
+    }
+    if (result != null) {
+      return result!;
+    }
+    throw const ForegroundCityClassificationBridgeException(
+      ForegroundCityClassificationBridgeFailure.busy,
+    );
   }
 }
