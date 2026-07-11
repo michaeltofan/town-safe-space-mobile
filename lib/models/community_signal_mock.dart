@@ -5,6 +5,8 @@
 /// not verified real events.
 library;
 
+import 'package:flutter/painting.dart';
+
 /// Civic issue status labels approved for Feed V1.
 enum CommunitySignalStatus {
   newSignal('New signal'),
@@ -16,6 +18,41 @@ enum CommunitySignalStatus {
   const CommunitySignalStatus(this.label);
 
   final String label;
+}
+
+/// Explicit photographic presentation mode for Feed V1 mock media.
+///
+/// The card adapts to the photograph; the photograph is not forced into one
+/// universal template. Ratios are source-asset targets, not stretched fits.
+enum CivicMediaPresentation {
+  /// Wide civic context — approximately 16:9.
+  landscape(1.7777778, 'landscape'),
+
+  /// Vertical street/path depth — approximately 4:5.
+  portrait(0.8, 'portrait'),
+
+  /// Balanced civic frame — approximately 1:1.
+  square(1.0, 'square');
+
+  const CivicMediaPresentation(this.aspectRatio, this.keyName);
+
+  /// Width / height of the approved source asset for this mode.
+  final double aspectRatio;
+
+  /// Stable key token for tests and semantics.
+  final String keyName;
+}
+
+/// Focal alignment protecting the civic subject inside the media frame.
+enum CivicMediaFocus {
+  center(Alignment.center),
+  topCenter(Alignment.topCenter),
+  centerLeft(Alignment.centerLeft),
+  centerRight(Alignment.centerRight);
+
+  const CivicMediaFocus(this.alignment);
+
+  final Alignment alignment;
 }
 
 /// One fictional COMMUNITY SIGNAL used only in the Feed V1 prototype.
@@ -33,6 +70,8 @@ class CommunitySignalMock {
     required this.imageAsset,
     required this.placeLabel,
     required this.initialConfirmationCount,
+    required this.mediaPresentation,
+    this.mediaFocus = CivicMediaFocus.center,
   });
 
   final String id;
@@ -47,11 +86,18 @@ class CommunitySignalMock {
   final String imageAsset;
   final String placeLabel;
   final int initialConfirmationCount;
+
+  /// Declared photographic presentation for adaptive card layout.
+  final CivicMediaPresentation mediaPresentation;
+
+  /// Focal alignment when the rounded frame clips the asset.
+  final CivicMediaFocus mediaFocus;
 }
 
 /// Exactly three fictional Milano Community Signals for Feed V1.
 ///
 /// FICTIONAL PROTOTYPE CONTENT — do not treat as real people or incidents.
+/// Card 1 landscape · Card 2 portrait · Card 3 square.
 const List<CommunitySignalMock>
 kMilanoFeedV1MockSignals = <CommunitySignalMock>[
   CommunitySignalMock(
@@ -68,6 +114,8 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
     imageAsset: 'assets/images/feed/signal_citta_studi_pavement.jpg',
     placeLabel: 'Via Padova · Città Studi · Milano',
     initialConfirmationCount: 18,
+    mediaPresentation: CivicMediaPresentation.landscape,
+    mediaFocus: CivicMediaFocus.center,
   ),
   CommunitySignalMock(
     id: 'milano-signal-2',
@@ -83,6 +131,8 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
     imageAsset: 'assets/images/feed/signal_porta_romana_lighting.jpg',
     placeLabel: 'Porta Romana · Milano',
     initialConfirmationCount: 11,
+    mediaPresentation: CivicMediaPresentation.portrait,
+    mediaFocus: CivicMediaFocus.topCenter,
   ),
   CommunitySignalMock(
     id: 'milano-signal-3',
@@ -99,5 +149,7 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
     imageAsset: 'assets/images/feed/signal_lorenteggio_works.jpg',
     placeLabel: 'Lorenteggio · Milano',
     initialConfirmationCount: 7,
+    mediaPresentation: CivicMediaPresentation.square,
+    mediaFocus: CivicMediaFocus.center,
   ),
 ];

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../models/community_signal_mock.dart';
@@ -5,7 +7,8 @@ import '../models/community_signal_mock.dart';
 /// Reusable COMMUNITY SIGNAL card for TOWN Feed V1.
 ///
 /// Renders one full viewport card without internal scrolling.
-/// Confirmation state is owned by the parent feed (session-only).
+/// Media height adapts to [CivicMediaPresentation] — landscape, portrait, or
+/// square — while preserving source aspect ratio (never stretched).
 class CommunitySignalCard extends StatelessWidget {
   const CommunitySignalCard({
     super.key,
@@ -35,11 +38,6 @@ class CommunitySignalCard extends StatelessWidget {
     final Size size = MediaQuery.sizeOf(context);
     final bool compact = size.height < 700;
     final bool tiny = size.height < 600 || size.width < 340;
-    final double imageMax = tiny
-        ? size.height * 0.16
-        : compact
-        ? size.height * 0.18
-        : size.height * 0.22;
 
     return Semantics(
       container: true,
@@ -47,18 +45,10 @@ class CommunitySignalCard extends StatelessWidget {
           'Community Signal. ${signal.headline}. $positionLabel. Status ${signal.status.label}.',
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          tiny ? 10 : 14,
-          tiny
-              ? 4
-              : compact
-              ? 6
-              : 10,
-          tiny ? 10 : 14,
-          tiny
-              ? 4
-              : compact
-              ? 6
-              : 10,
+          tiny ? 8 : 10,
+          tiny ? 2 : 4,
+          tiny ? 8 : 10,
+          tiny ? 2 : 4,
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
@@ -68,161 +58,274 @@ class CommunitySignalCard extends StatelessWidget {
           ),
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-              tiny ? 10 : 14,
-              tiny
-                  ? 8
-                  : compact
-                  ? 10
-                  : 14,
-              tiny ? 10 : 14,
-              tiny
-                  ? 8
-                  : compact
-                  ? 10
-                  : 14,
+              tiny ? 10 : 12,
+              tiny ? 8 : 10,
+              tiny ? 10 : 12,
+              tiny ? 8 : 10,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _AuthorRow(signal: signal, compact: compact || tiny),
-                SizedBox(
-                  height: tiny
-                      ? 6
-                      : compact
-                      ? 8
-                      : 10,
-                ),
-                Text(
-                  signal.category,
-                  key: Key('signal_category_${signal.id}'),
-                  style: TextStyle(
-                    color: orange,
-                    fontSize: tiny
-                        ? 10.5
-                        : compact
-                        ? 11
-                        : 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-                SizedBox(
-                  height: tiny
-                      ? 3
-                      : compact
-                      ? 4
-                      : 6,
-                ),
-                Text(
-                  signal.headline,
-                  key: Key('signal_headline_${signal.id}'),
-                  maxLines: tiny ? 2 : 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: white,
-                    fontSize: tiny
-                        ? 15.5
-                        : compact
-                        ? 17
-                        : 19,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                SizedBox(
-                  height: tiny
-                      ? 3
-                      : compact
-                      ? 4
-                      : 6,
-                ),
-                Text(
-                  signal.summary,
-                  key: Key('signal_summary_${signal.id}'),
-                  maxLines: tiny
-                      ? 3
-                      : compact
-                      ? 2
-                      : 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: muted,
-                    fontSize: tiny
-                        ? 12
-                        : compact
-                        ? 12.5
-                        : 13.5,
-                    height: 1.3,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                SizedBox(
-                  height: tiny
-                      ? 6
-                      : compact
-                      ? 8
-                      : 10,
-                ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxHeight: imageMax),
-                      child: _EvidenceImage(signal: signal),
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final double mediaBudget = _mediaHeightBudget(
+                  viewportHeight: size.height,
+                  presentation: signal.mediaPresentation,
+                  tiny: tiny,
+                  compact: compact,
+                );
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _AuthorRow(signal: signal, compact: compact || tiny),
+                    SizedBox(
+                      height: tiny
+                          ? 5
+                          : compact
+                          ? 6
+                          : 8,
                     ),
-                  ),
-                ),
-                SizedBox(
-                  height: tiny
-                      ? 6
-                      : compact
-                      ? 8
-                      : 10,
-                ),
-                _StatusRow(signal: signal, compact: compact || tiny),
-                SizedBox(
-                  height: tiny
-                      ? 4
-                      : compact
-                      ? 6
-                      : 8,
-                ),
-                _ConfirmationLine(
-                  count: confirmationCount,
-                  signalId: signal.id,
-                ),
-                SizedBox(
-                  height: tiny
-                      ? 6
-                      : compact
-                      ? 8
-                      : 10,
-                ),
-                _SeeThisTooButton(
-                  signalId: signal.id,
-                  hasConfirmed: hasConfirmed,
-                  onConfirm: onConfirm,
-                  compact: compact || tiny,
-                ),
-                SizedBox(
-                  height: tiny
-                      ? 4
-                      : compact
-                      ? 6
-                      : 8,
-                ),
-                _OpenSignalButton(
-                  signalId: signal.id,
-                  onOpen: onOpenSignal,
-                  compact: compact || tiny,
-                ),
-              ],
+                    Text(
+                      signal.category,
+                      key: Key('signal_category_${signal.id}'),
+                      style: TextStyle(
+                        color: orange,
+                        fontSize: tiny
+                            ? 10.5
+                            : compact
+                            ? 11
+                            : 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    SizedBox(height: tiny ? 2 : 4),
+                    Text(
+                      signal.headline,
+                      key: Key('signal_headline_${signal.id}'),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: white,
+                        fontSize: tiny
+                            ? 15
+                            : compact
+                            ? 16.5
+                            : 18,
+                        fontWeight: FontWeight.w700,
+                        height: 1.18,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    SizedBox(height: tiny ? 2 : 4),
+                    Text(
+                      signal.summary,
+                      key: Key('signal_summary_${signal.id}'),
+                      maxLines: tiny
+                          ? 2
+                          : compact
+                          ? 2
+                          : 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: muted,
+                        fontSize: tiny
+                            ? 11.5
+                            : compact
+                            ? 12.5
+                            : 13.5,
+                        height: 1.28,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    SizedBox(height: tiny ? 6 : 8),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: LayoutBuilder(
+                        builder:
+                            (BuildContext context, BoxConstraints mediaBox) {
+                              return Align(
+                                alignment: Alignment.topCenter,
+                                child: _AdaptiveEvidenceMedia(
+                                  signal: signal,
+                                  maxWidth: constraints.maxWidth,
+                                  maxHeight: math.min(
+                                    mediaBudget,
+                                    mediaBox.maxHeight,
+                                  ),
+                                ),
+                              );
+                            },
+                      ),
+                    ),
+                    SizedBox(height: tiny ? 6 : 8),
+                    _StatusRow(signal: signal, compact: compact || tiny),
+                    SizedBox(height: tiny ? 4 : 6),
+                    _ConfirmationLine(
+                      count: confirmationCount,
+                      signalId: signal.id,
+                    ),
+                    SizedBox(height: tiny ? 6 : 8),
+                    _SeeThisTooButton(
+                      signalId: signal.id,
+                      hasConfirmed: hasConfirmed,
+                      onConfirm: onConfirm,
+                      compact: compact || tiny,
+                    ),
+                    SizedBox(height: tiny ? 4 : 6),
+                    _OpenSignalButton(
+                      signalId: signal.id,
+                      onOpen: onOpenSignal,
+                      compact: compact || tiny,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// Bounded responsive media budget by presentation mode.
+  /// Portrait receives more vertical height; landscape stays moderate.
+  static double _mediaHeightBudget({
+    required double viewportHeight,
+    required CivicMediaPresentation presentation,
+    required bool tiny,
+    required bool compact,
+  }) {
+    final double fraction = switch (presentation) {
+      CivicMediaPresentation.landscape =>
+        tiny
+            ? 0.18
+            : compact
+            ? 0.20
+            : 0.22,
+      CivicMediaPresentation.portrait =>
+        tiny
+            ? 0.26
+            : compact
+            ? 0.30
+            : 0.34,
+      CivicMediaPresentation.square =>
+        tiny
+            ? 0.22
+            : compact
+            ? 0.25
+            : 0.28,
+    };
+    return viewportHeight * fraction;
+  }
+}
+
+/// Sizes civic evidence to the declared presentation aspect without stretching.
+class _AdaptiveEvidenceMedia extends StatelessWidget {
+  const _AdaptiveEvidenceMedia({
+    required this.signal,
+    required this.maxWidth,
+    required this.maxHeight,
+  });
+
+  final CommunitySignalMock signal;
+  final double maxWidth;
+  final double maxHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final CivicMediaPresentation presentation = signal.mediaPresentation;
+    final double aspect = presentation.aspectRatio;
+    final Size fitted = _fitWithin(
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      aspectRatio: aspect,
+    );
+
+    return Semantics(
+      label:
+          'Civic evidence, ${presentation.keyName} photograph for ${signal.placeLabel}',
+      child: SizedBox(
+        key: Key('signal_media_frame_${signal.id}_${presentation.keyName}'),
+        width: fitted.width,
+        height: fitted.height,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                signal.imageAsset,
+                key: Key('signal_image_${signal.id}'),
+                fit: BoxFit.cover,
+                alignment: signal.mediaFocus.alignment,
+                // Cover fills the aspect-matched frame without stretching.
+                filterQuality: FilterQuality.medium,
+                semanticLabel:
+                    'Fictional prototype civic evidence image for ${signal.placeLabel}',
+              ),
+              Positioned(
+                left: 8,
+                bottom: 8,
+                right: 8,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xCC111111),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.place_outlined,
+                            size: 13,
+                            color: CommunitySignalCard.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              signal.placeLabel,
+                              key: Key('signal_place_${signal.id}'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: CommunitySignalCard.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Fit [aspectRatio] (width/height) inside bounds without stretching.
+  static Size _fitWithin({
+    required double maxWidth,
+    required double maxHeight,
+    required double aspectRatio,
+  }) {
+    double width = maxWidth;
+    double height = width / aspectRatio;
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * aspectRatio;
+    }
+    return Size(width, height);
   }
 }
 
@@ -246,7 +349,7 @@ class _AuthorRow extends StatelessWidget {
     return Row(
       children: [
         CircleAvatar(
-          radius: compact ? 14 : 16,
+          radius: compact ? 13 : 15,
           backgroundColor: const Color(0xFF2C2C2C),
           child: Text(
             initials,
@@ -300,75 +403,6 @@ class _AuthorRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _EvidenceImage extends StatelessWidget {
-  const _EvidenceImage({required this.signal});
-
-  final CommunitySignalMock signal;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            signal.imageAsset,
-            key: Key('signal_image_${signal.id}'),
-            fit: BoxFit.cover,
-            semanticLabel:
-                'Fictional prototype civic evidence image for ${signal.placeLabel}',
-          ),
-          Positioned(
-            left: 8,
-            bottom: 8,
-            right: 8,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: const Color(0xCC111111),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.place_outlined,
-                        size: 13,
-                        color: CommunitySignalCard.white,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          signal.placeLabel,
-                          key: Key('signal_place_${signal.id}'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: CommunitySignalCard.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -500,7 +534,7 @@ class _SeeThisTooButton extends StatelessWidget {
         : 'I SEE THIS TOO';
 
     return SizedBox(
-      height: compact ? 44 : 48,
+      height: compact ? 42 : 46,
       width: double.infinity,
       child: OutlinedButton(
         key: Key('signal_confirm_$signalId'),
@@ -540,7 +574,7 @@ class _OpenSignalButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: compact ? 44 : 48,
+      height: compact ? 42 : 46,
       width: double.infinity,
       child: FilledButton(
         key: Key('signal_open_$signalId'),

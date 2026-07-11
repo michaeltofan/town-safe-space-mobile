@@ -93,6 +93,36 @@ void main() {
     );
   });
 
+  test(
+    'Feed V1 assigns distinct landscape, portrait, and square media modes',
+    () {
+      expect(
+        kMilanoFeedV1MockSignals[0].mediaPresentation,
+        CivicMediaPresentation.landscape,
+      );
+      expect(
+        kMilanoFeedV1MockSignals[1].mediaPresentation,
+        CivicMediaPresentation.portrait,
+      );
+      expect(
+        kMilanoFeedV1MockSignals[2].mediaPresentation,
+        CivicMediaPresentation.square,
+      );
+      expect(
+        kMilanoFeedV1MockSignals[0].mediaPresentation.aspectRatio,
+        closeTo(16 / 9, 0.01),
+      );
+      expect(
+        kMilanoFeedV1MockSignals[1].mediaPresentation.aspectRatio,
+        closeTo(4 / 5, 0.01),
+      );
+      expect(
+        kMilanoFeedV1MockSignals[2].mediaPresentation.aspectRatio,
+        closeTo(1.0, 0.01),
+      );
+    },
+  );
+
   testWidgets('eligible confirmedGood shows Continue to TOWN', (
     WidgetTester tester,
   ) async {
@@ -447,5 +477,89 @@ void main() {
       find.byKey(const Key('signal_open_milano-signal-1')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('adaptive media frames preserve presentation aspect ratios', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+    final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+
+    Future<void> expectMode({
+      required String id,
+      required String mode,
+      required double expectedAspect,
+    }) async {
+      final Finder frame = find.byKey(Key('signal_media_frame_${id}_$mode'));
+      expect(frame, findsOneWidget);
+      final Size frameSize = tester.getSize(frame);
+      expect(frameSize.width / frameSize.height, closeTo(expectedAspect, 0.05));
+      expect(frameSize.height, greaterThan(80));
+
+      final Image image = tester.widget<Image>(
+        find.byKey(Key('signal_image_$id')),
+      );
+      expect(image.fit, BoxFit.cover);
+      // BoxFit.fill the aspect-matched frame; never BoxFit.fill stretch.
+      expect(image.fit == BoxFit.fill, isFalse);
+    }
+
+    await expectMode(
+      id: 'milano-signal-1',
+      mode: 'landscape',
+      expectedAspect: 16 / 9,
+    );
+
+    await tester.fling(pageView, const Offset(0, -500), 2000);
+    await tester.pumpAndSettle();
+    await expectMode(
+      id: 'milano-signal-2',
+      mode: 'portrait',
+      expectedAspect: 4 / 5,
+    );
+    // Portrait must remain visually substantial, not a token thumbnail.
+    expect(
+      tester.getSize(find.byKey(const Key('signal_media_frame_milano-signal-2_portrait'))).height,
+      greaterThan(120),
+    );
+
+    await tester.fling(pageView, const Offset(0, -500), 2000);
+    await tester.pumpAndSettle();
+    await expectMode(
+      id: 'milano-signal-3',
+      mode: 'square',
+      expectedAspect: 1.0,
+    );
+  });
+
+  testWidgets('all three media formats fit at 390 and 320 without overflow', (
+    WidgetTester tester,
+  ) async {
+    for (final Size size in <Size>[
+      const Size(390, 844),
+      const Size(320, 568),
+    ]) {
+      await _pumpFeed(tester, size: size);
+      final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+
+      for (int i = 0; i < 3; i++) {
+        expect(tester.takeException(), isNull);
+        expect(find.text('I SEE THIS TOO'), findsOneWidget);
+        expect(find.text('Open signal'), findsOneWidget);
+        expect(find.textContaining('Confirmed by'), findsOneWidget);
+        expect(find.byType(CommunitySignalCard), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(CommunitySignalCard),
+            matching: find.byType(SingleChildScrollView),
+          ),
+          findsNothing,
+        );
+        if (i < 2) {
+          await tester.fling(pageView, const Offset(0, -500), 2000);
+          await tester.pumpAndSettle();
+        }
+      }
+    }
   });
 }

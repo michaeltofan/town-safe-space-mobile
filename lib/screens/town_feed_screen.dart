@@ -201,7 +201,7 @@ class _TownFeedHeader extends StatelessWidget {
     final bool compact = MediaQuery.sizeOf(context).height < 640;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(18, compact ? 4 : 6, 18, compact ? 2 : 4),
+      padding: EdgeInsets.fromLTRB(14, compact ? 4 : 6, 14, compact ? 2 : 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -224,7 +224,7 @@ class _TownFeedHeader extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: compact ? 6 : 10),
+          SizedBox(height: compact ? 4 : 6),
           const Text(
             'Milano · Community Signals',
             key: Key('town_feed_city_context'),
