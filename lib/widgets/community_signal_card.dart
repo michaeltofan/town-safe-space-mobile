@@ -136,17 +136,24 @@ class CommunitySignalCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: LayoutBuilder(
-                          builder:
-                              (BuildContext context, BoxConstraints mediaBox) {
-                                return Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: _AdaptiveEvidenceMedia(
-                                    signal: signal,
-                                    maxWidth: mediaBox.maxWidth,
-                                    maxHeight: mediaBox.maxHeight,
-                                  ),
-                                );
-                              },
+                          builder: (BuildContext context, BoxConstraints mediaBox) {
+                            // Landscape: top-align so the photo begins right
+                            // after the summary and expands downward.
+                            // Portrait/square: keep bottom seating (accepted).
+                            final Alignment mediaAlign =
+                                signal.mediaPresentation ==
+                                    CivicMediaPresentation.landscape
+                                ? Alignment.topCenter
+                                : Alignment.bottomCenter;
+                            return Align(
+                              alignment: mediaAlign,
+                              child: _AdaptiveEvidenceMedia(
+                                signal: signal,
+                                maxWidth: mediaBox.maxWidth,
+                                maxHeight: mediaBox.maxHeight,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       SizedBox(height: tiny ? 6 : 8),

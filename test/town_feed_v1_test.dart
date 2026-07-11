@@ -674,4 +674,87 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('landscape image begins immediately after the summary', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+
+    final Rect summaryRect = tester.getRect(
+      find.byKey(const Key('signal_summary_milano-signal-1')),
+    );
+    final Rect imageRect = tester.getRect(
+      find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
+    );
+    final Rect openRect = tester.getRect(
+      find.byKey(const Key('signal_open_milano-signal-1')),
+    );
+    final Rect cardRect = tester.getRect(
+      find.byKey(const Key('signal_card_surface_milano-signal-1')),
+    );
+
+    // Small intentional gap only — not a large empty Expanded band.
+    final double gapAboveImage = imageRect.top - summaryRect.bottom;
+    expect(gapAboveImage, greaterThanOrEqualTo(0));
+    expect(gapAboveImage, lessThanOrEqualTo(20));
+
+    // No large empty region above the landscape image relative to card height.
+    expect(gapAboveImage / cardRect.height, lessThan(0.05));
+
+    // Full-width, unstretched landscape.
+    expect(imageRect.width / cardRect.width, greaterThan(0.88));
+    expect(imageRect.width / imageRect.height, greaterThan(1.30));
+    final Image image = tester.widget<Image>(
+      find.byKey(const Key('signal_image_milano-signal-1')),
+    );
+    expect(image.fit, BoxFit.cover);
+    expect(image.fit == BoxFit.fill, isFalse);
+
+    // Lower civic zone still anchored.
+    expect(cardRect.bottom - openRect.bottom, lessThanOrEqualTo(24));
+  });
+
+  testWidgets('portrait and square media seating remain bottom-anchored', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+    final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+
+    Future<void> expectBottomSeated(String id, String mode) async {
+      final Rect frame = tester.getRect(
+        find.byKey(Key('signal_media_frame_${id}_$mode')),
+      );
+      final Rect lower = tester.getRect(
+        find.byKey(Key('signal_lower_civic_zone_$id')),
+      );
+      // Media sits just above the lower civic zone (small gap only).
+      final double gap = lower.top - frame.bottom;
+      expect(gap, greaterThanOrEqualTo(0));
+      expect(gap, lessThanOrEqualTo(20));
+    }
+
+    await tester.fling(pageView, const Offset(0, -500), 2000);
+    await tester.pumpAndSettle();
+    await expectBottomSeated('milano-signal-2', 'portrait');
+    expect(
+      find.byKey(const Key('signal_headline_milano-signal-2')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('signal_summary_milano-signal-2')),
+      findsOneWidget,
+    );
+
+    await tester.fling(pageView, const Offset(0, -500), 2000);
+    await tester.pumpAndSettle();
+    await expectBottomSeated('milano-signal-3', 'square');
+    expect(
+      find.byKey(const Key('signal_headline_milano-signal-3')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('signal_summary_milano-signal-3')),
+      findsOneWidget,
+    );
+  });
 }
