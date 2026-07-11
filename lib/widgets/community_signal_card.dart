@@ -139,9 +139,7 @@ class CommunitySignalCard extends StatelessWidget {
                           builder:
                               (BuildContext context, BoxConstraints mediaBox) {
                                 return Align(
-                                  alignment: _mediaAlign(
-                                    signal.mediaPresentation,
-                                  ),
+                                  alignment: Alignment.bottomCenter,
                                   child: _AdaptiveEvidenceMedia(
                                     signal: signal,
                                     maxWidth: mediaBox.maxWidth,
@@ -169,12 +167,6 @@ class CommunitySignalCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Keep media seated above the lower civic zone so leftover flex space
-  /// sits between summary and photograph — not below Open signal.
-  static Alignment _mediaAlign(CivicMediaPresentation presentation) {
-    return Alignment.bottomCenter;
   }
 }
 
@@ -226,9 +218,10 @@ class _LowerCivicZone extends StatelessWidget {
 
 /// Sizes civic evidence to the declared presentation aspect without stretching.
 ///
-/// Uses the full remaining media slot (maxWidth × maxHeight). Mode identity is
-/// preserved by aspect ratio — landscape stays wide, portrait tall, square
-/// balanced — while growing as large as the slot allows.
+/// Uses the full remaining media slot. Portrait and square keep exact source
+/// ratios. Landscape may grow taller within a still-landscape bound (down to
+/// ~4:3) so the photo uses leftover editorial height via controlled cover,
+/// without becoming a portrait frame or stretching pixels.
 class _AdaptiveEvidenceMedia extends StatelessWidget {
   const _AdaptiveEvidenceMedia({
     required this.signal,
@@ -240,14 +233,19 @@ class _AdaptiveEvidenceMedia extends StatelessWidget {
   final double maxWidth;
   final double maxHeight;
 
+  /// Widest landscape source ratio (~16:9).
+  static const double _landscapeSourceAspect = 16 / 9;
+
+  /// Tallest frame still read as landscape (~4:3).
+  static const double _landscapeMinAspect = 4 / 3;
+
   @override
   Widget build(BuildContext context) {
     final CivicMediaPresentation presentation = signal.mediaPresentation;
-    final double aspect = presentation.aspectRatio;
-    final Size fitted = _fitWithin(
+    final Size fitted = _fitForPresentation(
+      presentation: presentation,
       maxWidth: maxWidth,
       maxHeight: maxHeight,
-      aspectRatio: aspect,
     );
 
     return Semantics(
@@ -322,22 +320,58 @@ class _AdaptiveEvidenceMedia extends StatelessWidget {
     );
   }
 
-  /// Fit [aspectRatio] (width/height) inside bounds without stretching.
-  static Size _fitWithin({
+  static Size _fitForPresentation({
+    required CivicMediaPresentation presentation,
     required double maxWidth,
     required double maxHeight,
-    required double aspectRatio,
   }) {
     if (maxWidth <= 0 || maxHeight <= 0) {
       return Size.zero;
     }
+
+    if (presentation == CivicMediaPresentation.landscape) {
+      return _fitLandscape(maxWidth: maxWidth, maxHeight: maxHeight);
+    }
+
+    return _fitExact(
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      aspectRatio: presentation.aspectRatio,
+    );
+  }
+
+  /// Full-width landscape that grows into leftover height while staying wide.
+  static Size _fitLandscape({
+    required double maxWidth,
+    required double maxHeight,
+  }) {
+    final double width = maxWidth;
+    final double naturalHeight = width / _landscapeSourceAspect;
+    if (naturalHeight >= maxHeight) {
+      // Slot shorter than 16:9 — exact fit inside bounds.
+      return _fitExact(
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        aspectRatio: _landscapeSourceAspect,
+      );
+    }
+    // Grow toward filling the slot, but never steeper than ~4:3.
+    final double maxGrowHeight = width / _landscapeMinAspect;
+    final double height = math.min(maxHeight, maxGrowHeight);
+    return Size(width, height);
+  }
+
+  static Size _fitExact({
+    required double maxWidth,
+    required double maxHeight,
+    required double aspectRatio,
+  }) {
     double width = maxWidth;
     double height = width / aspectRatio;
     if (height > maxHeight) {
       height = maxHeight;
       width = height * aspectRatio;
     }
-    // Guard tiny rounding drift.
     width = math.min(width, maxWidth);
     height = math.min(height, maxHeight);
     return Size(width, height);

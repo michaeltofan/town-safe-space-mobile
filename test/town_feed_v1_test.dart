@@ -507,8 +507,16 @@ void main() {
     await expectMode(
       id: 'milano-signal-1',
       mode: 'landscape',
-      expectedAspect: 16 / 9,
+      expectedAspect: 4 / 3,
     );
+    // Landscape may grow from 16:9 toward ~4:3 while remaining wide.
+    final Size landscapeFrame = tester.getSize(
+      find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
+    );
+    final double landscapeAspect = landscapeFrame.width / landscapeFrame.height;
+    expect(landscapeAspect, greaterThan(1.30));
+    expect(landscapeAspect, lessThan(1.90));
+    expect(landscapeAspect, closeTo(4 / 3, 0.45));
 
     await tester.fling(pageView, const Offset(0, -500), 2000);
     await tester.pumpAndSettle();
@@ -606,13 +614,15 @@ void main() {
       final Size landscapeSize = tester.getSize(
         find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
       );
-      // Landscape stays 16:9 and width-led; must use nearly full card width.
-      expect(landscapeSize.width / landscapeSize.height, closeTo(16 / 9, 0.05));
+      // Landscape stays width-led and recognizably wide (≥ ~4:3 when grown).
+      expect(landscapeSize.width / landscapeSize.height, greaterThan(1.30));
+      expect(landscapeSize.width / landscapeSize.height, lessThan(1.90));
       final double cardWidth = tester
           .getSize(find.byKey(const Key('signal_card_surface_milano-signal-1')))
           .width;
       expect(landscapeSize.width / cardWidth, greaterThan(0.88));
-      expect(landscapeSize.height, greaterThan(170));
+      // Grown landscape should be taller than a shallow 16:9 banner (~197).
+      expect(landscapeSize.height, greaterThan(220));
 
       await tester.fling(pageView, const Offset(0, -500), 2000);
       await tester.pumpAndSettle();
