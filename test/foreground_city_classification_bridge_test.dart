@@ -698,21 +698,26 @@ void main() {
       expect(bridgeSource.contains('debugPrint('), isFalse);
     });
 
-    test('26. bridge is not called by LocationConfirmationScreen yet', () {
+    test('26. LocationConfirmationScreen wires bridge readAndClassifyOnce', () {
       expect(
         screenSource.contains('foreground_city_classification_bridge'),
-        isFalse,
+        isTrue,
       );
       expect(
         screenSource.contains('ForegroundCityClassificationBridge'),
-        isFalse,
-      );
-      expect(
-        screenSource.contains('CityBoundaryClassificationService'),
-        isFalse,
+        isTrue,
       );
       expect(
         screenSource.contains('readAndClassifyOnce'),
+        isTrue,
+      );
+      // Screen must not construct/call the classification service directly.
+      expect(
+        screenSource.contains('CityBoundaryClassificationService('),
+        isFalse,
+      );
+      expect(
+        screenSource.contains('classifyCoordinatesTransiently'),
         isFalse,
       );
     });

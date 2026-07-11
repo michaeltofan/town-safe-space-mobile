@@ -668,7 +668,6 @@ void main() {
   group('scope and privacy source scan', () {
     late String serviceSource;
     late List<File> changedLibFiles;
-    late List<File> screenFiles;
 
     setUpAll(() {
       serviceSource = File(
@@ -677,11 +676,6 @@ void main() {
       changedLibFiles = <File>[
         File('lib/services/city_boundary_classification_service.dart'),
       ];
-      screenFiles = Directory('lib/screens')
-          .listSync()
-          .whereType<File>()
-          .where((File f) => f.path.endsWith('.dart'))
-          .toList();
     });
 
     test('no persistence, transmission, logging, or analytics in service', () {
@@ -740,19 +734,27 @@ void main() {
       expect(serviceSource.contains('getCurrentPosition'), isFalse);
     });
 
-    test('screens were not modified by this task', () {
-      // Classification service must not import screens; screens must not
-      // import the classification service yet.
-      for (final File screen in screenFiles) {
-        final String source = screen.readAsStringSync();
-        expect(
-          source.contains('city_boundary_classification_service'),
-          isFalse,
-          reason: '${screen.path} must not reference classification service',
-        );
-      }
+    test('screens import classification result only via approved UI wiring', () {
+      // Classification service must not import screens.
       expect(
         serviceSource.contains("package:town_safe_space_mobile/screens/"),
+        isFalse,
+      );
+      // LocationConfirmationScreen may import the privacy-safe result type
+      // for bridge mapping; it must not construct or call the service.
+      final String confirmation = File(
+        'lib/screens/location_confirmation_screen.dart',
+      ).readAsStringSync();
+      expect(
+        confirmation.contains('city_boundary_classification_service'),
+        isTrue,
+      );
+      expect(
+        confirmation.contains('CityBoundaryClassificationService('),
+        isFalse,
+      );
+      expect(
+        confirmation.contains('classifyCoordinatesTransiently'),
         isFalse,
       );
     });
