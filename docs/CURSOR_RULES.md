@@ -60,22 +60,32 @@ Cursor must not invent:
 - new legal flows;
 - new monetization logic.
 
-## Prototype rule
+## Current phase rule
 
-The current project is a Flutter visual prototype only.
+**LOCAL ACCESS FOUNDATION V1 — IMPLEMENTED**
 
-Do not build:
+The local-access foundation is complete:
+
+Welcome → Country → City → Official city language → One-time location verification → Visible verification result.
+
+Do not reopen or expand that phase unless the owner explicitly requests a correction.
+
+Do not build unless explicitly approved in a future task:
 - backend;
 - authentication;
 - payments;
 - RevenueCat;
-- real GPS;
+- continuous or background GPS;
 - Supabase;
 - Firebase;
 - moderation backend;
 - creator studio;
 - real accounts;
-unless explicitly approved in a future task.
+- civic cards / feed / articles;
+- neighbourhood selection;
+- post-verification product navigation.
+
+One-time foreground location verification already exists for LOCAL ACCESS FOUNDATION V1. Do not treat it as unimplemented, and do not expand it without approval.
 
 ## Visual implementation rule
 

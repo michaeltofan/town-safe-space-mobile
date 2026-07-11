@@ -107,50 +107,45 @@ The screen must not feel:
 - cluttered;
 - corporate dashboard-like.
 
-## Implementation guidance for future Flutter task
+## Implementation status
 
-When this screen is later implemented in Flutter:
+This screen is implemented in:
 
-- use standard Flutter widgets;
-- avoid external packages;
-- avoid backend or navigation;
-- use mock/static content only;
-- create a dedicated screen file if approved later:
-  lib/screens/welcome_screen.dart
+`lib/screens/welcome_screen.dart`
 
-Do not implement this screen in this task.
-
-This task is only the screen specification document.
+It is part of **LOCAL ACCESS FOUNDATION V1 — IMPLEMENTED**.
 
 ## Asset guidance
 
-If a real street illustration asset is added later, it should be stored as:
+Approved street illustration asset:
 
-reference/screen_01_welcome.png
-
-or later as an app asset only after explicit approval.
-
-Do not add image assets in this task.
+- `reference/screen_01_welcome.png`
+- `assets/images/welcome_screen.png`
 
 ## Interaction behavior
 
-For the first prototype:
+- Welcome opens Select Country and continues the local-access flow.
+- Learn more opens a simple bottom sheet on the same Welcome Screen.
+- Learn more must not open a new screen, external link, account flow, membership flow, feed, or backend action.
+- The user remains on the Welcome Screen while the sheet is open.
 
-- Welcome button may later move to the next mock screen.
-- Learn more may later show a short explanation or secondary screen.
-- No interaction is implemented in this task.
+### Approved Learn more bottom sheet copy
 
-## Acceptance criteria
+Title:
 
-This task is complete only if:
+What is TOWN?
 
-- docs/screens/01_WELCOME.md is created;
-- no other files are modified;
-- no Flutter code is written;
-- no UI is built;
-- no assets are added;
-- no package or config file is changed.
+Body:
 
-## Stop condition
+TOWN is local civic infrastructure for real people, useful information, and community.
 
-Stop after creating docs/screens/01_WELCOME.md and show the file created.
+It helps people access and share relevant information about the city they live in.
+
+TOWN is not social media. It has no global feed, no follower race, and no advertising-driven engagement.
+
+Button:
+
+Close
+
+Close dismisses the sheet. Normal platform dismissal may also dismiss it.
+No additional actions or links.

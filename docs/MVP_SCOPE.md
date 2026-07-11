@@ -2,29 +2,48 @@
 
 ## Purpose
 
-This document defines the controlled scope for the first TOWN prototype.
+This document defines the controlled scope for TOWN prototype work.
 
-The purpose of the first prototype is not to build the full app.
+The purpose of early prototype work is not to build the full app.
 
-The purpose is to prove the visual, emotional, and UX direction of the product before implementing real accounts, payments, GPS, backend, moderation, or publishing.
+The purpose is to prove the visual, emotional, and UX direction of the product before implementing accounts, payments, backend, moderation, or publishing.
 
 ## Current build stage
 
-The current project stage is:
+### LOCAL ACCESS FOUNDATION V1 — IMPLEMENTED
 
-Flutter visual prototype.
+Completed flow:
 
-This means:
-- static screens are allowed;
-- mock data is allowed;
-- local placeholder interactions are allowed;
-- visual references are allowed;
-- no real user data is allowed;
-- no production functionality is allowed.
+```text
+Welcome
+→ Country
+→ City
+→ Official city language
+→ One-time location verification
+→ Visible verification result
+```
+
+This phase is implemented and closed for owner review.
+
+It includes real one-time foreground location verification and local offline city-boundary classification for Milano and Munich.
+
+It does **not** include:
+- accounts;
+- membership or payment;
+- persisted city membership / access entitlement;
+- civic cards, articles, or feed;
+- neighbourhood selection;
+- post-verification product navigation;
+- backend;
+- Creator Studio;
+- moderation;
+- legal certification.
 
 ## Product direction
 
-TOWN is a hyper-local civic app.
+TOWN is local civic infrastructure for real people, useful information, and community.
+
+TOWN is not social media.
 
 The prototype must communicate:
 - real communities;
@@ -43,62 +62,72 @@ It must not feel like a generic social media clone.
 
 ## Prototype goal
 
-The first prototype must answer these questions:
+Later prototype work must answer these questions:
 
 1. Does the app feel premium and trustworthy?
 2. Can the user understand the product in a few seconds?
 3. Does the local-only concept feel clear?
 4. Does the app avoid the feeling of toxic social media?
-5. Does the Substack Card feed concept feel strong enough to build further?
+5. Does the local civic-card feed concept feel strong enough to build further?
 6. Does the tap-to-expand reading experience feel natural?
 7. Does the app feel suitable for a European local civic space?
 
-## Included in the first prototype
-
-The first prototype may include these mock screens:
+## Included in LOCAL ACCESS FOUNDATION V1
 
 1. Welcome / Manifest Screen
    - introduces TOWN;
    - communicates real communities, real stories, no noise;
-   - establishes premium civic calm.
+   - Learn more opens an in-place bottom sheet on the same screen.
 
-2. Local Space Selection Screen
-   - mock country/city/neighbourhood selection;
-   - pilot context: Italy / Milano / Brera;
-   - no real GPS.
+2. Country selection
+   - Italy and Germany.
 
-3. Civic Guarantee Screen
+3. City selection
+   - Milano and Munich;
+   - official city language applied after city selection.
+
+4. One-time location verification
+   - foreground permission;
+   - one foreground GPS read;
+   - local offline boundary classification;
+   - visible result states;
+   - raw coordinates are not retained, transmitted, logged, or displayed.
+
+## Planned later prototype screens (not started)
+
+These remain future owner-approved work and are **not** part of LOCAL ACCESS FOUNDATION V1:
+
+1. Civic Guarantee Screen
    - explains why the future app may use paid membership;
    - frames membership as anti-bot and anti-hate-engagement;
    - no real payment.
 
-4. Local Access Confirmed Screen
-   - mock confirmation that the user is entering the local civic space;
-   - no real account verification.
+2. Local Access Confirmed / post-verification product entry
+   - not implemented; verification currently ends on the verification result screen.
 
-5. Substack Card Feed Screen
+3. Local Civic Card Feed Screen
    - vertical full-screen card layout;
    - mock local civic/editorial cards;
    - no real backend feed.
 
-6. Expanded Reading Screen
+4. Expanded Reading Screen
    - tap-to-expand long-form reading concept;
    - clean editorial reading experience;
    - mock content only.
 
-7. Constructive Response Screen
+5. Constructive Response Screen
    - mock structured civic response;
    - examples: Question, Proposal, Perspective;
    - no real comments.
 
-8. Settings / Safety Placeholder Screen
+6. Settings / Safety Placeholder Screen
    - mock Privacy Policy link;
    - mock Terms link;
    - mock Delete Account button;
    - mock Report / Block explanation;
    - no real legal or backend function.
 
-## Excluded from the first prototype
+## Excluded until explicitly approved
 
 Do not build:
 
@@ -109,8 +138,7 @@ Do not build:
 - RevenueCat;
 - Apple Pay;
 - Google Play Billing;
-- real GPS permission;
-- real location tracking;
+- continuous location tracking or background location;
 - Supabase;
 - Firebase;
 - backend APIs;
@@ -122,15 +150,22 @@ Do not build:
 - notifications;
 - analytics;
 - admin panel;
-- app store submission logic.
+- app store submission logic;
+- neighbourhood selection;
+- civic card / feed / article screens.
+
+Note: one-time foreground location verification for LOCAL ACCESS FOUNDATION V1 is already implemented and is not a future exclusion.
 
 ## Data rule
 
-The prototype must not collect, store, transmit, or process real personal data.
+Do not collect, store, transmit, or process personal data beyond what an approved feature requires.
 
-All names, places, stories, authors, and feed items must be mock data.
+For the implemented location verification:
+- coordinates exist only transiently during local classification;
+- raw coordinates are not retained, transmitted, logged, or displayed;
+- only safe derived UI fields are shown (for example city result / accuracy class).
 
-If a screen requires a user state, use fake local state only.
+All future feed names, places, stories, authors, and cards must use mock data until a later approved phase.
 
 ## Visual rule
 
@@ -147,13 +182,12 @@ The prototype should use a calm premium visual language:
 
 ## Pilot context
 
-Use this pilot context for prototype copy and examples:
+Current pilot cities for the implemented local-access phase:
 
-- Country: Italy
-- City: Milano
-- Neighbourhood: Brera
+- Country: Italy — City: Milano
+- Country: Germany — City: Munich
 
-Do not switch to Munich unless explicitly requested.
+Neighbourhood selection (for example Brera / Maxvorstadt) is not implemented.
 
 ## Cursor scope rule
 
@@ -170,13 +204,3 @@ The correct sequence is:
 5. screen specifications;
 6. reference assets;
 7. one screen implementation at a time.
-
-## Acceptance criteria for this document
-
-This task is complete only if:
-
-- docs/MVP_SCOPE.md is created;
-- no other files are modified;
-- no code is written;
-- no UI is built;
-- no package or config file is changed.
