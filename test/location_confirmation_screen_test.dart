@@ -15,9 +15,7 @@ import 'package:town_safe_space_mobile/services/foreground_position_reader.dart'
 import 'package:town_safe_space_mobile/services/location_permission_service.dart';
 
 class _FakeLocationPermissionService extends LocationPermissionService {
-  _FakeLocationPermissionService({
-    required this.state,
-  });
+  _FakeLocationPermissionService({required this.state});
 
   ForegroundLocationState state;
 
@@ -45,10 +43,7 @@ class _FakeLocationPermissionService extends LocationPermissionService {
 }
 
 class _FakeClassificationBridge extends ForegroundCityClassificationBridge {
-  _FakeClassificationBridge({
-    this.result,
-    this.failure,
-  });
+  _FakeClassificationBridge({this.result, this.failure});
 
   CityBoundaryClassificationResult? result;
   ForegroundCityClassificationBridgeFailure? failure;
@@ -94,7 +89,8 @@ Future<void> _pumpScreen(
 
   await tester.pumpWidget(
     MaterialApp(
-      home: home ??
+      home:
+          home ??
           LocationConfirmationScreen(
             key: UniqueKey(),
             selectedCountry: country,
@@ -123,15 +119,14 @@ void _expectNoDeveloperTerms(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('Milano Continua opens Italian Location Confirmation',
-      (WidgetTester tester) async {
+  testWidgets('Milano Continua opens Italian Location Confirmation', (
+    WidgetTester tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      const MaterialApp(
-        home: SelectCityScreen(selectedCountry: 'Italy'),
-      ),
+      const MaterialApp(home: SelectCityScreen(selectedCountry: 'Italy')),
     );
     await tester.pump();
 
@@ -151,15 +146,14 @@ void main() {
     expect(find.text('Non ora'), findsOneWidget);
   });
 
-  testWidgets('Munich Weiter opens German Location Confirmation',
-      (WidgetTester tester) async {
+  testWidgets('Munich Weiter opens German Location Confirmation', (
+    WidgetTester tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      const MaterialApp(
-        home: SelectCityScreen(selectedCountry: 'Germany'),
-      ),
+      const MaterialApp(home: SelectCityScreen(selectedCountry: 'Germany')),
     );
     await tester.pump();
 
@@ -179,8 +173,9 @@ void main() {
     expect(find.text('Nicht jetzt'), findsOneWidget);
   });
 
-  testWidgets('1-4. bridge called once after granted; duplicate taps ignored',
-      (WidgetTester tester) async {
+  testWidgets('1-4. bridge called once after granted; duplicate taps ignored', (
+    WidgetTester tester,
+  ) async {
     final Completer<void> gate = Completer<void>();
     final _FakeClassificationBridge blockingBridge = _FakeClassificationBridge(
       result: _result(
@@ -219,8 +214,9 @@ void main() {
     expect(find.byType(LocationConfirmationScreen), findsOneWidget);
   });
 
-  testWidgets('5. requesting-permission progress copy appears',
-      (WidgetTester tester) async {
+  testWidgets('5. requesting-permission progress copy appears', (
+    WidgetTester tester,
+  ) async {
     final Completer<void> gate = Completer<void>();
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
       result: _result(
@@ -254,8 +250,9 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('6. reading-and-classifying progress copy appears',
-      (WidgetTester tester) async {
+  testWidgets('6. reading-and-classifying progress copy appears', (
+    WidgetTester tester,
+  ) async {
     final Completer<void> gate = Completer<void>();
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
@@ -356,8 +353,9 @@ void main() {
     expect(find.text('Warum wird dein Standort benötigt?'), findsOneWidget);
   });
 
-  testWidgets('9. inside + limited IT/DE copy; retry optional',
-      (WidgetTester tester) async {
+  testWidgets('9. inside + limited IT/DE copy; retry optional', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
@@ -425,8 +423,9 @@ void main() {
     );
   });
 
-  testWidgets('10. inside + insufficient IT/DE copy; no Change city',
-      (WidgetTester tester) async {
+  testWidgets('10. inside + insufficient IT/DE copy; no Change city', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
@@ -487,8 +486,9 @@ void main() {
     expect(find.byKey(const Key('location_change_city')), findsNothing);
   });
 
-  testWidgets('11. outside + good IT/DE copy with Change city',
-      (WidgetTester tester) async {
+  testWidgets('11. outside + good IT/DE copy with Change city', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
@@ -604,8 +604,9 @@ void main() {
     );
   });
 
-  testWidgets('13. outside + insufficient IT/DE maps to uncertain',
-      (WidgetTester tester) async {
+  testWidgets('13. outside + insufficient IT/DE maps to uncertain', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
@@ -664,8 +665,9 @@ void main() {
     );
   });
 
-  testWidgets('14-16. boundary + any accuracy maps to uncertain',
-      (WidgetTester tester) async {
+  testWidgets('14-16. boundary + any accuracy maps to uncertain', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
 
@@ -701,8 +703,8 @@ void main() {
   testWidgets('18. services disabled mapping', (WidgetTester tester) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(
-      state: ForegroundLocationState.serviceDisabled,
-    );
+          state: ForegroundLocationState.serviceDisabled,
+        );
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
       result: _result(
         city: 'Milano',
@@ -765,20 +767,19 @@ void main() {
     expect(bridge.callCount, 0);
     expect(find.text('Autorizzazione richiesta'), findsOneWidget);
     expect(
-      find.text(
-        'TOWN usa la posizione solo per questa verifica una tantum.',
-      ),
+      find.text('TOWN usa la posizione solo per questa verifica una tantum.'),
       findsOneWidget,
     );
     expect(find.widgetWithText(FilledButton, 'Riprova'), findsOneWidget);
   });
 
-  testWidgets('20. permission permanently denied mapping',
-      (WidgetTester tester) async {
+  testWidgets('20. permission permanently denied mapping', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(
-      state: ForegroundLocationState.permanentlyDenied,
-    );
+          state: ForegroundLocationState.permanentlyDenied,
+        );
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
       result: _result(
         city: 'Milano',
@@ -806,8 +807,9 @@ void main() {
     );
   });
 
-  testWidgets('21-25. timeout and technical bridge failures',
-      (WidgetTester tester) async {
+  testWidgets('21-25. timeout and technical bridge failures', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
 
@@ -872,69 +874,73 @@ void main() {
   });
 
   testWidgets(
-      '26. busy keeps progress, clears busy flag, and allows later retry',
-      (WidgetTester tester) async {
-    final Completer<void> gate = Completer<void>();
-    final _FakeLocationPermissionService permission =
-        _FakeLocationPermissionService(state: ForegroundLocationState.granted);
-    final _FakeClassificationBridge bridge = _GatedBusyBridge(gate: gate);
+    '26. busy keeps progress, clears busy flag, and allows later retry',
+    (WidgetTester tester) async {
+      final Completer<void> gate = Completer<void>();
+      final _FakeLocationPermissionService permission =
+          _FakeLocationPermissionService(
+            state: ForegroundLocationState.granted,
+          );
+      final _FakeClassificationBridge bridge = _GatedBusyBridge(gate: gate);
 
-    await _pumpScreen(
-      tester,
-      country: 'Italy',
-      city: 'Milano',
-      permission: permission,
-      bridge: bridge,
-    );
+      await _pumpScreen(
+        tester,
+        country: 'Italy',
+        city: 'Milano',
+        permission: permission,
+        bridge: bridge,
+      );
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
-    await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
+      await tester.pump();
 
-    // Progress remains visible while the busy failure is still in-flight.
-    expect(find.text('Verifica della posizione in corso…'), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.text('Qualcosa non ha funzionato'), findsNothing);
-    expect(find.textContaining('busy'), findsNothing);
-    expect(bridge.callCount, 1);
+      // Progress remains visible while the busy failure is still in-flight.
+      expect(find.text('Verifica della posizione in corso…'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('Qualcosa non ha funzionato'), findsNothing);
+      expect(find.textContaining('busy'), findsNothing);
+      expect(bridge.callCount, 1);
 
-    // Duplicate tap while busy must not start a second bridge call.
-    await tester.tap(find.byKey(const Key('location_primary_action')));
-    await tester.pump();
-    expect(bridge.callCount, 1);
+      // Duplicate tap while busy must not start a second bridge call.
+      await tester.tap(find.byKey(const Key('location_primary_action')));
+      await tester.pump();
+      expect(bridge.callCount, 1);
 
-    gate.complete();
-    await tester.pumpAndSettle();
+      gate.complete();
+      await tester.pumpAndSettle();
 
-    // After settle: no idle flash, progress copy kept, no technical error,
-    // spinner gone, primary re-enabled for a later retry.
-    expect(find.text('Verifica della posizione in corso…'), findsOneWidget);
-    expect(find.text('Qualcosa non ha funzionato'), findsNothing);
-    expect(find.textContaining('busy'), findsNothing);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(
-      find.widgetWithText(FilledButton, 'Verifica posizione'),
-      findsOneWidget,
-    );
-    expect(bridge.callCount, 1);
+      // After settle: no idle flash, progress copy kept, no technical error,
+      // spinner gone, primary re-enabled for a later retry.
+      expect(find.text('Verifica della posizione in corso…'), findsOneWidget);
+      expect(find.text('Qualcosa non ha funzionato'), findsNothing);
+      expect(find.textContaining('busy'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(
+        find.widgetWithText(FilledButton, 'Verifica posizione'),
+        findsOneWidget,
+      );
+      expect(bridge.callCount, 1);
 
-    // Later normal retry can proceed once busy is cleared.
-    bridge.failure = null;
-    bridge.result = _result(
-      city: 'Milano',
-      containment: PointContainment.inside,
-      accuracyMeters: 20,
-    );
-    await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
-    await tester.pumpAndSettle();
+      // Later normal retry can proceed once busy is cleared.
+      bridge.failure = null;
+      bridge.result = _result(
+        city: 'Milano',
+        containment: PointContainment.inside,
+        accuracyMeters: 20,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
+      await tester.pumpAndSettle();
 
-    expect(bridge.callCount, 2);
-    expect(find.text('Posizione verificata'), findsOneWidget);
-    expect(find.text('Verifica della posizione in corso…'), findsNothing);
-    expect(find.byType(LocationConfirmationScreen), findsOneWidget);
-  });
+      expect(bridge.callCount, 2);
+      expect(find.text('Posizione verificata'), findsOneWidget);
+      expect(find.text('Verifica della posizione in corso…'), findsNothing);
+      expect(find.byType(LocationConfirmationScreen), findsOneWidget);
+    },
+  );
 
-  testWidgets('27-28. Change city pops to Select City preserving selection',
-      (WidgetTester tester) async {
+  testWidgets('27-28. Change city pops to Select City preserving selection', (
+    WidgetTester tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -1008,8 +1014,9 @@ void main() {
     expect(pushesBefore, greaterThan(0));
   });
 
-  testWidgets('29. Not now returns to WelcomeScreen',
-      (WidgetTester tester) async {
+  testWidgets('29. Not now returns to WelcomeScreen', (
+    WidgetTester tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -1032,8 +1039,9 @@ void main() {
     );
     await tester.pump();
 
-    final NavigatorState nav =
-        tester.state<NavigatorState>(find.byType(Navigator));
+    final NavigatorState nav = tester.state<NavigatorState>(
+      find.byType(Navigator),
+    );
     nav.push(
       MaterialPageRoute<void>(
         builder: (_) => LocationConfirmationScreen(
@@ -1060,15 +1068,14 @@ void main() {
     expect(bridge.callCount, 0);
   });
 
-  testWidgets('30. Back returns to Select City preserving city',
-      (WidgetTester tester) async {
+  testWidgets('30. Back returns to Select City preserving city', (
+    WidgetTester tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      const MaterialApp(
-        home: SelectCityScreen(selectedCountry: 'Italy'),
-      ),
+      const MaterialApp(home: SelectCityScreen(selectedCountry: 'Italy')),
     );
     await tester.pump();
 
@@ -1089,44 +1096,47 @@ void main() {
     expect(find.text('Milano'), findsOneWidget);
   });
 
-  testWidgets('31-33. confirmed stays on screen; privacy visible; no Continue',
-      (WidgetTester tester) async {
-    final _FakeLocationPermissionService permission =
-        _FakeLocationPermissionService(state: ForegroundLocationState.granted);
-    final _FakeClassificationBridge bridge = _FakeClassificationBridge(
-      result: _result(
+  testWidgets(
+    '31-33. confirmed stays on screen; privacy visible; Continue to TOWN',
+    (WidgetTester tester) async {
+      final _FakeLocationPermissionService permission =
+          _FakeLocationPermissionService(
+            state: ForegroundLocationState.granted,
+          );
+      final _FakeClassificationBridge bridge = _FakeClassificationBridge(
+        result: _result(
+          city: 'Milano',
+          containment: PointContainment.inside,
+          accuracyMeters: 15,
+        ),
+      );
+
+      await _pumpScreen(
+        tester,
+        country: 'Italy',
         city: 'Milano',
-        containment: PointContainment.inside,
-        accuracyMeters: 15,
-      ),
-    );
+        permission: permission,
+        bridge: bridge,
+      );
 
-    await _pumpScreen(
-      tester,
-      country: 'Italy',
-      city: 'Milano',
-      permission: permission,
-      bridge: bridge,
-    );
+      await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
-    await tester.pumpAndSettle();
+      expect(find.byType(LocationConfirmationScreen), findsOneWidget);
+      expect(find.text('Posizione verificata'), findsOneWidget);
+      expect(find.byKey(const Key('continue_to_town')), findsOneWidget);
+      expect(find.text('Continue to TOWN'), findsOneWidget);
+      expect(find.text('Perché è richiesta la posizione?'), findsOneWidget);
+      expect(
+        find.text('Non memorizziamo né trasmettiamo le tue coordinate.'),
+        findsOneWidget,
+      );
+    },
+  );
 
-    expect(find.byType(LocationConfirmationScreen), findsOneWidget);
-    expect(find.text('Posizione verificata'), findsOneWidget);
-    expect(find.text('Continua'), findsNothing);
-    expect(find.text('Weiter'), findsNothing);
-    expect(find.text('Perché è richiesta la posizione?'), findsOneWidget);
-    expect(
-      find.text(
-        'Non memorizziamo né trasmettiamo le tue coordinate.',
-      ),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('34. privacy card remains visible after error',
-      (WidgetTester tester) async {
+  testWidgets('34. privacy card remains visible after error', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.granted);
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
@@ -1175,8 +1185,9 @@ void main() {
     expect(bridge.callCount, 1);
   });
 
-  testWidgets('bridge not called when permission denied',
-      (WidgetTester tester) async {
+  testWidgets('bridge not called when permission denied', (
+    WidgetTester tester,
+  ) async {
     final _FakeLocationPermissionService permission =
         _FakeLocationPermissionService(state: ForegroundLocationState.denied);
     final _FakeClassificationBridge bridge = _FakeClassificationBridge(
@@ -1223,25 +1234,29 @@ void main() {
     );
   });
 
-  test('3/37. screen verification flow does not use ForegroundPositionReader.readOnce',
-      () {
-    final String screen =
-        File('lib/screens/location_confirmation_screen.dart').readAsStringSync();
-    // Thresholds live in the reader file; the class itself must not be used.
-    expect(screen.contains('ForegroundAccuracyThresholds'), isTrue);
-    expect(screen.contains('ForegroundPositionReader'), isFalse);
-    expect(screen.contains('readOnce'), isFalse);
-    expect(screen.contains('positionReader'), isFalse);
-    expect(screen.contains('getPositionStream'), isFalse);
-    expect(screen.contains('getLastKnownPosition'), isFalse);
-    expect(screen.contains('getCurrentPosition'), isFalse);
-    expect(screen.contains('readAndClassifyOnce'), isTrue);
-    expect(screen.contains('ForegroundCityClassificationBridge'), isTrue);
-  });
+  test(
+    '3/37. screen verification flow does not use ForegroundPositionReader.readOnce',
+    () {
+      final String screen = File(
+        'lib/screens/location_confirmation_screen.dart',
+      ).readAsStringSync();
+      // Thresholds live in the reader file; the class itself must not be used.
+      expect(screen.contains('ForegroundAccuracyThresholds'), isTrue);
+      expect(screen.contains('ForegroundPositionReader'), isFalse);
+      expect(screen.contains('readOnce'), isFalse);
+      expect(screen.contains('positionReader'), isFalse);
+      expect(screen.contains('getPositionStream'), isFalse);
+      expect(screen.contains('getLastKnownPosition'), isFalse);
+      expect(screen.contains('getCurrentPosition'), isFalse);
+      expect(screen.contains('readAndClassifyOnce'), isTrue);
+      expect(screen.contains('ForegroundCityClassificationBridge'), isTrue);
+    },
+  );
 
   test('35/39 source scan of LocationConfirmationScreen', () {
-    final String screen =
-        File('lib/screens/location_confirmation_screen.dart').readAsStringSync();
+    final String screen = File(
+      'lib/screens/location_confirmation_screen.dart',
+    ).readAsStringSync();
 
     final List<String> report = <String>[];
     void note(String token, bool present, String explanation) {
@@ -1273,8 +1288,16 @@ void main() {
             'Weiter',
           }.contains(token)) {
         // Hard-fail forbidden tokens except documented allowlist below.
-        if (token == 'Continue' || token == 'Continua' || token == 'Weiter') {
-          // Allowed only if absent from user-facing actions; assert absence.
+        if (token == 'Continue') {
+          // Feed V1 prototype entry uses exact approved "Continue to TOWN"
+          // in Italian and German copy constructors.
+          expect(screen.contains('Continue to TOWN'), isTrue);
+          expect(
+            'Continue to TOWN'.allMatches(screen).length,
+            2,
+            reason: 'Continue to TOWN only in IT/DE copy',
+          );
+        } else if (token == 'Continua' || token == 'Weiter') {
           expect(screen.contains(token), isFalse, reason: report.last);
         } else if (token == 'http') {
           // package imports may include https? check word boundary
@@ -1345,7 +1368,7 @@ void main() {
     note('eligible', screen.contains('eligible'), 'No eligibility');
     note('approved', screen.contains('approved'), 'No eligibility');
     note('rejected', screen.contains('rejected'), 'No eligibility');
-    note('Continue', screen.contains('Continue'), 'No Continue action');
+    note('Continue', screen.contains('Continue'), 'Continue to TOWN only');
     note('Continua', screen.contains('Continua'), 'No Continua action');
     note('Weiter', screen.contains('Weiter'), 'No Weiter action');
 
@@ -1359,24 +1382,20 @@ void main() {
   });
 
   test('Foreground permission config remains without background keys', () {
-    final String androidManifest =
-        File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+    final String androidManifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
     expect(androidManifest.contains('ACCESS_BACKGROUND_LOCATION'), isFalse);
-    expect(
-      androidManifest.contains('FOREGROUND_SERVICE_LOCATION'),
-      isFalse,
-    );
+    expect(androidManifest.contains('FOREGROUND_SERVICE_LOCATION'), isFalse);
 
     final String iosInfo = File('ios/Runner/Info.plist').readAsStringSync();
     expect(
-      RegExp(r'<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>')
-          .hasMatch(iosInfo),
+      RegExp(
+        r'<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>',
+      ).hasMatch(iosInfo),
       isFalse,
     );
-    expect(
-      RegExp(r'<key>UIBackgroundModes</key>').hasMatch(iosInfo),
-      isFalse,
-    );
+    expect(RegExp(r'<key>UIBackgroundModes</key>').hasMatch(iosInfo), isFalse);
   });
 }
 
@@ -1396,10 +1415,7 @@ class _RecordingNavigatorObserver extends NavigatorObserver {
 }
 
 class _BlockingPermissionService extends LocationPermissionService {
-  _BlockingPermissionService({
-    required this.state,
-    required this.gate,
-  });
+  _BlockingPermissionService({required this.state, required this.gate});
 
   final ForegroundLocationState state;
   final Completer<void> gate;
@@ -1431,9 +1447,8 @@ class _GatedBridge extends _FakeClassificationBridge {
 }
 
 class _GatedBusyBridge extends _FakeClassificationBridge {
-  _GatedBusyBridge({
-    required this.gate,
-  }) : super(failure: ForegroundCityClassificationBridgeFailure.busy);
+  _GatedBusyBridge({required this.gate})
+    : super(failure: ForegroundCityClassificationBridgeFailure.busy);
 
   final Completer<void> gate;
   bool _busyEmitted = false;

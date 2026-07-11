@@ -63,6 +63,9 @@ flutter:
 
   assets:
     - assets/images/welcome_screen.png
+    - assets/images/feed/signal_citta_studi_pavement.jpg
+    - assets/images/feed/signal_porta_romana_lighting.jpg
+    - assets/images/feed/signal_lorenteggio_works.jpg
     - assets/flags/italy.png
     - assets/flags/germany.png
     - assets/cities/milano.png

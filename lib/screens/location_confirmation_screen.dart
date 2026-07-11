@@ -5,6 +5,7 @@ import '../services/city_boundary_classification_service.dart';
 import '../services/foreground_city_classification_bridge.dart';
 import '../services/foreground_position_reader.dart';
 import '../services/location_permission_service.dart';
+import 'town_feed_screen.dart';
 
 /// Explicit internal UI states for location verification.
 ///
@@ -39,7 +40,7 @@ class LocationConfirmationScreen extends StatefulWidget {
     this.permissionService = const LocationPermissionService(),
     ForegroundCityClassificationBridge? classificationBridge,
   }) : classificationBridge =
-            classificationBridge ?? ForegroundCityClassificationBridge();
+           classificationBridge ?? ForegroundCityClassificationBridge();
 
   /// Canonical country from Select City (`Italy` or `Germany`).
   final String selectedCountry;
@@ -123,8 +124,8 @@ class _LocationConfirmationScreenState
     });
 
     try {
-      final ForegroundLocationState permission =
-          await widget.permissionService.ensureForegroundPermission();
+      final ForegroundLocationState permission = await widget.permissionService
+          .ensureForegroundPermission();
       if (!mounted) {
         return;
       }
@@ -142,10 +143,9 @@ class _LocationConfirmationScreenState
       });
 
       try {
-        final CityBoundaryClassificationResult result =
-            await widget.classificationBridge.readAndClassifyOnce(
-          selectedCity: widget.selectedCity,
-        );
+        final CityBoundaryClassificationResult result = await widget
+            .classificationBridge
+            .readAndClassifyOnce(selectedCity: widget.selectedCity);
         if (!mounted) {
           return;
         }
@@ -200,8 +200,8 @@ class _LocationConfirmationScreenState
 
     final bool good =
         accuracyMeters <= ForegroundAccuracyThresholds.goodMaxMeters;
-    final bool limited = accuracyMeters >
-            ForegroundAccuracyThresholds.goodMaxMeters &&
+    final bool limited =
+        accuracyMeters > ForegroundAccuracyThresholds.goodMaxMeters &&
         accuracyMeters <= ForegroundAccuracyThresholds.limitedMaxMeters;
 
     if (containment == PointContainment.boundary) {
@@ -248,16 +248,17 @@ class _LocationConfirmationScreenState
       case ForegroundCityClassificationBridgeFailure.permissionDenied:
         _uiState = LocationVerificationUiState.permissionDenied;
         _changeCityVisible = false;
-      case ForegroundCityClassificationBridgeFailure.permissionPermanentlyDenied:
+      case ForegroundCityClassificationBridgeFailure
+          .permissionPermanentlyDenied:
         _uiState = LocationVerificationUiState.permissionPermanentlyDenied;
         _changeCityVisible = false;
       case ForegroundCityClassificationBridgeFailure.timeout:
         _uiState = LocationVerificationUiState.timeout;
         _changeCityVisible = true;
       case ForegroundCityClassificationBridgeFailure.positionReadFailed ||
-            ForegroundCityClassificationBridgeFailure.boundaryAssetFailed ||
-            ForegroundCityClassificationBridgeFailure.classificationFailed ||
-            ForegroundCityClassificationBridgeFailure.unsupportedCity:
+          ForegroundCityClassificationBridgeFailure.boundaryAssetFailed ||
+          ForegroundCityClassificationBridgeFailure.classificationFailed ||
+          ForegroundCityClassificationBridgeFailure.unsupportedCity:
         _uiState = LocationVerificationUiState.technicalError;
         _changeCityVisible = true;
       case ForegroundCityClassificationBridgeFailure.busy:
@@ -327,7 +328,8 @@ class _LocationConfirmationScreenState
           body: copy.boundaryUncertainBody(city),
         );
       case LocationVerificationUiState.outsideSelectedCity:
-        final bool limited = accuracy != null &&
+        final bool limited =
+            accuracy != null &&
             accuracy > ForegroundAccuracyThresholds.goodMaxMeters &&
             accuracy <= ForegroundAccuracyThresholds.limitedMaxMeters;
         return _StatusContent(
@@ -352,10 +354,7 @@ class _LocationConfirmationScreenState
           body: copy.permissionPermanentlyDeniedBody,
         );
       case LocationVerificationUiState.timeout:
-        return _StatusContent(
-          title: copy.timeoutTitle,
-          body: copy.timeoutBody,
-        );
+        return _StatusContent(title: copy.timeoutTitle, body: copy.timeoutBody);
       case LocationVerificationUiState.technicalError:
         return _StatusContent(
           title: copy.technicalErrorTitle,
@@ -421,6 +420,19 @@ class _LocationConfirmationScreenState
   bool get _showPrimaryButton =>
       _isProgressState || _primaryLabel(_copy) != null;
 
+  /// Eligible local-access success states for the Feed V1 prototype entry.
+  ///
+  /// Does not imply paid access, entitlement persistence, or authentication.
+  bool get _canContinueToTown =>
+      _uiState == LocationVerificationUiState.confirmedGood ||
+      _uiState == LocationVerificationUiState.confirmedLimited;
+
+  void _onContinueToTown() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const TownFeedScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     final _LocationConfirmationCopy copy = _copy;
@@ -450,7 +462,9 @@ class _LocationConfirmationScreenState
                             alignment: Alignment.centerLeft,
                             child: IconButton(
                               onPressed: _onBack,
-                              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                              ),
                               color: _white,
                               iconSize: 18,
                               padding: EdgeInsets.zero,
@@ -536,6 +550,31 @@ class _LocationConfirmationScreenState
                       ),
                     ),
                   ),
+                  if (_canContinueToTown && !_isBusy) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: FilledButton(
+                        key: const Key('continue_to_town'),
+                        onPressed: _onContinueToTown,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _gold,
+                          foregroundColor: _background,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        child: Text(copy.continueToTown),
+                      ),
+                    ),
+                  ],
                   if (_showPrimaryButton) ...[
                     const SizedBox(height: 12),
                     SizedBox(
@@ -545,10 +584,15 @@ class _LocationConfirmationScreenState
                         key: const Key('location_primary_action'),
                         onPressed: _primaryCallback(),
                         style: FilledButton.styleFrom(
-                          backgroundColor: _gold,
-                          foregroundColor: _background,
-                          disabledBackgroundColor:
-                              _gold.withValues(alpha: 0.45),
+                          backgroundColor: _canContinueToTown
+                              ? const Color(0xFF2A2A2A)
+                              : _gold,
+                          foregroundColor: _canContinueToTown
+                              ? _white
+                              : _background,
+                          disabledBackgroundColor: _gold.withValues(
+                            alpha: 0.45,
+                          ),
                           disabledForegroundColor: _background,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -632,11 +676,7 @@ class _LocationConfirmationScreenState
 }
 
 class _StatusContent {
-  const _StatusContent({
-    this.title,
-    required this.body,
-    this.guidance,
-  });
+  const _StatusContent({this.title, required this.body, this.guidance});
 
   final String? title;
   final String body;
@@ -682,116 +722,117 @@ class _LocationConfirmationCopy {
     required this.timeoutBody,
     required this.technicalErrorTitle,
     required this.technicalErrorBody,
+    required this.continueToTown,
   });
 
   const _LocationConfirmationCopy.italian()
-      : title = 'Conferma la tua posizione',
-        introductionTemplate =
-            'Per mantenere TOWN una comunità reale e locale, verifichiamo che ti trovi a {city}.',
-        cardTitle = 'Perché è richiesta la posizione?',
-        cardText = 'Ci aiuta a mantenere TOWN locale, sicuro e affidabile.',
-        point1 =
-            'Usiamo la tua posizione solo una volta, in primo piano, per questa verifica.',
-        point2 = 'Non memorizziamo né trasmettiamo le tue coordinate.',
-        point3 = 'Non monitoriamo la tua posizione in background.',
-        primaryIdle = 'Verifica posizione',
-        notNow = 'Non ora',
-        backTooltip = 'Indietro',
-        changeCity = 'Cambia città',
-        tryAgain = 'Riprova',
-        openAppSettings = 'Apri le impostazioni dell’app',
-        openLocationSettings = 'Apri le impostazioni di localizzazione',
-        checkingPermission = 'Controllo dell’autorizzazione…',
-        readingAndClassifying = 'Verifica della posizione in corso…',
-        confirmedTitle = 'Posizione verificata',
-        confirmedGoodBodyTemplate =
-            'La verifica indica che ti trovi a {city}. Precisione: circa {accuracy} m.',
-        confirmedLimitedBodyTemplate =
-            'La verifica indica che ti trovi a {city}. Precisione limitata: circa {accuracy} m.',
-        limitedRetryGuidance =
-            'Puoi riprovare per una misura più precisa.',
-        notConfirmedTitle = 'Posizione non confermata',
-        insideInsufficientBodyTemplate =
-            'La precisione non è sufficiente per confermare che ti trovi a {city}. Riprova in uno spazio aperto.',
-        mismatchTitle = 'Posizione non corrispondente',
-        outsideGoodBodyTemplate =
-            'La lettura non corrisponde a {city}. Puoi riprovare o cambiare città.',
-        outsideLimitedBodyTemplate =
-            'La lettura non corrisponde a {city}. Precisione limitata: circa {accuracy} m. Puoi riprovare o cambiare città.',
-        outsideInsufficientBodyTemplate =
-            'Non possiamo confermare con certezza la tua posizione rispetto a {city}. Riprova in uno spazio aperto.',
-        boundaryUncertainBodyTemplate =
-            'Non siamo riusciti a confermare con certezza che ti trovi a {city}. Riprova.',
-        servicesDisabledTitle = 'Localizzazione disattivata',
-        servicesDisabledBody =
-            'Attiva i servizi di localizzazione per completare la verifica.',
-        permissionDeniedTitle = 'Autorizzazione richiesta',
-        permissionDeniedBody =
-            'TOWN usa la posizione solo per questa verifica una tantum.',
-        permissionPermanentlyDeniedTitle = 'Autorizzazione necessaria',
-        permissionPermanentlyDeniedBody =
-            'Abilita l’accesso alla posizione nelle impostazioni dell’app.',
-        timeoutTitle = 'Tempo scaduto',
-        timeoutBody =
-            'Non siamo riusciti a rilevare la posizione in tempo. Riprova.',
-        technicalErrorTitle = 'Qualcosa non ha funzionato',
-        technicalErrorBody =
-            'Non siamo riusciti a completare la verifica. Riprova.';
+    : title = 'Conferma la tua posizione',
+      introductionTemplate =
+          'Per mantenere TOWN una comunità reale e locale, verifichiamo che ti trovi a {city}.',
+      cardTitle = 'Perché è richiesta la posizione?',
+      cardText = 'Ci aiuta a mantenere TOWN locale, sicuro e affidabile.',
+      point1 =
+          'Usiamo la tua posizione solo una volta, in primo piano, per questa verifica.',
+      point2 = 'Non memorizziamo né trasmettiamo le tue coordinate.',
+      point3 = 'Non monitoriamo la tua posizione in background.',
+      primaryIdle = 'Verifica posizione',
+      notNow = 'Non ora',
+      backTooltip = 'Indietro',
+      changeCity = 'Cambia città',
+      tryAgain = 'Riprova',
+      openAppSettings = 'Apri le impostazioni dell’app',
+      openLocationSettings = 'Apri le impostazioni di localizzazione',
+      checkingPermission = 'Controllo dell’autorizzazione…',
+      readingAndClassifying = 'Verifica della posizione in corso…',
+      confirmedTitle = 'Posizione verificata',
+      confirmedGoodBodyTemplate =
+          'La verifica indica che ti trovi a {city}. Precisione: circa {accuracy} m.',
+      confirmedLimitedBodyTemplate =
+          'La verifica indica che ti trovi a {city}. Precisione limitata: circa {accuracy} m.',
+      limitedRetryGuidance = 'Puoi riprovare per una misura più precisa.',
+      notConfirmedTitle = 'Posizione non confermata',
+      insideInsufficientBodyTemplate =
+          'La precisione non è sufficiente per confermare che ti trovi a {city}. Riprova in uno spazio aperto.',
+      mismatchTitle = 'Posizione non corrispondente',
+      outsideGoodBodyTemplate =
+          'La lettura non corrisponde a {city}. Puoi riprovare o cambiare città.',
+      outsideLimitedBodyTemplate =
+          'La lettura non corrisponde a {city}. Precisione limitata: circa {accuracy} m. Puoi riprovare o cambiare città.',
+      outsideInsufficientBodyTemplate =
+          'Non possiamo confermare con certezza la tua posizione rispetto a {city}. Riprova in uno spazio aperto.',
+      boundaryUncertainBodyTemplate =
+          'Non siamo riusciti a confermare con certezza che ti trovi a {city}. Riprova.',
+      servicesDisabledTitle = 'Localizzazione disattivata',
+      servicesDisabledBody =
+          'Attiva i servizi di localizzazione per completare la verifica.',
+      permissionDeniedTitle = 'Autorizzazione richiesta',
+      permissionDeniedBody =
+          'TOWN usa la posizione solo per questa verifica una tantum.',
+      permissionPermanentlyDeniedTitle = 'Autorizzazione necessaria',
+      permissionPermanentlyDeniedBody =
+          'Abilita l’accesso alla posizione nelle impostazioni dell’app.',
+      timeoutTitle = 'Tempo scaduto',
+      timeoutBody =
+          'Non siamo riusciti a rilevare la posizione in tempo. Riprova.',
+      technicalErrorTitle = 'Qualcosa non ha funzionato',
+      technicalErrorBody =
+          'Non siamo riusciti a completare la verifica. Riprova.',
+      continueToTown = 'Continue to TOWN';
 
   const _LocationConfirmationCopy.german()
-      : title = 'Bestätige deinen Standort',
-        introductionTemplate =
-            'Damit TOWN eine echte lokale Gemeinschaft bleibt, prüfen wir, ob du dich in {city} befindest.',
-        cardTitle = 'Warum wird dein Standort benötigt?',
-        cardText = 'Damit TOWN lokal, sicher und vertrauenswürdig bleibt.',
-        point1 =
-            'Wir nutzen deinen Standort nur einmalig im Vordergrund für diese Prüfung.',
-        point2 = 'Wir speichern und übermitteln deine Koordinaten nicht.',
-        point3 =
-            'Wir verfolgen deinen Standort nicht im Hintergrund.',
-        primaryIdle = 'Standort prüfen',
-        notNow = 'Nicht jetzt',
-        backTooltip = 'Zurück',
-        changeCity = 'Stadt ändern',
-        tryAgain = 'Erneut versuchen',
-        openAppSettings = 'App-Einstellungen öffnen',
-        openLocationSettings = 'Ortungseinstellungen öffnen',
-        checkingPermission = 'Berechtigung wird geprüft…',
-        readingAndClassifying = 'Standort wird geprüft…',
-        confirmedTitle = 'Standort bestätigt',
-        confirmedGoodBodyTemplate =
-            'Die Prüfung zeigt, dass du dich in {city} befindest. Ungefähre Genauigkeit: {accuracy} m.',
-        confirmedLimitedBodyTemplate =
-            'Die Prüfung zeigt, dass du dich in {city} befindest. Eingeschränkte Genauigkeit: ungefähr {accuracy} m.',
-        limitedRetryGuidance =
-            'Du kannst es für eine präzisere Messung erneut versuchen.',
-        notConfirmedTitle = 'Standort nicht bestätigt',
-        insideInsufficientBodyTemplate =
-            'Die Genauigkeit reicht nicht aus, um zu bestätigen, dass du dich in {city} befindest. Versuche es erneut im Freien.',
-        mismatchTitle = 'Standort stimmt nicht überein',
-        outsideGoodBodyTemplate =
-            'Die Standortprüfung stimmt nicht mit {city} überein. Du kannst es erneut versuchen oder die Stadt ändern.',
-        outsideLimitedBodyTemplate =
-            'Die Standortprüfung stimmt nicht mit {city} überein. Die Genauigkeit ist eingeschränkt: ungefähr {accuracy} m. Du kannst es erneut versuchen oder die Stadt ändern.',
-        outsideInsufficientBodyTemplate =
-            'Wir können deine Position im Vergleich zu {city} nicht sicher bestätigen. Versuche es erneut im Freien.',
-        boundaryUncertainBodyTemplate =
-            'Wir konnten nicht sicher bestätigen, dass du dich in {city} befindest. Versuche es erneut.',
-        servicesDisabledTitle = 'Ortung deaktiviert',
-        servicesDisabledBody =
-            'Aktiviere die Ortungsdienste, um die Prüfung abzuschließen.',
-        permissionDeniedTitle = 'Berechtigung erforderlich',
-        permissionDeniedBody =
-            'TOWN nutzt den Standort nur für diese einmalige Prüfung.',
-        permissionPermanentlyDeniedTitle = 'Berechtigung erforderlich',
-        permissionPermanentlyDeniedBody =
-            'Aktiviere den Standortzugriff in den App-Einstellungen.',
-        timeoutTitle = 'Zeitüberschreitung',
-        timeoutBody =
-            'Der Standort konnte nicht rechtzeitig ermittelt werden. Versuche es erneut.',
-        technicalErrorTitle = 'Etwas ist schiefgelaufen',
-        technicalErrorBody =
-            'Die Prüfung konnte nicht abgeschlossen werden. Versuche es erneut.';
+    : title = 'Bestätige deinen Standort',
+      introductionTemplate =
+          'Damit TOWN eine echte lokale Gemeinschaft bleibt, prüfen wir, ob du dich in {city} befindest.',
+      cardTitle = 'Warum wird dein Standort benötigt?',
+      cardText = 'Damit TOWN lokal, sicher und vertrauenswürdig bleibt.',
+      point1 =
+          'Wir nutzen deinen Standort nur einmalig im Vordergrund für diese Prüfung.',
+      point2 = 'Wir speichern und übermitteln deine Koordinaten nicht.',
+      point3 = 'Wir verfolgen deinen Standort nicht im Hintergrund.',
+      primaryIdle = 'Standort prüfen',
+      notNow = 'Nicht jetzt',
+      backTooltip = 'Zurück',
+      changeCity = 'Stadt ändern',
+      tryAgain = 'Erneut versuchen',
+      openAppSettings = 'App-Einstellungen öffnen',
+      openLocationSettings = 'Ortungseinstellungen öffnen',
+      checkingPermission = 'Berechtigung wird geprüft…',
+      readingAndClassifying = 'Standort wird geprüft…',
+      confirmedTitle = 'Standort bestätigt',
+      confirmedGoodBodyTemplate =
+          'Die Prüfung zeigt, dass du dich in {city} befindest. Ungefähre Genauigkeit: {accuracy} m.',
+      confirmedLimitedBodyTemplate =
+          'Die Prüfung zeigt, dass du dich in {city} befindest. Eingeschränkte Genauigkeit: ungefähr {accuracy} m.',
+      limitedRetryGuidance =
+          'Du kannst es für eine präzisere Messung erneut versuchen.',
+      notConfirmedTitle = 'Standort nicht bestätigt',
+      insideInsufficientBodyTemplate =
+          'Die Genauigkeit reicht nicht aus, um zu bestätigen, dass du dich in {city} befindest. Versuche es erneut im Freien.',
+      mismatchTitle = 'Standort stimmt nicht überein',
+      outsideGoodBodyTemplate =
+          'Die Standortprüfung stimmt nicht mit {city} überein. Du kannst es erneut versuchen oder die Stadt ändern.',
+      outsideLimitedBodyTemplate =
+          'Die Standortprüfung stimmt nicht mit {city} überein. Die Genauigkeit ist eingeschränkt: ungefähr {accuracy} m. Du kannst es erneut versuchen oder die Stadt ändern.',
+      outsideInsufficientBodyTemplate =
+          'Wir können deine Position im Vergleich zu {city} nicht sicher bestätigen. Versuche es erneut im Freien.',
+      boundaryUncertainBodyTemplate =
+          'Wir konnten nicht sicher bestätigen, dass du dich in {city} befindest. Versuche es erneut.',
+      servicesDisabledTitle = 'Ortung deaktiviert',
+      servicesDisabledBody =
+          'Aktiviere die Ortungsdienste, um die Prüfung abzuschließen.',
+      permissionDeniedTitle = 'Berechtigung erforderlich',
+      permissionDeniedBody =
+          'TOWN nutzt den Standort nur für diese einmalige Prüfung.',
+      permissionPermanentlyDeniedTitle = 'Berechtigung erforderlich',
+      permissionPermanentlyDeniedBody =
+          'Aktiviere den Standortzugriff in den App-Einstellungen.',
+      timeoutTitle = 'Zeitüberschreitung',
+      timeoutBody =
+          'Der Standort konnte nicht rechtzeitig ermittelt werden. Versuche es erneut.',
+      technicalErrorTitle = 'Etwas ist schiefgelaufen',
+      technicalErrorBody =
+          'Die Prüfung konnte nicht abgeschlossen werden. Versuche es erneut.',
+      continueToTown = 'Continue to TOWN';
 
   final String title;
   final String introductionTemplate;
@@ -830,6 +871,7 @@ class _LocationConfirmationCopy {
   final String timeoutBody;
   final String technicalErrorTitle;
   final String technicalErrorBody;
+  final String continueToTown;
 
   String introduction(String city) =>
       introductionTemplate.replaceAll('{city}', city);
@@ -948,11 +990,7 @@ class _LocationIconBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _gold.withValues(alpha: 0.35), width: 1),
       ),
-      child: const Icon(
-        Icons.add_location_alt_rounded,
-        color: _gold,
-        size: 22,
-      ),
+      child: const Icon(Icons.add_location_alt_rounded, color: _gold, size: 22),
     );
   }
 }
@@ -972,11 +1010,7 @@ class _PrivacyPoint extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(top: 1),
-          child: Icon(
-            Icons.remove_red_eye_outlined,
-            color: _gold,
-            size: 18,
-          ),
+          child: Icon(Icons.remove_red_eye_outlined, color: _gold, size: 18),
         ),
         const SizedBox(width: 12),
         Expanded(
