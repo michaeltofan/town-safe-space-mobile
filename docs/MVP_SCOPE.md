@@ -39,6 +39,21 @@ It does **not** include:
 - moderation;
 - legal certification.
 
+## OWNER PREVIEW MODE — WEB PROTOTYPE ONLY
+
+Temporary web-only visual convenience for owner review of Feed V1.
+
+- Exact preview URL:
+  `https://michaeltofan.github.io/town-safe-space-mobile/?ownerPreview=feed`
+- Exact parameter: `ownerPreview=feed` (exact value match only)
+- Opens TOWN Feed V1 directly and bypasses location verification for this parameter only
+- Normal URL remains unchanged:
+  `https://michaeltofan.github.io/town-safe-space-mobile/`
+- Public and non-secure: GitHub Pages is public; anyone who knows the URL may open it
+- Visual testing only — not authentication, not authorization, not production entitlement
+- Ignored outside Flutter web; creates no account, membership, entitlement, cookie, or persisted privilege
+- Must be removed or replaced before production access control
+
 ## Product direction
 
 TOWN is local civic infrastructure for real people, useful information, and community.
