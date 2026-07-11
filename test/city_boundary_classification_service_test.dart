@@ -290,7 +290,101 @@ void main() {
       expect(up.accuracyMeters, 13);
     });
 
-    test('timestamp is UTC', () async {
+    test('zero accuracy is accepted and retained as 0', () async {
+      final CityBoundaryClassificationService service =
+          CityBoundaryClassificationService(
+        clock: () => DateTime.utc(2026, 7, 11, 12),
+      );
+      final CityBoundaryClassificationResult result =
+          await service.classifyCoordinatesTransiently(
+        selectedCity: 'Milano',
+        longitude: kMilanoInsideLon,
+        latitude: kMilanoInsideLat,
+        accuracyMeters: 0,
+      );
+      expect(result.accuracyMeters, 0);
+    });
+
+    test('NaN accuracy is rejected', () async {
+      final CityBoundaryClassificationService service =
+          CityBoundaryClassificationService(
+        clock: () => DateTime.utc(2026, 7, 11, 12),
+      );
+      try {
+        await service.classifyCoordinatesTransiently(
+          selectedCity: 'Milano',
+          longitude: kMilanoInsideLon,
+          latitude: kMilanoInsideLat,
+          accuracyMeters: double.nan,
+        );
+        fail('Expected CityBoundaryClassificationException');
+      } on CityBoundaryClassificationException catch (e) {
+        expect(e.message, 'Invalid accuracy value.');
+        expect(e.message.contains('NaN'), isFalse);
+        expect(e.toString().contains('NaN'), isFalse);
+      }
+    });
+
+    test('positive infinity accuracy is rejected', () async {
+      final CityBoundaryClassificationService service =
+          CityBoundaryClassificationService(
+        clock: () => DateTime.utc(2026, 7, 11, 12),
+      );
+      try {
+        await service.classifyCoordinatesTransiently(
+          selectedCity: 'Milano',
+          longitude: kMilanoInsideLon,
+          latitude: kMilanoInsideLat,
+          accuracyMeters: double.infinity,
+        );
+        fail('Expected CityBoundaryClassificationException');
+      } on CityBoundaryClassificationException catch (e) {
+        expect(e.message, 'Invalid accuracy value.');
+        expect(e.message.contains('Infinity'), isFalse);
+        expect(e.toString().contains('Infinity'), isFalse);
+      }
+    });
+
+    test('negative infinity accuracy is rejected', () async {
+      final CityBoundaryClassificationService service =
+          CityBoundaryClassificationService(
+        clock: () => DateTime.utc(2026, 7, 11, 12),
+      );
+      try {
+        await service.classifyCoordinatesTransiently(
+          selectedCity: 'Milano',
+          longitude: kMilanoInsideLon,
+          latitude: kMilanoInsideLat,
+          accuracyMeters: double.negativeInfinity,
+        );
+        fail('Expected CityBoundaryClassificationException');
+      } on CityBoundaryClassificationException catch (e) {
+        expect(e.message, 'Invalid accuracy value.');
+        expect(e.message.contains('Infinity'), isFalse);
+      }
+    });
+
+    test('negative finite accuracy is rejected', () async {
+      final CityBoundaryClassificationService service =
+          CityBoundaryClassificationService(
+        clock: () => DateTime.utc(2026, 7, 11, 12),
+      );
+      try {
+        await service.classifyCoordinatesTransiently(
+          selectedCity: 'Milano',
+          longitude: kMilanoInsideLon,
+          latitude: kMilanoInsideLat,
+          accuracyMeters: -0.1,
+        );
+        fail('Expected CityBoundaryClassificationException');
+      } on CityBoundaryClassificationException catch (e) {
+        expect(e.message, 'Invalid accuracy value.');
+        expect(e.message.contains('-0.1'), isFalse);
+        expect(e.toString().contains('-0.1'), isFalse);
+      }
+    });
+
+    test('default clock produces UTC classifiedAt', () async {
       final CityBoundaryClassificationService service =
           CityBoundaryClassificationService();
       final CityBoundaryClassificationResult result =
@@ -303,7 +397,7 @@ void main() {
       expect(result.classifiedAt.isUtc, isTrue);
     });
 
-    test('deterministic injected clock produces expected timestamp', () async {
+    test('injected UTC clock remains unchanged', () async {
       final DateTime fixed = DateTime.utc(2026, 1, 2, 3, 4, 5);
       final CityBoundaryClassificationService service =
           CityBoundaryClassificationService(clock: () => fixed);
@@ -317,6 +411,49 @@ void main() {
       expect(result.classifiedAt, fixed);
       expect(result.classifiedAt.isUtc, isTrue);
       expect(result.accuracyMeters, 8);
+    });
+
+    test('injected local DateTime is converted to equivalent UTC instant',
+        () async {
+      final DateTime local = DateTime(2026, 3, 15, 14, 30, 0);
+      expect(local.isUtc, isFalse);
+      final CityBoundaryClassificationService service =
+          CityBoundaryClassificationService(clock: () => local);
+      final CityBoundaryClassificationResult result =
+          await service.classifyCoordinatesTransiently(
+        selectedCity: 'Milano',
+        longitude: kMilanoInsideLon,
+        latitude: kMilanoInsideLat,
+        accuracyMeters: 10,
+      );
+      expect(result.classifiedAt.isUtc, isTrue);
+      expect(result.classifiedAt, local.toUtc());
+      expect(
+        result.classifiedAt.millisecondsSinceEpoch,
+        local.millisecondsSinceEpoch,
+      );
+    });
+
+    test('injected offset DateTime is converted to equivalent UTC instant',
+        () async {
+      final DateTime offset =
+          DateTime.parse('2026-07-11T12:00:00+02:00');
+      final CityBoundaryClassificationService service =
+          CityBoundaryClassificationService(clock: () => offset);
+      final CityBoundaryClassificationResult result =
+          await service.classifyCoordinatesTransiently(
+        selectedCity: 'Munich',
+        longitude: kMunichInsideLon,
+        latitude: kMunichInsideLat,
+        accuracyMeters: 10,
+      );
+      expect(result.classifiedAt.isUtc, isTrue);
+      expect(result.classifiedAt, offset.toUtc());
+      expect(
+        result.classifiedAt.millisecondsSinceEpoch,
+        offset.millisecondsSinceEpoch,
+      );
+      expect(result.classifiedAt, DateTime.utc(2026, 7, 11, 10));
     });
 
     test('final result contains only privacy-safe fields', () async {

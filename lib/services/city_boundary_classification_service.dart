@@ -104,14 +104,21 @@ class CityBoundaryClassificationService {
   ///
   /// [longitude], [latitude], and [accuracyMeters] are method parameters only.
   /// They are not stored on the service, not placed in the result, and not
-  /// logged. [accuracyMeters] is rounded with the same `.round()` behaviour
-  /// used by the foreground position reader.
+  /// logged. [accuracyMeters] must be finite and >= 0, then is rounded with
+  /// the same `.round()` behaviour used by the foreground position reader.
+  /// [classifiedAt] is always stored as UTC via `_clock().toUtc()`.
   Future<CityBoundaryClassificationResult> classifyCoordinatesTransiently({
     required String selectedCity,
     required double longitude,
     required double latitude,
     required double accuracyMeters,
   }) async {
+    if (!accuracyMeters.isFinite || accuracyMeters < 0) {
+      throw const CityBoundaryClassificationException(
+        'Invalid accuracy value.',
+      );
+    }
+
     final String assetPath = assetPathForCity(selectedCity);
     final String expectedMetadataCity = cityMetadataIds[selectedCity]!;
 
@@ -171,7 +178,7 @@ class CityBoundaryClassificationService {
       city: selectedCity,
       containment: containment,
       accuracyMeters: accuracyMeters.round(),
-      classifiedAt: _clock(),
+      classifiedAt: _clock().toUtc(),
     );
   }
 }
