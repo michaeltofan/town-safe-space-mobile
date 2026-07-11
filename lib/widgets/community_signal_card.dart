@@ -142,15 +142,20 @@ class CommunitySignalCard extends StatelessWidget {
                       child: LayoutBuilder(
                         builder:
                             (BuildContext context, BoxConstraints mediaBox) {
+                              final double available = mediaBox.maxHeight;
+                              final double maxH = available.isFinite
+                                  ? math.min(mediaBudget, available)
+                                  : mediaBudget;
                               return Align(
                                 alignment: Alignment.topCenter,
+                                // Shrink-wrap to the media — do not expand and
+                                // create dead space between image and status.
+                                widthFactor: 1,
+                                heightFactor: 1,
                                 child: _AdaptiveEvidenceMedia(
                                   signal: signal,
                                   maxWidth: constraints.maxWidth,
-                                  maxHeight: math.min(
-                                    mediaBudget,
-                                    mediaBox.maxHeight,
-                                  ),
+                                  maxHeight: maxH,
                                 ),
                               );
                             },
@@ -197,22 +202,22 @@ class CommunitySignalCard extends StatelessWidget {
     final double fraction = switch (presentation) {
       CivicMediaPresentation.landscape =>
         tiny
-            ? 0.18
-            : compact
             ? 0.20
-            : 0.22,
+            : compact
+            ? 0.23
+            : 0.26,
       CivicMediaPresentation.portrait =>
         tiny
-            ? 0.26
+            ? 0.28
             : compact
-            ? 0.30
-            : 0.34,
+            ? 0.32
+            : 0.36,
       CivicMediaPresentation.square =>
         tiny
-            ? 0.22
+            ? 0.24
             : compact
-            ? 0.25
-            : 0.28,
+            ? 0.27
+            : 0.30,
     };
     return viewportHeight * fraction;
   }
