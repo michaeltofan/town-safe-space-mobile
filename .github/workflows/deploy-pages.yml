@@ -86,7 +86,7 @@ jobs:
       - name: Checkout PR #34 owner-verification tip
         uses: actions/checkout@v4
         with:
-          ref: a3f31fe11c6ecc421d0ffef4bf3485ea487ff6d5
+          ref: f6dbf079b87990621f07831d70b4175a3bc5037f
           path: owner-src
 
       - name: Build owner-journey-v1 Flutter subdirectory
