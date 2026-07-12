@@ -1,14 +1,18 @@
 name: Deploy GitHub Pages
 
+# SINGLE authoritative GitHub Pages deployment.
+# Publishes one combined artifact:
+#   /                         production Feed V1 (pinned product SHA)
+#   /pr30-preview/            rejected PR #30 visual (pinned SHA)
+#   /experience-v1/           standalone HTML experience prototype
+#
+# Do not add a second workflow that calls actions/deploy-pages.
+# Competing root-only deploys overwrite this site (see run 29182694682).
+
 on:
   push:
     branches:
       - main
-    paths-ignore:
-      # Touching only temporary preview workflows must not
-      # overwrite the combined Pages artifact with a root-only build.
-      - '.github/workflows/deploy-pr30-preview.yml'
-      - '.github/workflows/deploy-experience-v1.yml'
   workflow_dispatch:
 
 permissions:
@@ -24,9 +28,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Install Flutter
         run: |
           git clone --depth 1 --branch 3.44.6 https://github.com/flutter/flutter.git "$HOME/flutter"
@@ -38,17 +39,68 @@ jobs:
           flutter config --no-analytics
           flutter precache --web
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Checkout production product tip
+        uses: actions/checkout@v4
+        with:
+          ref: 99fec708c05c978948e4a1894caf7c2ef0135296
+          path: prod
 
-      - name: Analyze
-        run: flutter analyze
+      - name: Build production root
+        working-directory: prod
+        run: |
+          flutter pub get
+          flutter build web --release --base-href /town-safe-space-mobile/ --pwa-strategy=none
 
-      - name: Test
-        run: flutter test
+      - name: Checkout PR #30 tip
+        uses: actions/checkout@v4
+        with:
+          ref: 43f4bc17b71c377d09afd4cf01fcdc5ff923ecbd
+          path: pr30
 
-      - name: Build web
-        run: flutter build web --release --base-href /town-safe-space-mobile/
+      - name: Build PR #30 preview subdirectory
+        working-directory: pr30
+        run: |
+          flutter pub get
+          flutter build web --release --base-href /town-safe-space-mobile/pr30-preview/ --pwa-strategy=none
+
+      - name: Checkout experience prototype tip
+        uses: actions/checkout@v4
+        with:
+          ref: ace5062d37b5c368ebc0266b46cea6bee3cad7a9
+          path: experience-src
+
+      - name: Assemble combined Pages artifact
+        run: |
+          set -euo pipefail
+          mkdir -p site
+          cp -a prod/build/web/. site/
+          mkdir -p site/pr30-preview
+          cp -a pr30/build/web/. site/pr30-preview/
+          mkdir -p site/experience-v1
+          cp -a experience-src/prototype/town-feed-experience-v1/. site/experience-v1/
+          rm -f site/flutter_service_worker.js
+          rm -f site/pr30-preview/flutter_service_worker.js
+
+          echo "===== ARTIFACT TREE (required paths) ====="
+          find site -maxdepth 3 \( -name index.html -o -name styles.css -o -name app.js -o -name '*.jpg' -o -name main.dart.js \) | sort
+          echo "===== END ARTIFACT TREE ====="
+
+          test -f site/index.html
+          test -f site/main.dart.js
+          test -f site/pr30-preview/index.html
+          test -f site/pr30-preview/main.dart.js
+          test -f site/experience-v1/index.html
+          test -f site/experience-v1/styles.css
+          test -f site/experience-v1/app.js
+          test -f site/experience-v1/assets/signal_citta_studi_pavement.jpg
+          test -f site/experience-v1/assets/signal_porta_romana_lighting.jpg
+          test -f site/experience-v1/assets/signal_lorenteggio_works.jpg
+          grep -q 'href="/town-safe-space-mobile/"' site/index.html
+          grep -q 'href="/town-safe-space-mobile/pr30-preview/"' site/pr30-preview/index.html
+          grep -q 'TOWN_EXPERIENCE_PROTOTYPE_V1' site/experience-v1/index.html
+          test ! -f site/flutter_service_worker.js
+          test ! -f site/pr30-preview/flutter_service_worker.js
+          echo "ARTIFACT_VALIDATION=pass"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -56,7 +108,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/web
+          path: site
 
   deploy:
     needs: build
