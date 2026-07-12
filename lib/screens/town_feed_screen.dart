@@ -2,11 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../models/community_signal_mock.dart';
 import '../widgets/community_signal_card.dart';
+import '../widgets/visitor_civic_commitment_gate.dart';
+import 'welcome_screen.dart';
+
+/// Temporary visitor phases for the civic commitment gate.
+enum VisitorFeedPhase {
+  visitorBrowsing,
+  membershipInvitation,
+  joinPlaceholder,
+  experienceEnded,
+}
 
 /// TOWN Feed — Experience Prototype V1 parity.
 ///
 /// Finite vertical full-bleed civic scenes. No external header, no Home bar,
-/// no bordered cards. Session-only confirmation; Open signal placeholder only.
+/// no bordered cards. Open signal placeholder unchanged.
+///
+/// Visitors cannot confirm signals: I SEE THIS TOO opens the civic membership
+/// invitation instead of incrementing counts.
 class TownFeedScreen extends StatefulWidget {
   const TownFeedScreen({super.key, this.signals = kMilanoFeedV1MockSignals});
 
@@ -29,10 +42,17 @@ class TownFeedScreen extends StatefulWidget {
 
 class _TownFeedScreenState extends State<TownFeedScreen> {
   late final PageController _pageController;
-  late final List<int> _confirmationCounts;
-  late final List<bool> _confirmed;
+  late List<int> _confirmationCounts;
+  late List<bool> _confirmed;
   int _index = 0;
   bool _sheetOpen = false;
+  VisitorFeedPhase _phase = VisitorFeedPhase.visitorBrowsing;
+
+  bool get _feedInteractionBlocked =>
+      _sheetOpen ||
+      _phase == VisitorFeedPhase.membershipInvitation ||
+      _phase == VisitorFeedPhase.joinPlaceholder ||
+      _phase == VisitorFeedPhase.experienceEnded;
 
   @override
   void initState() {
@@ -42,10 +62,15 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
       'Feed requires exactly 3 Community Signal scenes.',
     );
     _pageController = PageController();
+    _resetSessionCounts();
+  }
+
+  void _resetSessionCounts() {
     _confirmationCounts = widget.signals
         .map((CommunitySignalMock s) => s.initialConfirmationCount)
         .toList(growable: false);
     _confirmed = List<bool>.filled(widget.signals.length, false);
+    _index = 0;
   }
 
   @override
@@ -54,18 +79,69 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
     super.dispose();
   }
 
-  void _onConfirm(int index) {
-    if (_confirmed[index]) {
+  /// Visitor commitment gate — never increments or confirms.
+  void _onVisitorSeeThisToo(int _) {
+    if (_feedInteractionBlocked) {
       return;
     }
+    // Visitors never mutate confirmation state or counts.
     setState(() {
-      _confirmed[index] = true;
-      _confirmationCounts[index] = _confirmationCounts[index] + 1;
+      _phase = VisitorFeedPhase.membershipInvitation;
     });
   }
 
+  void _onJoinCommunity() {
+    if (_phase != VisitorFeedPhase.membershipInvitation) {
+      return;
+    }
+    setState(() {
+      _phase = VisitorFeedPhase.joinPlaceholder;
+    });
+  }
+
+  void _onCloseJoinPlaceholder() {
+    if (_phase != VisitorFeedPhase.joinPlaceholder) {
+      return;
+    }
+    setState(() {
+      _phase = VisitorFeedPhase.membershipInvitation;
+    });
+  }
+
+  void _onNotNow() {
+    if (_phase != VisitorFeedPhase.membershipInvitation) {
+      return;
+    }
+    setState(() {
+      _phase = VisitorFeedPhase.experienceEnded;
+    });
+  }
+
+  void _onLeaveTown() {
+    // Reset temporary feed session before leaving.
+    _resetSessionCounts();
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(0);
+    }
+    setState(() {
+      _phase = VisitorFeedPhase.visitorBrowsing;
+      _sheetOpen = false;
+    });
+
+    final NavigatorState navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.popUntil((Route<dynamic> route) => route.isFirst);
+      return;
+    }
+    // ownerPreview / direct feed root: replace with existing Welcome.
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute<void>(builder: (_) => const WelcomeScreen()),
+      (_) => false,
+    );
+  }
+
   Future<void> _onOpenSignal() async {
-    if (_sheetOpen) {
+    if (_feedInteractionBlocked) {
       return;
     }
     setState(() => _sheetOpen = true);
@@ -169,7 +245,7 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
   }
 
   void _goTo(int index) {
-    if (_sheetOpen) {
+    if (_feedInteractionBlocked) {
       return;
     }
     if (index < 0 || index >= widget.signals.length) {
@@ -187,6 +263,13 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_phase == VisitorFeedPhase.experienceEnded) {
+      return Scaffold(
+        backgroundColor: TownFeedScreen.background,
+        body: VisitorExperienceEndedScreen(onLeaveTown: _onLeaveTown),
+      );
+    }
+
     return Scaffold(
       backgroundColor: TownFeedScreen.background,
       // Photo extends under system insets; each scene pads its chrome.
@@ -197,7 +280,7 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
             key: const Key('town_feed_page_view'),
             controller: _pageController,
             scrollDirection: Axis.vertical,
-            physics: _sheetOpen
+            physics: _feedInteractionBlocked
                 ? const NeverScrollableScrollPhysics()
                 : const PageScrollPhysics(parent: ClampingScrollPhysics()),
             itemCount: widget.signals.length,
@@ -214,7 +297,7 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
                 positionLabel: '${index + 1} / ${widget.signals.length}',
                 sceneIndex: index + 1,
                 sceneCount: widget.signals.length,
-                onConfirm: () => _onConfirm(index),
+                onConfirm: () => _onVisitorSeeThisToo(index),
                 onOpenSignal: _onOpenSignal,
               );
             },
@@ -237,6 +320,13 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
               ],
             ),
           ),
+          if (_phase == VisitorFeedPhase.membershipInvitation)
+            VisitorMembershipInvitationPanel(
+              onJoin: _onJoinCommunity,
+              onNotNow: _onNotNow,
+            ),
+          if (_phase == VisitorFeedPhase.joinPlaceholder)
+            VisitorJoinPlaceholderPanel(onClose: _onCloseJoinPlaceholder),
         ],
       ),
     );

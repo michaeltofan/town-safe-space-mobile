@@ -5,10 +5,12 @@ import 'package:town_safe_space_mobile/geometry/point_in_polygon_engine.dart';
 import 'package:town_safe_space_mobile/models/community_signal_mock.dart';
 import 'package:town_safe_space_mobile/screens/location_confirmation_screen.dart';
 import 'package:town_safe_space_mobile/screens/town_feed_screen.dart';
+import 'package:town_safe_space_mobile/screens/welcome_screen.dart';
 import 'package:town_safe_space_mobile/services/city_boundary_classification_service.dart';
 import 'package:town_safe_space_mobile/services/foreground_city_classification_bridge.dart';
 import 'package:town_safe_space_mobile/services/location_permission_service.dart';
 import 'package:town_safe_space_mobile/widgets/community_signal_card.dart';
+import 'package:town_safe_space_mobile/widgets/visitor_civic_commitment_gate.dart';
 
 class _FakePermission extends LocationPermissionService {
   _FakePermission(this.state);
@@ -338,7 +340,7 @@ void main() {
     }
   });
 
-  testWidgets('I SEE THIS TOO increments once, updates copy, no reorder', (
+  testWidgets('I SEE THIS TOO opens membership invitation without confirming', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
@@ -349,21 +351,121 @@ void main() {
     await tester.tap(find.byKey(const Key('signal_confirm_milano-signal-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Confirmed by 19 people nearby'), findsOneWidget);
-    expect(find.text('You confirmed this locally'), findsOneWidget);
-    expect(find.text('I SEE THIS TOO'), findsNothing);
+    // Count must not increase; button must not flip to confirmed.
+    expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
+    expect(find.text('Confirmed by 19 people nearby'), findsNothing);
+    expect(find.text('You confirmed this locally'), findsNothing);
     expect(find.text(firstHeadline), findsOneWidget);
+
+    expect(
+      find.byKey(const Key('visitor_membership_invitation')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(VisitorCivicCommitmentCopy.invitationTitle),
+      findsOneWidget,
+    );
+    expect(
+      find.text(VisitorCivicCommitmentCopy.invitationBody),
+      findsOneWidget,
+    );
+    expect(
+      find.text(VisitorCivicCommitmentCopy.invitationBodySecond),
+      findsOneWidget,
+    );
+    expect(find.text(VisitorCivicCommitmentCopy.joinAction), findsOneWidget);
+    expect(find.text(VisitorCivicCommitmentCopy.notNowAction), findsOneWidget);
+
+    // Feed swipe blocked while invitation is open.
+    final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+    await tester.drag(pageView, const Offset(0, -700), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 3'), findsOneWidget);
+    expect(find.text('2 / 3'), findsNothing);
+  });
+
+  testWidgets('Join your community shows temporary next-phase placeholder', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+    await tester.tap(find.byKey(const Key('signal_confirm_milano-signal-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('visitor_join_community')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('visitor_join_placeholder')), findsOneWidget);
+    expect(
+      find.text(VisitorCivicCommitmentCopy.joinPlaceholderTitle),
+      findsOneWidget,
+    );
+    expect(
+      find.text(VisitorCivicCommitmentCopy.joinPlaceholderBody),
+      findsOneWidget,
+    );
+    expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
+    expect(find.text('You confirmed this locally'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('visitor_join_placeholder_close')));
+    await tester.pumpAndSettle();
+
+    // Close returns to membership invitation, not free browsing.
+    expect(find.byKey(const Key('visitor_join_placeholder')), findsNothing);
+    expect(
+      find.byKey(const Key('visitor_membership_invitation')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('town_feed_page_view')), findsOneWidget);
+    final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+    await tester.drag(pageView, const Offset(0, -700), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 3'), findsOneWidget);
+  });
+
+  testWidgets('Not now ends experience; Leave TOWN returns to Welcome', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(const MaterialApp(home: WelcomeScreen()));
+    await tester.pumpAndSettle();
+
+    // Push feed onto Welcome so Leave TOWN can pop back.
+    final NavigatorState navigator = tester.state<NavigatorState>(
+      find.byType(Navigator),
+    );
+    navigator.push(
+      MaterialPageRoute<void>(builder: (_) => const TownFeedScreen()),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TownFeedScreen), findsOneWidget);
+    expect(find.text('I SEE THIS TOO'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('signal_confirm_milano-signal-1')));
     await tester.pumpAndSettle();
-    expect(find.text('Confirmed by 19 people nearby'), findsOneWidget);
-    expect(find.text(firstHeadline), findsOneWidget);
-
-    final Finder pageView = find.byKey(const Key('town_feed_page_view'));
-    await tester.fling(pageView, const Offset(0, -500), 2000);
+    await tester.tap(find.byKey(const Key('visitor_not_now')));
     await tester.pumpAndSettle();
-    expect(find.text('Confirmed by 11 people nearby'), findsOneWidget);
-    expect(find.text('I SEE THIS TOO'), findsOneWidget);
+
+    expect(find.byKey(const Key('visitor_experience_ended')), findsOneWidget);
+    expect(find.byKey(const Key('town_feed_page_view')), findsNothing);
+    expect(find.text('I SEE THIS TOO'), findsNothing);
+    expect(find.text('Open signal'), findsNothing);
+    expect(find.text(VisitorCivicCommitmentCopy.endedTitle), findsOneWidget);
+    expect(find.text(VisitorCivicCommitmentCopy.endedBody), findsOneWidget);
+    expect(
+      find.text(VisitorCivicCommitmentCopy.leaveTownAction),
+      findsOneWidget,
+    );
+    expect(find.text('Back'), findsNothing);
+    expect(find.text('Continue browsing'), findsNothing);
+    expect(find.text('Maybe later'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('visitor_leave_town')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WelcomeScreen), findsOneWidget);
+    expect(find.byType(TownFeedScreen), findsNothing);
+    expect(find.text('Welcome'), findsOneWidget);
   });
 
   testWidgets('Open signal shows approved sheet hierarchy', (
