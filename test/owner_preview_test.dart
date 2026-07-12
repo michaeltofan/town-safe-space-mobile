@@ -68,6 +68,101 @@ void main() {
     });
   });
 
+  group('isOwnerJourneyMode', () {
+    test('activates only for /owner-journey-v1/ path segment on web', () {
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/owner-journey-v1/',
+          ),
+          isWeb: true,
+        ),
+        isTrue,
+      );
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/owner-journey-v1',
+          ),
+          isWeb: true,
+        ),
+        isTrue,
+      );
+    });
+
+    test('does not activate on production root /', () {
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/',
+          ),
+          isWeb: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not activate on /experience-v1/', () {
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/experience-v1/',
+          ),
+          isWeb: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not activate on /pr30-preview/', () {
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/pr30-preview/',
+          ),
+          isWeb: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not activate on /pr33-preview/', () {
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/pr33-preview/',
+          ),
+          isWeb: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not activate from country/city query alone', () {
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/?country=Italy&city=Milano',
+          ),
+          isWeb: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not activate when not web', () {
+      expect(
+        isOwnerJourneyMode(
+          uri: Uri.parse(
+            'https://michaeltofan.github.io/town-safe-space-mobile/owner-journey-v1/',
+          ),
+          isWeb: false,
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('initialHomeForApp', () {
     testWidgets('no query parameter starts at Welcome', (tester) async {
       await tester.pumpWidget(
@@ -178,6 +273,8 @@ void main() {
     expect(source.contains('NOT AUTHENTICATION'), isTrue);
     expect(source.contains('NOT OWNER AUTHORIZATION'), isTrue);
     expect(source.contains('NOT FOR PRODUCTION ACCESS CONTROL'), isTrue);
+    expect(source.contains('isOwnerJourneyMode'), isTrue);
+    expect(source.contains('kOwnerJourneyPathSegment'), isTrue);
     expect(source.contains("import 'dart:html'"), isFalse);
     expect(source.contains('shared_preferences'), isFalse);
     expect(source.contains('localStorage'), isFalse);

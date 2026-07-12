@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:town_safe_space_mobile/geometry/point_in_polygon_engine.dart';
 import 'package:town_safe_space_mobile/screens/location_confirmation_screen.dart';
 import 'package:town_safe_space_mobile/screens/select_city_screen.dart';
+import 'package:town_safe_space_mobile/screens/town_feed_screen.dart';
 import 'package:town_safe_space_mobile/screens/welcome_screen.dart';
 import 'package:town_safe_space_mobile/services/city_boundary_classification_service.dart';
 import 'package:town_safe_space_mobile/services/foreground_city_classification_bridge.dart';
@@ -83,6 +84,7 @@ Future<void> _pumpScreen(
   required _FakeLocationPermissionService permission,
   required _FakeClassificationBridge bridge,
   Widget? home,
+  bool ownerJourneyMode = false,
 }) async {
   await tester.binding.setSurfaceSize(const Size(390, 844));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -97,6 +99,7 @@ Future<void> _pumpScreen(
             selectedCity: city,
             permissionService: permission,
             classificationBridge: bridge,
+            ownerJourneyMode: ownerJourneyMode,
           ),
     ),
   );
@@ -1396,6 +1399,262 @@ void main() {
       isFalse,
     );
     expect(RegExp(r'<key>UIBackgroundModes</key>').hasMatch(iosInfo), isFalse);
+  });
+
+  group('owner journey location bypass', () {
+    testWidgets(
+      'owner journey mode keeps Location screen visible and skips GPS',
+      (WidgetTester tester) async {
+        final _FakeLocationPermissionService permission =
+            _FakeLocationPermissionService(
+              state: ForegroundLocationState.denied,
+            );
+        final _FakeClassificationBridge bridge = _FakeClassificationBridge(
+          failure: ForegroundCityClassificationBridgeFailure.timeout,
+        );
+
+        await _pumpScreen(
+          tester,
+          country: 'Italy',
+          city: 'Milano',
+          permission: permission,
+          bridge: bridge,
+          ownerJourneyMode: true,
+        );
+
+        expect(find.byType(LocationConfirmationScreen), findsOneWidget);
+        expect(find.text('Conferma la tua posizione'), findsOneWidget);
+        expect(
+          find.widgetWithText(FilledButton, 'Verifica posizione'),
+          findsOneWidget,
+        );
+        expect(find.text('Continue to TOWN'), findsNothing);
+
+        await tester.tap(
+          find.widgetWithText(FilledButton, 'Verifica posizione'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(permission.ensureCalls, 0);
+        expect(bridge.callCount, 0);
+        expect(find.byType(LocationConfirmationScreen), findsOneWidget);
+        expect(find.text('Posizione verificata'), findsOneWidget);
+        expect(find.textContaining('Milano'), findsWidgets);
+        expect(find.byKey(const Key('continue_to_town')), findsOneWidget);
+        expect(find.text('Continue to TOWN'), findsOneWidget);
+        _expectNoCoordinates(tester);
+      },
+    );
+
+    testWidgets(
+      'owner verify preserves selected Germany/Munich and enables Continue',
+      (WidgetTester tester) async {
+        final _FakeLocationPermissionService permission =
+            _FakeLocationPermissionService(
+              state: ForegroundLocationState.denied,
+            );
+        final _FakeClassificationBridge bridge = _FakeClassificationBridge(
+          failure: ForegroundCityClassificationBridgeFailure.permissionDenied,
+        );
+
+        await _pumpScreen(
+          tester,
+          country: 'Germany',
+          city: 'Munich',
+          permission: permission,
+          bridge: bridge,
+          ownerJourneyMode: true,
+        );
+
+        expect(find.text('Bestätige deinen Standort'), findsOneWidget);
+        await tester.tap(find.widgetWithText(FilledButton, 'Standort prüfen'));
+        await tester.pumpAndSettle();
+
+        expect(permission.ensureCalls, 0);
+        expect(bridge.callCount, 0);
+        expect(find.text('Standort bestätigt'), findsOneWidget);
+        expect(find.textContaining('München'), findsWidgets);
+        expect(find.text('Continue to TOWN'), findsOneWidget);
+
+        await tester.tap(find.byKey(const Key('continue_to_town')));
+        await tester.pumpAndSettle();
+        expect(find.byType(TownFeedScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets('path /owner-journey-v1/ enables location bypass', (
+      WidgetTester tester,
+    ) async {
+      final _FakeLocationPermissionService permission =
+          _FakeLocationPermissionService(state: ForegroundLocationState.denied);
+      final _FakeClassificationBridge bridge = _FakeClassificationBridge(
+        failure: ForegroundCityClassificationBridgeFailure.timeout,
+      );
+
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LocationConfirmationScreen(
+            selectedCountry: 'Italy',
+            selectedCity: 'Milano',
+            permissionService: permission,
+            classificationBridge: bridge,
+            uri: Uri.parse(
+              'https://michaeltofan.github.io/town-safe-space-mobile/owner-journey-v1/',
+            ),
+            isWeb: true,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
+      await tester.pumpAndSettle();
+      expect(permission.ensureCalls, 0);
+      expect(bridge.callCount, 0);
+      expect(find.text('Continue to TOWN'), findsOneWidget);
+    });
+
+    testWidgets('production root path still uses real verification pipeline', (
+      WidgetTester tester,
+    ) async {
+      final _FakeLocationPermissionService permission =
+          _FakeLocationPermissionService(
+            state: ForegroundLocationState.granted,
+          );
+      final _FakeClassificationBridge bridge = _FakeClassificationBridge(
+        result: _result(
+          city: 'Milano',
+          containment: PointContainment.outside,
+          accuracyMeters: 15,
+        ),
+      );
+
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LocationConfirmationScreen(
+            selectedCountry: 'Italy',
+            selectedCity: 'Milano',
+            permissionService: permission,
+            classificationBridge: bridge,
+            uri: Uri.parse(
+              'https://michaeltofan.github.io/town-safe-space-mobile/',
+            ),
+            isWeb: true,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Verifica posizione'));
+      await tester.pumpAndSettle();
+      expect(permission.ensureCalls, 1);
+      expect(bridge.callCount, 1);
+      expect(find.text('Posizione non corrispondente'), findsOneWidget);
+      expect(find.text('Continue to TOWN'), findsNothing);
+    });
+
+    testWidgets(
+      'experience-v1 and pr30-preview paths do not enable owner bypass',
+      (WidgetTester tester) async {
+        for (final String path in <String>[
+          'https://michaeltofan.github.io/town-safe-space-mobile/experience-v1/',
+          'https://michaeltofan.github.io/town-safe-space-mobile/pr30-preview/',
+          'https://michaeltofan.github.io/town-safe-space-mobile/pr33-preview/',
+        ]) {
+          final _FakeLocationPermissionService permission =
+              _FakeLocationPermissionService(
+                state: ForegroundLocationState.granted,
+              );
+          final _FakeClassificationBridge bridge = _FakeClassificationBridge(
+            result: _result(
+              city: 'Milano',
+              containment: PointContainment.inside,
+              accuracyMeters: 18,
+            ),
+          );
+
+          await tester.binding.setSurfaceSize(const Size(390, 844));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+
+          await tester.pumpWidget(
+            MaterialApp(
+              home: LocationConfirmationScreen(
+                key: UniqueKey(),
+                selectedCountry: 'Italy',
+                selectedCity: 'Milano',
+                permissionService: permission,
+                classificationBridge: bridge,
+                uri: Uri.parse(path),
+                isWeb: true,
+              ),
+            ),
+          );
+          await tester.pump();
+          await tester.tap(
+            find.widgetWithText(FilledButton, 'Verifica posizione'),
+          );
+          await tester.pumpAndSettle();
+          expect(permission.ensureCalls, 1, reason: path);
+          expect(bridge.callCount, 1, reason: path);
+        }
+      },
+    );
+
+    testWidgets(
+      'normal production path still uses permission + classification pipeline',
+      (WidgetTester tester) async {
+        final _FakeLocationPermissionService permission =
+            _FakeLocationPermissionService(
+              state: ForegroundLocationState.granted,
+            );
+        final _FakeClassificationBridge bridge = _FakeClassificationBridge(
+          result: _result(
+            city: 'Milano',
+            containment: PointContainment.inside,
+            accuracyMeters: 12,
+          ),
+        );
+
+        await _pumpScreen(
+          tester,
+          country: 'Italy',
+          city: 'Milano',
+          permission: permission,
+          bridge: bridge,
+          ownerJourneyMode: false,
+        );
+
+        await tester.tap(
+          find.widgetWithText(FilledButton, 'Verifica posizione'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(permission.ensureCalls, 1);
+        expect(bridge.callCount, 1);
+        expect(bridge.cities, <String>['Milano']);
+        expect(find.text('Posizione verificata'), findsOneWidget);
+        expect(find.text('Continue to TOWN'), findsOneWidget);
+      },
+    );
+
+    test('owner bypass is gated in LocationConfirmationScreen source', () {
+      final String screen = File(
+        'lib/screens/location_confirmation_screen.dart',
+      ).readAsStringSync();
+      expect(screen.contains('isOwnerJourneyMode'), isTrue);
+      expect(screen.contains('ownerJourneyMode'), isTrue);
+      expect(screen.contains('ensureForegroundPermission'), isTrue);
+      expect(screen.contains('readAndClassifyOnce'), isTrue);
+      expect(screen.contains('SharedPreferences'), isFalse);
+      expect(screen.contains('package:http'), isFalse);
+      expect(RegExp(r'\bpayment\b').hasMatch(screen), isFalse);
+      expect(RegExp(r'\baccount\b').hasMatch(screen), isFalse);
+      expect(RegExp(r'\bmembership\b').hasMatch(screen), isFalse);
+    });
   });
 }
 

@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../geometry/point_in_polygon_engine.dart';
+import '../owner_preview.dart';
 import '../services/city_boundary_classification_service.dart';
 import '../services/foreground_city_classification_bridge.dart';
 import '../services/foreground_position_reader.dart';
@@ -39,8 +41,14 @@ class LocationConfirmationScreen extends StatefulWidget {
     required this.selectedCity,
     this.permissionService = const LocationPermissionService(),
     ForegroundCityClassificationBridge? classificationBridge,
+    bool? ownerJourneyMode,
+    Uri? uri,
+    bool? isWeb,
   }) : classificationBridge =
-           classificationBridge ?? ForegroundCityClassificationBridge();
+           classificationBridge ?? ForegroundCityClassificationBridge(),
+       ownerJourneyMode =
+           ownerJourneyMode ??
+           isOwnerJourneyMode(uri: uri ?? Uri.base, isWeb: isWeb ?? kIsWeb);
 
   /// Canonical country from Select City (`Italy` or `Germany`).
   final String selectedCountry;
@@ -53,6 +61,10 @@ class LocationConfirmationScreen extends StatefulWidget {
 
   /// Injectable classification bridge for tests.
   final ForegroundCityClassificationBridge classificationBridge;
+
+  /// Path-scoped owner journey mode. Production detects `/owner-journey-v1/`
+  /// via [isOwnerJourneyMode]. Tests inject an explicit value.
+  final bool ownerJourneyMode;
 
   @override
   State<LocationConfirmationScreen> createState() =>
@@ -110,8 +122,26 @@ class _LocationConfirmationScreenState
     return widget.selectedCity;
   }
 
+  /// Display-only accuracy for the shared confirmed-good copy in owner
+  /// journey mode. Not a GPS reading and not persisted.
+  static const int _ownerJourneyDisplayAccuracyMeters = 25;
+
   Future<void> _onVerifyLocation() async {
     if (_isBusy) {
+      return;
+    }
+
+    // Owner journey mode: simulate a successful local verification without
+    // requesting permission, reading GPS, classifying boundaries, or calling
+    // any backend. Normal production path below remains unchanged.
+    if (widget.ownerJourneyMode) {
+      setState(() {
+        _isBusy = false;
+        _uiState = LocationVerificationUiState.confirmedGood;
+        _accuracyMeters = _ownerJourneyDisplayAccuracyMeters;
+        _resultContainment = PointContainment.inside;
+        _changeCityVisible = false;
+      });
       return;
     }
 
