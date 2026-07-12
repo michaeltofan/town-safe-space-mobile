@@ -73,7 +73,7 @@ jobs:
       - name: Checkout owner full-journey tip
         uses: actions/checkout@v4
         with:
-          ref: cursor/owner-full-journey-v1-a8e5
+          ref: 1b33f0abf2d4b0f46daaa590f87f72e5338df5bb
           path: owner-src
 
       - name: Assemble combined Pages artifact
