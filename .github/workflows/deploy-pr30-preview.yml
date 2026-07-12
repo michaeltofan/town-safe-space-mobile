@@ -66,17 +66,25 @@ jobs:
           cp -a prod/build/web/. site/
           mkdir -p site/pr30-preview
           cp -a pr30/build/web/. site/pr30-preview/
-          # Prove isolation: preview must not share production main.dart.js path.
+
+          # pwa-strategy=none skips registration but may still emit the file.
+          # Remove orphan workers so root scope cannot blanket-cache the tree.
+          rm -f site/flutter_service_worker.js
+          rm -f site/pr30-preview/flutter_service_worker.js
+
           test -f site/main.dart.js
           test -f site/pr30-preview/main.dart.js
           test -f site/index.html
           test -f site/pr30-preview/index.html
-          # Preview base href must be nested.
           grep -q 'href="/town-safe-space-mobile/pr30-preview/"' site/pr30-preview/index.html
           grep -q 'href="/town-safe-space-mobile/"' site/index.html
-          # No production flutter_service_worker that could blanket-cache the tree.
+          # Bootstrap must not request a serviceWorkerVersion under pwa-strategy=none.
+          ! grep -q 'serviceWorkerVersion' site/flutter_bootstrap.js
+          ! grep -q 'serviceWorkerVersion' site/pr30-preview/flutter_bootstrap.js
           test ! -f site/flutter_service_worker.js
           test ! -f site/pr30-preview/flutter_service_worker.js
+          echo "PROD_BASE=$(grep -o 'href=\"[^\"]*\"' site/index.html | head -1)"
+          echo "PREV_BASE=$(grep -o 'href=\"[^\"]*\"' site/pr30-preview/index.html | head -1)"
           ls -la site
           ls -la site/pr30-preview | head
 
