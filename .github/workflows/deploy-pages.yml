@@ -5,6 +5,7 @@ name: Deploy GitHub Pages
 #   /                         production Feed V1 (pinned product SHA)
 #   /pr30-preview/            rejected PR #30 visual (pinned SHA)
 #   /experience-v1/           standalone HTML experience prototype
+#   /owner-journey-v1/        public owner full-journey test route
 #
 # Do not add a second workflow that calls actions/deploy-pages.
 # Competing root-only deploys overwrite this site (see run 29182694682).
@@ -69,6 +70,12 @@ jobs:
           ref: ace5062d37b5c368ebc0266b46cea6bee3cad7a9
           path: experience-src
 
+      - name: Checkout owner full-journey tip
+        uses: actions/checkout@v4
+        with:
+          ref: cursor/owner-full-journey-v1-a8e5
+          path: owner-src
+
       - name: Assemble combined Pages artifact
         run: |
           set -euo pipefail
@@ -78,11 +85,13 @@ jobs:
           cp -a pr30/build/web/. site/pr30-preview/
           mkdir -p site/experience-v1
           cp -a experience-src/prototype/town-feed-experience-v1/. site/experience-v1/
+          mkdir -p site/owner-journey-v1
+          cp -a owner-src/prototype/owner-journey-v1/. site/owner-journey-v1/
           rm -f site/flutter_service_worker.js
           rm -f site/pr30-preview/flutter_service_worker.js
 
           echo "===== ARTIFACT TREE (required paths) ====="
-          find site -maxdepth 3 \( -name index.html -o -name styles.css -o -name app.js -o -name '*.jpg' -o -name main.dart.js \) | sort
+          find site -maxdepth 3 \( -name index.html -o -name styles.css -o -name app.js -o -name '*.jpg' -o -name '*.png' -o -name main.dart.js \) | sort
           echo "===== END ARTIFACT TREE ====="
 
           test -f site/index.html
@@ -95,9 +104,14 @@ jobs:
           test -f site/experience-v1/assets/signal_citta_studi_pavement.jpg
           test -f site/experience-v1/assets/signal_porta_romana_lighting.jpg
           test -f site/experience-v1/assets/signal_lorenteggio_works.jpg
+          test -f site/owner-journey-v1/index.html
+          test -f site/owner-journey-v1/styles.css
+          test -f site/owner-journey-v1/app.js
+          test -f site/owner-journey-v1/assets/welcome_screen.png
           grep -q 'href="/town-safe-space-mobile/"' site/index.html
           grep -q 'href="/town-safe-space-mobile/pr30-preview/"' site/pr30-preview/index.html
           grep -q 'TOWN_EXPERIENCE_PROTOTYPE_V1' site/experience-v1/index.html
+          grep -q 'TOWN_OWNER_FULL_JOURNEY_V1' site/owner-journey-v1/index.html
           test ! -f site/flutter_service_worker.js
           test ! -f site/pr30-preview/flutter_service_worker.js
           echo "ARTIFACT_VALIDATION=pass"
