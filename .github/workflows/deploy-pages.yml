@@ -4,6 +4,7 @@ name: Deploy GitHub Pages
 # Publishes one combined artifact:
 #   /                         production Feed V1 (pinned product SHA)
 #   /pr30-preview/            rejected PR #30 visual (pinned SHA)
+#   /pr33-preview/            temporary PR #33 rebuilt-feed preview (pinned SHA)
 #   /experience-v1/           standalone HTML experience prototype
 #   /owner-journey-v1/        public owner full-journey test route
 #
@@ -64,6 +65,18 @@ jobs:
           flutter pub get
           flutter build web --release --base-href /town-safe-space-mobile/pr30-preview/ --pwa-strategy=none
 
+      - name: Checkout PR #33 tip
+        uses: actions/checkout@v4
+        with:
+          ref: 0c98577e4e366391786b716499e4bec7396cb630
+          path: pr33
+
+      - name: Build PR #33 preview subdirectory
+        working-directory: pr33
+        run: |
+          flutter pub get
+          flutter build web --release --base-href /town-safe-space-mobile/pr33-preview/ --pwa-strategy=none
+
       - name: Checkout experience prototype tip
         uses: actions/checkout@v4
         with:
@@ -83,12 +96,15 @@ jobs:
           cp -a prod/build/web/. site/
           mkdir -p site/pr30-preview
           cp -a pr30/build/web/. site/pr30-preview/
+          mkdir -p site/pr33-preview
+          cp -a pr33/build/web/. site/pr33-preview/
           mkdir -p site/experience-v1
           cp -a experience-src/prototype/town-feed-experience-v1/. site/experience-v1/
           mkdir -p site/owner-journey-v1
           cp -a owner-src/prototype/owner-journey-v1/. site/owner-journey-v1/
           rm -f site/flutter_service_worker.js
           rm -f site/pr30-preview/flutter_service_worker.js
+          rm -f site/pr33-preview/flutter_service_worker.js
 
           echo "===== ARTIFACT TREE (required paths) ====="
           find site -maxdepth 3 \( -name index.html -o -name styles.css -o -name app.js -o -name '*.jpg' -o -name '*.png' -o -name main.dart.js \) | sort
@@ -98,6 +114,8 @@ jobs:
           test -f site/main.dart.js
           test -f site/pr30-preview/index.html
           test -f site/pr30-preview/main.dart.js
+          test -f site/pr33-preview/index.html
+          test -f site/pr33-preview/main.dart.js
           test -f site/experience-v1/index.html
           test -f site/experience-v1/styles.css
           test -f site/experience-v1/app.js
@@ -110,10 +128,12 @@ jobs:
           test -f site/owner-journey-v1/assets/welcome_screen.png
           grep -q 'href="/town-safe-space-mobile/"' site/index.html
           grep -q 'href="/town-safe-space-mobile/pr30-preview/"' site/pr30-preview/index.html
+          grep -q 'href="/town-safe-space-mobile/pr33-preview/"' site/pr33-preview/index.html
           grep -q 'TOWN_EXPERIENCE_PROTOTYPE_V1' site/experience-v1/index.html
           grep -q 'TOWN_OWNER_FULL_JOURNEY_V1' site/owner-journey-v1/index.html
           test ! -f site/flutter_service_worker.js
           test ! -f site/pr30-preview/flutter_service_worker.js
+          test ! -f site/pr33-preview/flutter_service_worker.js
           echo "ARTIFACT_VALIDATION=pass"
 
       - name: Setup Pages
