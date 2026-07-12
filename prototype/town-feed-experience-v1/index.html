@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta
+    name="description"
+    content="TOWN Feed Experience Prototype V1 — fictional interactive civic scenes for owner iPhone review. Not the Flutter product."
+  />
+  <!--
+    TOWN_EXPERIENCE_PROTOTYPE_V1
+    EXPERIENCE PROTOTYPE ONLY — NOT FLUTTER PRODUCT — NOT APPROVED UI
+    Public path: /town-safe-space-mobile/experience-v1/
+  -->
+  <title>TOWN — Experience Prototype V1</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main
+    id="feed"
+    class="feed"
+    aria-label="TOWN Community Signal experience prototype"
+  >
+    <!-- Scene 1 — landscape -->
+    <section
+      class="scene"
+      data-scene="1"
+      data-count="18"
+      aria-label="Community signal 1 of 3"
+    >
+      <div class="scene-media" aria-hidden="true">
+        <img
+          class="scene-photo scene-photo--landscape"
+          src="assets/signal_citta_studi_pavement.jpg"
+          alt=""
+          decoding="async"
+          fetchpriority="high"
+        />
+        <div class="scene-veil"></div>
+      </div>
+      <div class="scene-chrome">
+        <header class="scene-top">
+          <p class="brand" aria-label="TOWN">TOWN</p>
+          <p class="pager"><span class="pager-current">1</span> / 3</p>
+        </header>
+        <div class="scene-body">
+          <p class="meta">Marta Rinaldi · Osservato ieri</p>
+          <p class="category">SPAZIO PUBBLICO</p>
+          <h1 class="headline">
+            Marciapiede danneggiato davanti alla scuola di via Padova
+          </h1>
+          <p class="summary">
+            Le radici hanno sollevato il marciapiede. Bambini e anziani sono
+            costretti sulla carreggiata.
+          </p>
+        </div>
+        <footer class="scene-actions">
+          <p class="status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span class="status-label">Locally confirmed</span>
+            <span class="status-sep" aria-hidden="true">·</span>
+            <span class="status-area">Città Studi</span>
+          </p>
+          <p class="confirm-count">
+            Confirmed by
+            <span class="confirm-count-value" data-role="count">18</span>
+            people nearby
+          </p>
+          <button
+            type="button"
+            class="btn-confirm"
+            data-role="confirm"
+            aria-pressed="false"
+          >
+            I SEE THIS TOO
+          </button>
+          <button type="button" class="btn-open" data-role="open">
+            Open signal
+          </button>
+        </footer>
+      </div>
+    </section>
+
+    <!-- Scene 2 — portrait -->
+    <section
+      class="scene"
+      data-scene="2"
+      data-count="11"
+      aria-label="Community signal 2 of 3"
+    >
+      <div class="scene-media" aria-hidden="true">
+        <img
+          class="scene-photo scene-photo--portrait"
+          src="assets/signal_porta_romana_lighting.jpg"
+          alt=""
+          decoding="async"
+        />
+        <div class="scene-veil"></div>
+      </div>
+      <div class="scene-chrome">
+        <header class="scene-top">
+          <p class="brand">TOWN</p>
+          <p class="pager"><span class="pager-current">2</span> / 3</p>
+        </header>
+        <div class="scene-body">
+          <p class="meta">Chiara Valli · Segnalato due giorni fa</p>
+          <p class="category">ILLUMINAZIONE</p>
+          <h1 class="headline">
+            Il percorso vicino alla scuola resta al buio la sera
+          </h1>
+          <p class="summary">
+            Diversi lampioni non funzionano sul tratto pedonale. I residenti
+            hanno già segnalato il Comune.
+          </p>
+        </div>
+        <footer class="scene-actions">
+          <p class="status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span class="status-label">Reported</span>
+            <span class="status-sep" aria-hidden="true">·</span>
+            <span class="status-area">Porta Romana</span>
+          </p>
+          <p class="confirm-count">
+            Confirmed by
+            <span class="confirm-count-value" data-role="count">11</span>
+            people nearby
+          </p>
+          <button
+            type="button"
+            class="btn-confirm"
+            data-role="confirm"
+            aria-pressed="false"
+          >
+            I SEE THIS TOO
+          </button>
+          <button type="button" class="btn-open" data-role="open">
+            Open signal
+          </button>
+        </footer>
+      </div>
+    </section>
+
+    <!-- Scene 3 — square -->
+    <section
+      class="scene"
+      data-scene="3"
+      data-count="7"
+      aria-label="Community signal 3 of 3"
+    >
+      <div class="scene-media" aria-hidden="true">
+        <img
+          class="scene-photo scene-photo--square"
+          src="assets/signal_lorenteggio_works.jpg"
+          alt=""
+          decoding="async"
+        />
+        <div class="scene-veil"></div>
+      </div>
+      <div class="scene-chrome">
+        <header class="scene-top">
+          <p class="brand">TOWN</p>
+          <p class="pager"><span class="pager-current">3</span> / 3</p>
+        </header>
+        <div class="scene-body">
+          <p class="meta">Luca Ferri · Osservato questa settimana</p>
+          <p class="category">LAVORI PUBBLICI</p>
+          <h1 class="headline">
+            Il cantiere restringe il passaggio pedonale senza indicazioni chiare
+          </h1>
+          <p class="summary">
+            Il percorso temporaneo è stretto e poco segnalato. Servono tempi
+            chiari e un passaggio più sicuro.
+          </p>
+        </div>
+        <footer class="scene-actions">
+          <p class="status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span class="status-label">In progress</span>
+            <span class="status-sep" aria-hidden="true">·</span>
+            <span class="status-area">Lorenteggio</span>
+          </p>
+          <p class="confirm-count">
+            Confirmed by
+            <span class="confirm-count-value" data-role="count">7</span>
+            people nearby
+          </p>
+          <button
+            type="button"
+            class="btn-confirm"
+            data-role="confirm"
+            aria-pressed="false"
+          >
+            I SEE THIS TOO
+          </button>
+          <button type="button" class="btn-open" data-role="open">
+            Open signal
+          </button>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <div
+    id="sheet"
+    class="sheet"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="sheet-title"
+  >
+    <div class="sheet-backdrop" data-role="sheet-close" tabindex="-1"></div>
+    <div class="sheet-panel">
+      <h2 id="sheet-title" class="sheet-title">Signal detail</h2>
+      <p class="sheet-copy">
+        Signal details will be added in the next TOWN phase.
+      </p>
+      <button type="button" class="sheet-close" data-role="sheet-close">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
