@@ -4,14 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../models/community_signal_mock.dart';
 
-/// Reusable COMMUNITY SIGNAL card for TOWN Feed V1.
+/// Full-bleed civic scene matching Experience Prototype V1.
 ///
-/// Full-viewport editorial composition:
-/// 1. upper text block — intrinsic height only;
-/// 2. adaptive media — expands into remaining space (aspect preserved);
-/// 3. lower civic zone — anchored at the bottom of the card.
-///
-/// Confirmation state is owned by the parent feed (session-only).
+/// Layout mirrors `.scene` / `.scene-chrome`:
+/// photo cover → veil → top brand/pager → body text → actions.
 class CommunitySignalCard extends StatelessWidget {
   const CommunitySignalCard({
     super.key,
@@ -21,13 +17,15 @@ class CommunitySignalCard extends StatelessWidget {
     required this.onConfirm,
     required this.onOpenSignal,
     required this.positionLabel,
+    required this.sceneIndex,
+    required this.sceneCount,
   });
 
-  static const Color orange = Color(0xFFFF5A1F);
-  static const Color cardBg = Color(0xFF161616);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color muted = Color(0xFFB5B5B5);
-  static const Color soft = Color(0xFF8E8E8E);
+  static const Color accent = Color(0xFFE8772E);
+  static const Color ink = Color(0xFFF5F5F5);
+  static const Color inkSoft = Color(0xC7F5F5F5); // ~0.78
+  static const Color inkMute = Color(0x94F5F5F5); // ~0.58
+  static const Color statusDot = Color(0xFFF0C419);
 
   final CommunitySignalMock signal;
   final int confirmationCount;
@@ -35,157 +33,308 @@ class CommunitySignalCard extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback onOpenSignal;
   final String positionLabel;
+  final int sceneIndex;
+  final int sceneCount;
 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
-    final bool compact = size.height < 700;
-    final bool tiny = size.height < 600 || size.width < 340;
+    final EdgeInsets safe = MediaQuery.paddingOf(context);
+    final bool short = size.height < 700;
+    final bool narrow = size.width <= 360;
+
+    final double padX = (size.width * 0.045).clamp(16.0, 21.6);
+    final double topPad = 11.2 + safe.top;
+    final double bottomPad = 13.6 + safe.bottom;
+    final double gap = short ? 5.6 : 8.8;
+    final double actionGap = short ? 5.6 : 7.2;
+    final double btnMinHeight = short ? 44.0 : 48.0;
+    final double btnPadV = short ? 11.2 : 13.6;
+
+    // CSS clamp(min, preferred vw, max) with rem=16.
+    double brandSize = (size.width * 0.034).clamp(16.8, 19.2);
+    const double pagerSize = 15.2;
+    double metaSize = (size.width * 0.028).clamp(16.8, 19.2);
+    double categorySize = (size.width * 0.022).clamp(12.5, 14.1);
+    double headlineSize = (size.width * 0.058).clamp(30.0, 40.8);
+    double summarySize = (size.width * 0.032).clamp(18.0, 21.6);
+    if (short) {
+      headlineSize = (size.width * 0.054).clamp(27.2, 33.6);
+      summarySize = (size.width * 0.03).clamp(16.8, 19.2);
+      metaSize = math.min(metaSize, 16.8);
+    }
+    if (narrow) {
+      headlineSize = math.min(headlineSize, 27.2);
+      summarySize = math.min(summarySize, 16.8);
+    }
+    // Extra compression for very short phones (prototype still shows full copy).
+    if (size.height <= 600) {
+      headlineSize = math.min(headlineSize, 22.0);
+      summarySize = math.min(summarySize, 14.5);
+      metaSize = math.min(metaSize, 14.0);
+      categorySize = math.min(categorySize, 11.0);
+      brandSize = math.min(brandSize, 16.0);
+    }
+
+    final double statusSize = (size.width * 0.028).clamp(
+      size.height <= 600 ? 13.0 : 16.0,
+      18.4,
+    );
+    final double countSize = (size.width * 0.026).clamp(
+      size.height <= 600 ? 12.5 : 15.7,
+      17.9,
+    );
+    final double btnSize = (size.width * 0.03).clamp(
+      size.height <= 600 ? 13.5 : 16.0,
+      17.9,
+    );
+    final double confirmedBtnSize = math.min(btnSize, 16.8);
 
     return Semantics(
       container: true,
       label:
-          'Community Signal. ${signal.headline}. $positionLabel. Status ${signal.status.label}.',
-      child: Padding(
-        // Minimal outer margin — immersive full-viewport card.
-        padding: EdgeInsets.fromLTRB(
-          tiny ? 6 : 8,
-          tiny ? 2 : 4,
-          tiny ? 6 : 8,
-          tiny ? 2 : 4,
-        ),
-        child: DecoratedBox(
-          key: Key('signal_card_surface_${signal.id}'),
-          decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFF2A2A2A)),
-          ),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              tiny ? 10 : 12,
-              tiny ? 8 : 10,
-              tiny ? 10 : 12,
-              tiny ? 8 : 10,
+          'Community Signal. ${signal.headline}. $positionLabel. '
+          'Status ${signal.status.label}.',
+      child: SizedBox.expand(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(
+              color: const Color(0xFF111111),
+              child: Image.asset(
+                signal.imageAsset,
+                key: Key('signal_image_${signal.id}'),
+                fit: BoxFit.cover,
+                alignment: signal.mediaFocus,
+                filterQuality: FilterQuality.high,
+                semanticLabel: 'Civic evidence photograph for ${signal.area}',
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // —— 1. Upper editorial block (intrinsic) ——
-                _AuthorRow(signal: signal, compact: compact || tiny),
-                SizedBox(height: tiny ? 4 : 6),
-                Text(
-                  signal.category,
-                  key: Key('signal_category_${signal.id}'),
-                  style: TextStyle(
-                    color: orange,
-                    fontSize: tiny
-                        ? 10.5
-                        : compact
-                        ? 11
-                        : 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.1,
-                  ),
+            const DecoratedBox(
+              key: Key('scene_veil'),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xB8000000),
+                    Color(0x47000000),
+                    Color(0x2E000000),
+                    Color(0x8C000000),
+                    Color(0xE0000000),
+                  ],
+                  stops: [0.0, 0.28, 0.48, 0.72, 1.0],
                 ),
-                SizedBox(height: tiny ? 2 : 3),
-                Text(
-                  signal.headline,
-                  key: Key('signal_headline_${signal.id}'),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: white,
-                    fontSize: tiny
-                        ? 15
-                        : compact
-                        ? 16.5
-                        : 18,
-                    fontWeight: FontWeight.w700,
-                    height: 1.18,
-                    letterSpacing: -0.2,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                padX + safe.left,
+                topPad,
+                padX + safe.right,
+                bottomPad,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SceneTop(
+                    brandSize: brandSize,
+                    pagerSize: pagerSize,
+                    sceneIndex: sceneIndex,
+                    sceneCount: sceneCount,
                   ),
-                ),
-                SizedBox(height: tiny ? 2 : 3),
-                Text(
-                  signal.summary,
-                  key: Key('signal_summary_${signal.id}'),
-                  maxLines: tiny
-                      ? 2
-                      : compact
-                      ? 2
-                      : 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: muted,
-                    fontSize: tiny
-                        ? 11.5
-                        : compact
-                        ? 12.5
-                        : 13.5,
-                    height: 1.28,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                SizedBox(height: tiny ? 6 : 8),
-
-                // —— 2+3. Media expands; lower civic zone anchors to bottom ——
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: LayoutBuilder(
-                          builder: (BuildContext context, BoxConstraints mediaBox) {
-                            // Landscape: top-align so the photo begins right
-                            // after the summary and expands downward.
-                            // Portrait/square: keep bottom seating (accepted).
-                            final Alignment mediaAlign =
-                                signal.mediaPresentation ==
-                                    CivicMediaPresentation.landscape
-                                ? Alignment.topCenter
-                                : Alignment.bottomCenter;
-                            return Align(
-                              alignment: mediaAlign,
-                              child: _AdaptiveEvidenceMedia(
-                                signal: signal,
-                                maxWidth: mediaBox.maxWidth,
-                                maxHeight: mediaBox.maxHeight,
+                  SizedBox(height: gap),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (BuildContext context, BoxConstraints bodyBox) {
+                        return Align(
+                          alignment: Alignment.bottomLeft,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: bodyBox.maxWidth,
+                              maxHeight: bodyBox.maxHeight,
+                            ),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.bottomLeft,
+                              child: SizedBox(
+                                width: bodyBox.maxWidth,
+                                child: _SceneBody(
+                                  signal: signal,
+                                  metaSize: metaSize,
+                                  categorySize: categorySize,
+                                  headlineSize: headlineSize,
+                                  summarySize: summarySize,
+                                ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: tiny ? 6 : 8),
-                      _LowerCivicZone(
-                        signal: signal,
-                        confirmationCount: confirmationCount,
-                        hasConfirmed: hasConfirmed,
-                        onConfirm: onConfirm,
-                        onOpenSignal: onOpenSignal,
-                        compact: compact || tiny,
-                      ),
-                    ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  SizedBox(height: gap),
+                  _SceneActions(
+                    signal: signal,
+                    confirmationCount: confirmationCount,
+                    hasConfirmed: hasConfirmed,
+                    onConfirm: onConfirm,
+                    onOpenSignal: onOpenSignal,
+                    actionGap: actionGap,
+                    statusSize: statusSize,
+                    countSize: countSize,
+                    btnSize: btnSize,
+                    confirmedBtnSize: confirmedBtnSize,
+                    btnMinHeight: btnMinHeight,
+                    btnPadV: btnPadV,
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// Status, confirmation, and both actions — stable lower civic block.
-class _LowerCivicZone extends StatelessWidget {
-  const _LowerCivicZone({
+class _SceneTop extends StatelessWidget {
+  const _SceneTop({
+    required this.brandSize,
+    required this.pagerSize,
+    required this.sceneIndex,
+    required this.sceneCount,
+  });
+
+  final double brandSize;
+  final double pagerSize;
+  final int sceneIndex;
+  final int sceneCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Expanded(
+          child: Text(
+            'TOWN',
+            key: const Key('scene_brand'),
+            style: TextStyle(
+              fontFamily: 'sans-serif',
+              fontWeight: FontWeight.w800,
+              letterSpacing: brandSize * 0.08,
+              fontSize: brandSize,
+              height: 1,
+              color: CommunitySignalCard.ink,
+            ),
+          ),
+        ),
+        Semantics(
+          liveRegion: true,
+          label: 'Card $sceneIndex / $sceneCount',
+          child: Text(
+            '$sceneIndex / $sceneCount',
+            key: const Key('town_feed_position'),
+            style: TextStyle(
+              fontSize: pagerSize,
+              color: CommunitySignalCard.inkMute,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SceneBody extends StatelessWidget {
+  const _SceneBody({
+    required this.signal,
+    required this.metaSize,
+    required this.categorySize,
+    required this.headlineSize,
+    required this.summarySize,
+  });
+
+  final CommunitySignalMock signal;
+  final double metaSize;
+  final double categorySize;
+  final double headlineSize;
+  final double summarySize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          signal.metaLine,
+          key: Key('signal_meta_${signal.id}'),
+          style: TextStyle(
+            fontSize: metaSize,
+            height: 1.25,
+            fontWeight: FontWeight.w500,
+            color: CommunitySignalCard.inkSoft,
+          ),
+        ),
+        SizedBox(height: metaSize * 0.45),
+        Text(
+          signal.category,
+          key: Key('signal_category_${signal.id}'),
+          style: TextStyle(
+            fontSize: categorySize,
+            letterSpacing: categorySize * 0.12,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xEBE8772E),
+          ),
+        ),
+        SizedBox(height: categorySize * 0.45),
+        Text(
+          signal.headline,
+          key: Key('signal_headline_${signal.id}'),
+          style: TextStyle(
+            fontFamily: 'serif',
+            fontWeight: FontWeight.w700,
+            fontSize: headlineSize,
+            height: 1.08,
+            letterSpacing: -0.015 * headlineSize,
+            color: CommunitySignalCard.ink,
+            shadows: const [Shadow(color: Color(0x59000000), blurRadius: 18)],
+          ),
+        ),
+        SizedBox(height: headlineSize * 0.18),
+        Text(
+          signal.summary,
+          key: Key('signal_summary_${signal.id}'),
+          style: TextStyle(
+            fontSize: summarySize,
+            height: 1.35,
+            color: CommunitySignalCard.inkSoft,
+            shadows: const [Shadow(color: Color(0x4D000000), blurRadius: 12)],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SceneActions extends StatelessWidget {
+  const _SceneActions({
     required this.signal,
     required this.confirmationCount,
     required this.hasConfirmed,
     required this.onConfirm,
     required this.onOpenSignal,
-    required this.compact,
+    required this.actionGap,
+    required this.statusSize,
+    required this.countSize,
+    required this.btnSize,
+    required this.confirmedBtnSize,
+    required this.btnMinHeight,
+    required this.btnPadV,
   });
 
   final CommunitySignalMock signal;
@@ -193,7 +342,13 @@ class _LowerCivicZone extends StatelessWidget {
   final bool hasConfirmed;
   final VoidCallback onConfirm;
   final VoidCallback onOpenSignal;
-  final bool compact;
+  final double actionGap;
+  final double statusSize;
+  final double countSize;
+  final double btnSize;
+  final double confirmedBtnSize;
+  final double btnMinHeight;
+  final double btnPadV;
 
   @override
   Widget build(BuildContext context) {
@@ -202,386 +357,99 @@ class _LowerCivicZone extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _StatusRow(signal: signal, compact: compact),
-        SizedBox(height: compact ? 4 : 5),
-        _ConfirmationLine(count: confirmationCount, signalId: signal.id),
-        SizedBox(height: compact ? 6 : 8),
-        _SeeThisTooButton(
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 5.6,
+          children: [
+            Container(
+              width: math.max(7.0, statusSize * 0.55),
+              height: math.max(7.0, statusSize * 0.55),
+              decoration: const BoxDecoration(
+                color: CommunitySignalCard.statusDot,
+                shape: BoxShape.circle,
+              ),
+            ),
+            Text(
+              signal.status.label,
+              key: Key('signal_status_${signal.id}'),
+              style: TextStyle(
+                fontSize: statusSize,
+                height: 1.25,
+                fontWeight: FontWeight.w600,
+                color: CommunitySignalCard.ink,
+              ),
+            ),
+            Text(
+              '·',
+              style: TextStyle(
+                fontSize: statusSize,
+                color: CommunitySignalCard.inkMute,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              signal.area,
+              key: Key('signal_zone_${signal.id}'),
+              style: TextStyle(
+                fontSize: statusSize,
+                height: 1.25,
+                fontWeight: FontWeight.w500,
+                color: CommunitySignalCard.inkMute,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: actionGap),
+        Semantics(
+          liveRegion: true,
+          child: Text(
+            'Confirmed by $confirmationCount people nearby',
+            key: Key('signal_confirmation_${signal.id}'),
+            style: TextStyle(
+              fontSize: countSize,
+              height: 1.25,
+              color: CommunitySignalCard.inkMute,
+            ),
+          ),
+        ),
+        SizedBox(height: actionGap + 3.2),
+        _ConfirmButton(
           signalId: signal.id,
           hasConfirmed: hasConfirmed,
           onConfirm: onConfirm,
-          compact: compact,
+          btnSize: hasConfirmed ? confirmedBtnSize : btnSize,
+          btnMinHeight: btnMinHeight,
+          btnPadV: btnPadV,
         ),
-        SizedBox(height: compact ? 4 : 6),
+        SizedBox(height: actionGap),
         _OpenSignalButton(
           signalId: signal.id,
           onOpen: onOpenSignal,
-          compact: compact,
+          btnSize: btnSize,
+          btnMinHeight: btnMinHeight,
+          btnPadV: btnPadV,
         ),
       ],
     );
   }
 }
 
-/// Sizes civic evidence to the declared presentation aspect without stretching.
-///
-/// Uses the full remaining media slot. Portrait and square keep exact source
-/// ratios. Landscape may grow taller within a still-landscape bound (down to
-/// ~4:3) so the photo uses leftover editorial height via controlled cover,
-/// without becoming a portrait frame or stretching pixels.
-class _AdaptiveEvidenceMedia extends StatelessWidget {
-  const _AdaptiveEvidenceMedia({
-    required this.signal,
-    required this.maxWidth,
-    required this.maxHeight,
-  });
-
-  final CommunitySignalMock signal;
-  final double maxWidth;
-  final double maxHeight;
-
-  /// Widest landscape source ratio (~16:9).
-  static const double _landscapeSourceAspect = 16 / 9;
-
-  /// Tallest frame still read as landscape (~4:3).
-  static const double _landscapeMinAspect = 4 / 3;
-
-  @override
-  Widget build(BuildContext context) {
-    final CivicMediaPresentation presentation = signal.mediaPresentation;
-    final Size fitted = _fitForPresentation(
-      presentation: presentation,
-      maxWidth: maxWidth,
-      maxHeight: maxHeight,
-    );
-
-    return Semantics(
-      label:
-          'Civic evidence, ${presentation.keyName} photograph for ${signal.placeLabel}',
-      child: SizedBox(
-        key: Key('signal_media_frame_${signal.id}_${presentation.keyName}'),
-        width: fitted.width,
-        height: fitted.height,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(
-                signal.imageAsset,
-                key: Key('signal_image_${signal.id}'),
-                fit: BoxFit.cover,
-                alignment: signal.mediaFocus.alignment,
-                filterQuality: FilterQuality.medium,
-                semanticLabel:
-                    'Fictional prototype civic evidence image for ${signal.placeLabel}',
-              ),
-              Positioned(
-                left: 8,
-                bottom: 8,
-                right: 8,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: const Color(0xCC111111),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.place_outlined,
-                            size: 13,
-                            color: CommunitySignalCard.white,
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              signal.placeLabel,
-                              key: Key('signal_place_${signal.id}'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: CommunitySignalCard.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  static Size _fitForPresentation({
-    required CivicMediaPresentation presentation,
-    required double maxWidth,
-    required double maxHeight,
-  }) {
-    if (maxWidth <= 0 || maxHeight <= 0) {
-      return Size.zero;
-    }
-
-    if (presentation == CivicMediaPresentation.landscape) {
-      return _fitLandscape(maxWidth: maxWidth, maxHeight: maxHeight);
-    }
-
-    return _fitExact(
-      maxWidth: maxWidth,
-      maxHeight: maxHeight,
-      aspectRatio: presentation.aspectRatio,
-    );
-  }
-
-  /// Full-width landscape that grows into leftover height while staying wide.
-  static Size _fitLandscape({
-    required double maxWidth,
-    required double maxHeight,
-  }) {
-    final double width = maxWidth;
-    final double naturalHeight = width / _landscapeSourceAspect;
-    if (naturalHeight >= maxHeight) {
-      // Slot shorter than 16:9 — exact fit inside bounds.
-      return _fitExact(
-        maxWidth: maxWidth,
-        maxHeight: maxHeight,
-        aspectRatio: _landscapeSourceAspect,
-      );
-    }
-    // Grow toward filling the slot, but never steeper than ~4:3.
-    final double maxGrowHeight = width / _landscapeMinAspect;
-    final double height = math.min(maxHeight, maxGrowHeight);
-    return Size(width, height);
-  }
-
-  static Size _fitExact({
-    required double maxWidth,
-    required double maxHeight,
-    required double aspectRatio,
-  }) {
-    double width = maxWidth;
-    double height = width / aspectRatio;
-    if (height > maxHeight) {
-      height = maxHeight;
-      width = height * aspectRatio;
-    }
-    width = math.min(width, maxWidth);
-    height = math.min(height, maxHeight);
-    return Size(width, height);
-  }
-}
-
-class _AuthorRow extends StatelessWidget {
-  const _AuthorRow({required this.signal, required this.compact});
-
-  final CommunitySignalMock signal;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final String initials = signal.authorName.trim().isEmpty
-        ? '?'
-        : signal.authorName
-              .trim()
-              .split(RegExp(r'\s+'))
-              .take(2)
-              .map((String p) => p[0].toUpperCase())
-              .join();
-
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: compact ? 12 : 14,
-          backgroundColor: const Color(0xFF2C2C2C),
-          child: Text(
-            initials,
-            style: TextStyle(
-              color: CommunitySignalCard.white,
-              fontSize: compact ? 10 : 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                signal.authorName,
-                key: Key('signal_author_${signal.id}'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: CommunitySignalCard.white,
-                  fontSize: compact ? 13 : 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                '${signal.localRelationship} · ${signal.cityZone}',
-                key: Key('signal_meta_${signal.id}'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: CommunitySignalCard.soft,
-                  fontSize: compact ? 11 : 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            signal.observedTime,
-            textAlign: TextAlign.right,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: CommunitySignalCard.soft,
-              fontSize: compact ? 10.5 : 11.5,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatusRow extends StatelessWidget {
-  const _StatusRow({required this.signal, required this.compact});
-
-  final CommunitySignalMock signal;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Flexible(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: const Color(0xFF222222),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF333333)),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: compact ? 8 : 10,
-                vertical: compact ? 4 : 5,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE8C547),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      signal.status.label,
-                      key: Key('signal_status_${signal.id}'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: CommunitySignalCard.white,
-                        fontSize: compact ? 11 : 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            signal.cityZone,
-            key: Key('signal_zone_${signal.id}'),
-            textAlign: TextAlign.right,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: CommunitySignalCard.soft,
-              fontSize: compact ? 11 : 12,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ConfirmationLine extends StatelessWidget {
-  const _ConfirmationLine({required this.count, required this.signalId});
-
-  final int count;
-  final String signalId;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      liveRegion: true,
-      child: Row(
-        children: [
-          const Icon(
-            Icons.groups_outlined,
-            size: 16,
-            color: CommunitySignalCard.muted,
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              'Confirmed by $count people nearby',
-              key: Key('signal_confirmation_$signalId'),
-              style: const TextStyle(
-                color: CommunitySignalCard.muted,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w500,
-                height: 1.3,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SeeThisTooButton extends StatelessWidget {
-  const _SeeThisTooButton({
+class _ConfirmButton extends StatelessWidget {
+  const _ConfirmButton({
     required this.signalId,
     required this.hasConfirmed,
     required this.onConfirm,
-    required this.compact,
+    required this.btnSize,
+    required this.btnMinHeight,
+    required this.btnPadV,
   });
 
   final String signalId;
   final bool hasConfirmed;
   final VoidCallback onConfirm;
-  final bool compact;
+  final double btnSize;
+  final double btnMinHeight;
+  final double btnPadV;
 
   @override
   Widget build(BuildContext context) {
@@ -590,27 +458,33 @@ class _SeeThisTooButton extends StatelessWidget {
         : 'I SEE THIS TOO';
 
     return SizedBox(
-      height: compact ? 42 : 46,
       width: double.infinity,
+      height: btnMinHeight,
       child: OutlinedButton(
         key: Key('signal_confirm_$signalId'),
         onPressed: hasConfirmed ? null : onConfirm,
         style: OutlinedButton.styleFrom(
-          foregroundColor: CommunitySignalCard.orange,
-          disabledForegroundColor: CommunitySignalCard.orange.withValues(
-            alpha: 0.85,
+          foregroundColor: CommunitySignalCard.accent,
+          disabledForegroundColor: CommunitySignalCard.accent,
+          backgroundColor: hasConfirmed
+              ? const Color(0x1AE8772E)
+              : Colors.transparent,
+          disabledBackgroundColor: const Color(0x1AE8772E),
+          side: const BorderSide(color: CommunitySignalCard.accent, width: 1.5),
+          padding: EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: btnPadV * 0.2,
           ),
-          side: const BorderSide(color: CommunitySignalCard.orange, width: 1.4),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(26),
-          ),
+          minimumSize: Size(0, btnMinHeight),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: const StadiumBorder(),
           textStyle: TextStyle(
-            fontSize: compact ? 13 : 14,
+            fontSize: btnSize,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.4,
+            letterSpacing: hasConfirmed ? 0.02 * btnSize : 0.04 * btnSize,
           ),
         ),
-        child: Text(label),
+        child: Text(label, textAlign: TextAlign.center),
       ),
     );
   }
@@ -620,35 +494,43 @@ class _OpenSignalButton extends StatelessWidget {
   const _OpenSignalButton({
     required this.signalId,
     required this.onOpen,
-    required this.compact,
+    required this.btnSize,
+    required this.btnMinHeight,
+    required this.btnPadV,
   });
 
   final String signalId;
   final VoidCallback onOpen;
-  final bool compact;
+  final double btnSize;
+  final double btnMinHeight;
+  final double btnPadV;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: compact ? 42 : 46,
       width: double.infinity,
-      child: FilledButton(
+      height: btnMinHeight,
+      child: OutlinedButton(
         key: Key('signal_open_$signalId'),
         onPressed: onOpen,
-        style: FilledButton.styleFrom(
-          backgroundColor: CommunitySignalCard.orange,
-          foregroundColor: const Color(0xFF111111),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(26),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xE0F5F5F5),
+          backgroundColor: const Color(0x8C141414),
+          side: const BorderSide(color: Color(0x2EFFFFFF), width: 1),
+          padding: EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: btnPadV * 0.2,
           ),
+          minimumSize: Size(0, btnMinHeight),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: const StadiumBorder(),
           textStyle: TextStyle(
-            fontSize: compact ? 14 : 15,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
+            fontSize: btnSize,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.01 * btnSize,
           ),
         ),
-        child: const Text('Open signal'),
+        child: const Text('Open signal', textAlign: TextAlign.center),
       ),
     );
   }

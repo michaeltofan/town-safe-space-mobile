@@ -1,13 +1,13 @@
-/// Immutable mock content for TOWN Feed V1 Community Signal cards.
+/// Immutable mock content for TOWN Feed — Experience Prototype V1 parity.
 ///
 /// **FICTIONAL PROTOTYPE CONTENT** — authors and incidents are not real.
-/// Images are fictional photorealistic prototype civic-evidence visuals,
-/// not verified real events.
+/// Copy and hierarchy match published Experience Prototype V1
+/// (`ace5062d37b5c368ebc0266b46cea6bee3cad7a9`).
 library;
 
 import 'package:flutter/painting.dart';
 
-/// Civic issue status labels approved for Feed V1.
+/// Civic issue status labels from Experience Prototype V1.
 enum CommunitySignalStatus {
   newSignal('New signal'),
   locallyConfirmed('Locally confirmed'),
@@ -20,10 +20,7 @@ enum CommunitySignalStatus {
   final String label;
 }
 
-/// Explicit photographic presentation mode for Feed V1 mock media.
-///
-/// The card adapts to the photograph; the photograph is not forced into one
-/// universal template. Ratios are source-asset targets, not stretched fits.
+/// Photographic presentation mode for full-bleed scene cover crops.
 enum CivicMediaPresentation {
   /// Wide civic context — approximately 16:9.
   landscape(1.7777778, 'landscape'),
@@ -36,67 +33,50 @@ enum CivicMediaPresentation {
 
   const CivicMediaPresentation(this.aspectRatio, this.keyName);
 
-  /// Width / height of the approved source asset for this mode.
   final double aspectRatio;
-
-  /// Stable key token for tests and semantics.
   final String keyName;
 }
 
-/// Focal alignment protecting the civic subject inside the media frame.
-enum CivicMediaFocus {
-  center(Alignment.center),
-  topCenter(Alignment.topCenter),
-  centerLeft(Alignment.centerLeft),
-  centerRight(Alignment.centerRight);
-
-  const CivicMediaFocus(this.alignment);
-
-  final Alignment alignment;
-}
-
-/// One fictional COMMUNITY SIGNAL used only in the Feed V1 prototype.
+/// One fictional COMMUNITY SIGNAL matching Experience Prototype V1 HTML.
 class CommunitySignalMock {
   const CommunitySignalMock({
     required this.id,
     required this.category,
     required this.authorName,
-    required this.localRelationship,
-    required this.cityZone,
     required this.observedTime,
     required this.status,
+    required this.area,
     required this.headline,
     required this.summary,
     required this.imageAsset,
-    required this.placeLabel,
     required this.initialConfirmationCount,
     required this.mediaPresentation,
-    this.mediaFocus = CivicMediaFocus.center,
+    required this.mediaFocus,
   });
 
   final String id;
   final String category;
   final String authorName;
-  final String localRelationship;
-  final String cityZone;
   final String observedTime;
   final CommunitySignalStatus status;
+
+  /// Neighbourhood-only area label (prototype `.status-area`).
+  final String area;
   final String headline;
   final String summary;
   final String imageAsset;
-  final String placeLabel;
   final int initialConfirmationCount;
-
-  /// Declared photographic presentation for adaptive card layout.
   final CivicMediaPresentation mediaPresentation;
 
-  /// Focal alignment when the rounded frame clips the asset.
-  final CivicMediaFocus mediaFocus;
+  /// Cover focal alignment matching prototype `object-position`.
+  final Alignment mediaFocus;
+
+  /// Prototype `.meta` line: `Author · observed time`.
+  String get metaLine => '$authorName · $observedTime';
 }
 
-/// Exactly three fictional Milano Community Signals for Feed V1.
+/// Exactly three fictional Milano Community Signals — Experience Prototype V1.
 ///
-/// FICTIONAL PROTOTYPE CONTENT — do not treat as real people or incidents.
 /// Card 1 landscape · Card 2 portrait · Card 3 square.
 const List<CommunitySignalMock>
 kMilanoFeedV1MockSignals = <CommunitySignalMock>[
@@ -104,52 +84,52 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
     id: 'milano-signal-1',
     category: 'SPAZIO PUBBLICO',
     authorName: 'Marta Rinaldi',
-    localRelationship: 'Residente del quartiere',
-    cityZone: 'Milano · Città Studi',
     observedTime: 'Osservato ieri',
     status: CommunitySignalStatus.locallyConfirmed,
+    area: 'Città Studi',
     headline: 'Marciapiede danneggiato davanti alla scuola di via Padova',
     summary:
-        'Le radici degli alberi hanno sollevato il marciapiede. Bambini, anziani e passeggini sono costretti a scendere sulla carreggiata.',
+        'Le radici hanno sollevato il marciapiede. Bambini e anziani sono '
+        'costretti sulla carreggiata.',
     imageAsset: 'assets/images/feed/signal_citta_studi_pavement.jpg',
-    placeLabel: 'Via Padova · Città Studi · Milano',
     initialConfirmationCount: 18,
     mediaPresentation: CivicMediaPresentation.landscape,
-    mediaFocus: CivicMediaFocus.center,
+    // object-position: 50% 42%
+    mediaFocus: Alignment(0, -0.16),
   ),
   CommunitySignalMock(
     id: 'milano-signal-2',
     category: 'ILLUMINAZIONE',
     authorName: 'Chiara Valli',
-    localRelationship: 'Genitore del quartiere',
-    cityZone: 'Milano · Porta Romana',
     observedTime: 'Segnalato due giorni fa',
     status: CommunitySignalStatus.reported,
+    area: 'Porta Romana',
     headline: 'Il percorso vicino alla scuola resta al buio la sera',
     summary:
-        'Diversi lampioni non funzionano lungo il tratto pedonale. Famiglie e residenti hanno già inviato una segnalazione al Comune.',
+        'Diversi lampioni non funzionano sul tratto pedonale. I residenti '
+        'hanno già segnalato il Comune.',
     imageAsset: 'assets/images/feed/signal_porta_romana_lighting.jpg',
-    placeLabel: 'Porta Romana · Milano',
     initialConfirmationCount: 11,
     mediaPresentation: CivicMediaPresentation.portrait,
-    mediaFocus: CivicMediaFocus.topCenter,
+    // object-position: 58% 40%
+    mediaFocus: Alignment(0.16, -0.20),
   ),
   CommunitySignalMock(
     id: 'milano-signal-3',
     category: 'LAVORI PUBBLICI',
     authorName: 'Luca Ferri',
-    localRelationship: 'Residente del quartiere',
-    cityZone: 'Milano · Lorenteggio',
     observedTime: 'Osservato questa settimana',
     status: CommunitySignalStatus.inProgress,
+    area: 'Lorenteggio',
     headline:
         'Il cantiere restringe il passaggio pedonale senza indicazioni chiare',
     summary:
-        'Il percorso temporaneo è stretto e poco segnalato. I residenti chiedono tempi chiari e una sistemazione più sicura durante i lavori.',
+        'Il percorso temporaneo è stretto e poco segnalato. Servono tempi '
+        'chiari e un passaggio più sicuro.',
     imageAsset: 'assets/images/feed/signal_lorenteggio_works.jpg',
-    placeLabel: 'Lorenteggio · Milano',
     initialConfirmationCount: 7,
     mediaPresentation: CivicMediaPresentation.square,
-    mediaFocus: CivicMediaFocus.center,
+    // object-position: 50% 45%
+    mediaFocus: Alignment(0, -0.10),
   ),
 ];
