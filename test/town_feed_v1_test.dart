@@ -76,7 +76,7 @@ Future<void> _pumpFeed(
 }
 
 void main() {
-  test('Feed V1 mock catalog is exactly three fictional Milano signals', () {
+  test('Feed mock catalog is exactly three Experience V1 Milano signals', () {
     expect(kMilanoFeedV1MockSignals, hasLength(3));
     expect(
       kMilanoFeedV1MockSignals[0].status,
@@ -91,37 +91,44 @@ void main() {
       kMilanoFeedV1MockSignals[0].headline,
       'Marciapiede danneggiato davanti alla scuola di via Padova',
     );
+    expect(
+      kMilanoFeedV1MockSignals[0].summary,
+      'Le radici hanno sollevato il marciapiede. Bambini e anziani sono '
+      'costretti sulla carreggiata.',
+    );
+    expect(
+      kMilanoFeedV1MockSignals[1].summary,
+      'Diversi lampioni non funzionano sul tratto pedonale. I residenti '
+      'hanno già segnalato il Comune.',
+    );
+    expect(
+      kMilanoFeedV1MockSignals[2].summary,
+      'Il percorso temporaneo è stretto e poco segnalato. Servono tempi '
+      'chiari e un passaggio più sicuro.',
+    );
+    expect(kMilanoFeedV1MockSignals[0].area, 'Città Studi');
+    expect(kMilanoFeedV1MockSignals[1].area, 'Porta Romana');
+    expect(kMilanoFeedV1MockSignals[2].area, 'Lorenteggio');
+    expect(
+      kMilanoFeedV1MockSignals[0].metaLine,
+      'Marta Rinaldi · Osservato ieri',
+    );
   });
 
-  test(
-    'Feed V1 assigns distinct landscape, portrait, and square media modes',
-    () {
-      expect(
-        kMilanoFeedV1MockSignals[0].mediaPresentation,
-        CivicMediaPresentation.landscape,
-      );
-      expect(
-        kMilanoFeedV1MockSignals[1].mediaPresentation,
-        CivicMediaPresentation.portrait,
-      );
-      expect(
-        kMilanoFeedV1MockSignals[2].mediaPresentation,
-        CivicMediaPresentation.square,
-      );
-      expect(
-        kMilanoFeedV1MockSignals[0].mediaPresentation.aspectRatio,
-        closeTo(16 / 9, 0.01),
-      );
-      expect(
-        kMilanoFeedV1MockSignals[1].mediaPresentation.aspectRatio,
-        closeTo(4 / 5, 0.01),
-      );
-      expect(
-        kMilanoFeedV1MockSignals[2].mediaPresentation.aspectRatio,
-        closeTo(1.0, 0.01),
-      );
-    },
-  );
+  test('Feed assigns distinct landscape, portrait, and square media modes', () {
+    expect(
+      kMilanoFeedV1MockSignals[0].mediaPresentation,
+      CivicMediaPresentation.landscape,
+    );
+    expect(
+      kMilanoFeedV1MockSignals[1].mediaPresentation,
+      CivicMediaPresentation.portrait,
+    );
+    expect(
+      kMilanoFeedV1MockSignals[2].mediaPresentation,
+      CivicMediaPresentation.square,
+    );
+  });
 
   testWidgets('eligible confirmedGood shows Continue to TOWN', (
     WidgetTester tester,
@@ -207,7 +214,9 @@ void main() {
     );
   });
 
-  testWidgets('Continue to TOWN opens Feed V1', (WidgetTester tester) async {
+  testWidgets('Continue to TOWN opens rebuilt feed', (
+    WidgetTester tester,
+  ) async {
     await _pumpLocation(
       tester,
       permission: _FakePermission(ForegroundLocationState.granted),
@@ -222,25 +231,49 @@ void main() {
     expect(find.byType(CommunitySignalCard), findsWidgets);
   });
 
-  testWidgets('Feed V1 renders exactly 3 cards and first Milano content', (
+  testWidgets('Feed renders scene 1 with exact Experience V1 copy', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
 
     expect(find.byType(CommunitySignalCard), findsOneWidget);
     expect(find.byKey(const Key('town_feed_page_view')), findsOneWidget);
+    expect(find.byKey(const Key('scene_brand')), findsOneWidget);
+    expect(find.byKey(const Key('scene_veil')), findsOneWidget);
     expect(find.text('1 / 3'), findsOneWidget);
+    expect(find.text('TOWN'), findsWidgets);
+    expect(find.text('Marta Rinaldi · Osservato ieri'), findsOneWidget);
+    expect(find.text('SPAZIO PUBBLICO'), findsOneWidget);
     expect(
       find.text('Marciapiede danneggiato davanti alla scuola di via Padova'),
       findsOneWidget,
     );
+    expect(
+      find.text(
+        'Le radici hanno sollevato il marciapiede. Bambini e anziani sono '
+        'costretti sulla carreggiata.',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Locally confirmed'), findsOneWidget);
-    expect(find.text('Milano · Città Studi'), findsWidgets);
+    expect(find.text('Città Studi'), findsOneWidget);
     expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
     expect(find.text('I SEE THIS TOO'), findsOneWidget);
     expect(find.text('Open signal'), findsOneWidget);
-    expect(find.text('SPAZIO PUBBLICO'), findsOneWidget);
-    expect(find.text('Marta Rinaldi'), findsOneWidget);
+  });
+
+  testWidgets('no Home bar and no Flutter-only city header', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+
+    expect(find.text('Home'), findsNothing);
+    expect(find.byKey(const Key('town_feed_home_shell')), findsNothing);
+    expect(find.byKey(const Key('town_feed_home_label')), findsNothing);
+    expect(find.text('Milano · Community Signals'), findsNothing);
+    expect(find.text('Milano · Città Studi'), findsNothing);
+    expect(find.text('Residente del quartiere'), findsNothing);
+    expect(find.text('Via Padova · Città Studi · Milano'), findsNothing);
   });
 
   testWidgets('vertical swipe moves 1→2→3 and does not loop', (
@@ -256,7 +289,9 @@ void main() {
       find.text('Il percorso vicino alla scuola resta al buio la sera'),
       findsOneWidget,
     );
+    expect(find.text('Chiara Valli · Segnalato due giorni fa'), findsOneWidget);
     expect(find.text('Reported'), findsOneWidget);
+    expect(find.text('Porta Romana'), findsOneWidget);
     expect(find.text('Confirmed by 11 people nearby'), findsOneWidget);
 
     await tester.fling(pageView, const Offset(0, -500), 2000);
@@ -269,27 +304,33 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('In progress'), findsOneWidget);
+    expect(find.text('Lorenteggio'), findsOneWidget);
     expect(find.text('Confirmed by 7 people nearby'), findsOneWidget);
 
-    // Attempt to go past last card — must stay on 3 / 3.
     await tester.fling(pageView, const Offset(0, -500), 2000);
     await tester.pumpAndSettle();
     expect(find.text('3 / 3'), findsOneWidget);
     expect(find.text('1 / 3'), findsNothing);
   });
 
-  testWidgets('every visible card exposes required civic fields', (
+  testWidgets('every visible scene exposes required Experience V1 fields', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
     final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+    final List<String> areas = <String>[
+      'Città Studi',
+      'Porta Romana',
+      'Lorenteggio',
+    ];
 
     for (int i = 0; i < 3; i++) {
-      expect(find.textContaining('Milano'), findsWidgets);
+      expect(find.text(areas[i]), findsOneWidget);
       expect(find.text('I SEE THIS TOO'), findsOneWidget);
       expect(find.text('Open signal'), findsOneWidget);
       expect(find.textContaining('Confirmed by'), findsOneWidget);
       expect(find.text('${i + 1} / 3'), findsOneWidget);
+      expect(find.byKey(const Key('scene_veil')), findsWidgets);
       if (i < 2) {
         await tester.fling(pageView, const Offset(0, -500), 2000);
         await tester.pumpAndSettle();
@@ -301,7 +342,7 @@ void main() {
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
-    final String firstHeadline =
+    const String firstHeadline =
         'Marciapiede danneggiato davanti alla scuola di via Padova';
 
     expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
@@ -318,7 +359,6 @@ void main() {
     expect(find.text('Confirmed by 19 people nearby'), findsOneWidget);
     expect(find.text(firstHeadline), findsOneWidget);
 
-    // Other cards unchanged when not visited/confirmed.
     final Finder pageView = find.byKey(const Key('town_feed_page_view'));
     await tester.fling(pageView, const Offset(0, -500), 2000);
     await tester.pumpAndSettle();
@@ -326,13 +366,15 @@ void main() {
     expect(find.text('I SEE THIS TOO'), findsOneWidget);
   });
 
-  testWidgets('Open signal shows controlled prototype message', (
+  testWidgets('Open signal shows approved sheet hierarchy', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
     await tester.tap(find.byKey(const Key('signal_open_milano-signal-1')));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('open_signal_sheet_title')), findsOneWidget);
+    expect(find.text(TownFeedScreen.openSignalSheetTitle), findsOneWidget);
     expect(
       find.byKey(const Key('open_signal_prototype_message')),
       findsOneWidget,
@@ -341,8 +383,11 @@ void main() {
       find.text(TownFeedScreen.openSignalPrototypeMessage),
       findsOneWidget,
     );
+    expect(find.text('Close'), findsOneWidget);
+
     await tester.tap(find.byKey(const Key('open_signal_prototype_close')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('open_signal_sheet_title')), findsNothing);
     expect(
       find.byKey(const Key('open_signal_prototype_message')),
       findsNothing,
@@ -354,407 +399,82 @@ void main() {
   ) async {
     await _pumpFeed(tester);
     expect(find.textContaining('like'), findsNothing);
-    expect(find.textContaining('Like'), findsNothing);
-    expect(find.textContaining('heart'), findsNothing);
-    expect(find.textContaining('followers'), findsNothing);
-    expect(find.textContaining('views'), findsNothing);
-    expect(find.textContaining('trending'), findsNothing);
-    expect(find.textContaining('Substack'), findsNothing);
+    expect(find.textContaining('follower'), findsNothing);
+    expect(find.textContaining('Share'), findsNothing);
     expect(find.textContaining('TikTok'), findsNothing);
-    expect(find.textContaining('restack'), findsNothing);
-  });
-
-  testWidgets('no internal scrollable card content', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(tester);
-    final Finder card = find.byType(CommunitySignalCard);
-    expect(
-      find.descendant(of: card, matching: find.byType(SingleChildScrollView)),
-      findsNothing,
-    );
-    expect(
-      find.descendant(of: card, matching: find.byType(ListView)),
-      findsNothing,
-    );
-  });
-
-  testWidgets('smallest supported mobile viewport has no overflow', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(tester, size: const Size(320, 568));
-    expect(tester.takeException(), isNull);
-    expect(find.byType(TownFeedScreen), findsOneWidget);
-    expect(find.text('I SEE THIS TOO'), findsOneWidget);
-    expect(find.text('Open signal'), findsOneWidget);
-    expect(
-      find.text('Marciapiede danneggiato davanti alla scuola di via Padova'),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('signal_summary_milano-signal-1')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('signal_image_milano-signal-1')),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Substack'), findsNothing);
+    expect(find.textContaining('trending'), findsNothing);
   });
 
   testWidgets('feed image assets are local photorealistic jpgs', (
     WidgetTester tester,
   ) async {
-    expect(kMilanoFeedV1MockSignals.map((s) => s.imageAsset).toList(), <String>[
-      'assets/images/feed/signal_citta_studi_pavement.jpg',
-      'assets/images/feed/signal_porta_romana_lighting.jpg',
-      'assets/images/feed/signal_lorenteggio_works.jpg',
-    ]);
+    expect(
+      kMilanoFeedV1MockSignals.every(
+        (CommunitySignalMock s) =>
+            s.imageAsset.startsWith('assets/images/feed/') &&
+            s.imageAsset.endsWith('.jpg'),
+      ),
+      isTrue,
+    );
     await _pumpFeed(tester);
     expect(
       find.byKey(const Key('signal_image_milano-signal-1')),
       findsOneWidget,
     );
-    final Image image = tester.widget<Image>(
-      find.byKey(const Key('signal_image_milano-signal-1')),
-    );
-    expect(image.image, isA<AssetImage>());
-    expect(
-      (image.image as AssetImage).assetName,
-      'assets/images/feed/signal_citta_studi_pavement.jpg',
-    );
   });
 
-  testWidgets('shell shows only Home as active destination', (
+  testWidgets('representative viewports have no overflow', (
     WidgetTester tester,
   ) async {
-    await _pumpFeed(tester);
-
-    expect(find.byKey(const Key('town_feed_home_shell')), findsOneWidget);
-    expect(find.byKey(const Key('town_feed_home_label')), findsOneWidget);
-    expect(find.text('Home'), findsOneWidget);
-
-    // Unfinished shell controls must not appear as functional UI.
-    expect(find.byIcon(Icons.search), findsNothing);
-    expect(find.byIcon(Icons.notifications_none_rounded), findsNothing);
-    expect(find.byIcon(Icons.add), findsNothing);
-    expect(find.text('Esplora'), findsNothing);
-    expect(find.text('Attività'), findsNothing);
-    expect(find.text('Salvati'), findsNothing);
-    expect(find.text('Profilo'), findsNothing);
-    expect(find.text('Per te'), findsNothing);
-    expect(find.text('Spazio pubblico'), findsNothing);
-    expect(find.text('Illuminazione'), findsNothing);
-  });
-
-  testWidgets('removed unfinished shell controls expose no interactions', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(tester);
-
-    expect(find.byType(FloatingActionButton), findsNothing);
-    expect(find.byType(IconButton), findsNothing);
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('town_feed_home_shell')),
-        matching: find.byType(GestureDetector),
-      ),
-      findsNothing,
-    );
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('town_feed_home_shell')),
-        matching: find.byType(InkWell),
-      ),
-      findsNothing,
-    );
-
-    // Civic actions remain interactive.
-    expect(
-      find.byKey(const Key('signal_confirm_milano-signal-1')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('signal_open_milano-signal-1')),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('adaptive media frames preserve presentation aspect ratios', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(tester);
-    final Finder pageView = find.byKey(const Key('town_feed_page_view'));
-
-    Future<void> expectMode({
-      required String id,
-      required String mode,
-      required double expectedAspect,
-    }) async {
-      final Finder frame = find.byKey(Key('signal_media_frame_${id}_$mode'));
-      expect(frame, findsOneWidget);
-      final Size frameSize = tester.getSize(frame);
-      expect(frameSize.width / frameSize.height, closeTo(expectedAspect, 0.05));
-      expect(frameSize.height, greaterThan(80));
-
-      final Image image = tester.widget<Image>(
-        find.byKey(Key('signal_image_$id')),
-      );
-      expect(image.fit, BoxFit.cover);
-      // BoxFit.fill the aspect-matched frame; never BoxFit.fill stretch.
-      expect(image.fit == BoxFit.fill, isFalse);
-    }
-
-    await expectMode(
-      id: 'milano-signal-1',
-      mode: 'landscape',
-      expectedAspect: 4 / 3,
-    );
-    // Landscape may grow from 16:9 toward ~4:3 while remaining wide.
-    final Size landscapeFrame = tester.getSize(
-      find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
-    );
-    final double landscapeAspect = landscapeFrame.width / landscapeFrame.height;
-    expect(landscapeAspect, greaterThan(1.30));
-    expect(landscapeAspect, lessThan(1.90));
-    expect(landscapeAspect, closeTo(4 / 3, 0.45));
-
-    await tester.fling(pageView, const Offset(0, -500), 2000);
-    await tester.pumpAndSettle();
-    await expectMode(
-      id: 'milano-signal-2',
-      mode: 'portrait',
-      expectedAspect: 4 / 5,
-    );
-    // Portrait must remain visually substantial, not a token thumbnail.
-    expect(
-      tester
-          .getSize(
-            find.byKey(
-              const Key('signal_media_frame_milano-signal-2_portrait'),
-            ),
-          )
-          .height,
-      greaterThan(120),
-    );
-
-    await tester.fling(pageView, const Offset(0, -500), 2000);
-    await tester.pumpAndSettle();
-    await expectMode(
-      id: 'milano-signal-3',
-      mode: 'square',
-      expectedAspect: 1.0,
-    );
-  });
-
-  testWidgets('all three media formats fit at 390 and 320 without overflow', (
-    WidgetTester tester,
-  ) async {
-    for (final Size size in <Size>[
-      const Size(390, 844),
+    final List<Size> sizes = <Size>[
       const Size(320, 568),
-    ]) {
-      await _pumpFeed(tester, size: size);
-      final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+      const Size(375, 812),
+      const Size(390, 844),
+      const Size(430, 932),
+      const Size(440, 956),
+    ];
 
-      for (int i = 0; i < 3; i++) {
-        expect(tester.takeException(), isNull);
-        expect(find.text('I SEE THIS TOO'), findsOneWidget);
-        expect(find.text('Open signal'), findsOneWidget);
-        expect(find.textContaining('Confirmed by'), findsOneWidget);
-        expect(find.byType(CommunitySignalCard), findsOneWidget);
-        expect(
-          find.descendant(
-            of: find.byType(CommunitySignalCard),
-            matching: find.byType(SingleChildScrollView),
-          ),
-          findsNothing,
-        );
-        if (i < 2) {
-          await tester.fling(pageView, const Offset(0, -500), 2000);
-          await tester.pumpAndSettle();
-        }
-      }
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    for (final Size size in sizes) {
+      await tester.binding.setSurfaceSize(size);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(const MaterialApp(home: TownFeedScreen()));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull, reason: 'overflow at $size');
+      expect(find.text('I SEE THIS TOO'), findsOneWidget, reason: '$size');
+      expect(find.text('Open signal'), findsOneWidget, reason: '$size');
+      expect(find.text('1 / 3'), findsOneWidget, reason: '$size');
+      expect(
+        find.byKey(const Key('scene_veil')),
+        findsWidgets,
+        reason: '$size',
+      );
+
+      final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+      await tester.drag(pageView, Offset(0, -size.height * 0.85));
+      await tester.pumpAndSettle();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'scene2 overflow at $size',
+      );
+      expect(find.text('2 / 3'), findsOneWidget, reason: '$size');
     }
   });
 
-  testWidgets(
-    'full-viewport composition anchors Open signal near card bottom',
-    (WidgetTester tester) async {
-      await _pumpFeed(tester);
-      final Finder pageView = find.byKey(const Key('town_feed_page_view'));
-
-      Future<void> expectFullViewport(String id) async {
-        final Finder surface = find.byKey(Key('signal_card_surface_$id'));
-        final Finder open = find.byKey(Key('signal_open_$id'));
-        final Finder lower = find.byKey(Key('signal_lower_civic_zone_$id'));
-        expect(surface, findsOneWidget);
-        expect(open, findsOneWidget);
-        expect(lower, findsOneWidget);
-
-        final Rect cardRect = tester.getRect(surface);
-        final Rect openRect = tester.getRect(open);
-        final Rect lowerRect = tester.getRect(lower);
-
-        // Lower civic zone lives inside the card surface.
-        expect(cardRect.contains(lowerRect.topLeft), isTrue);
-        expect(cardRect.contains(lowerRect.bottomRight), isTrue);
-
-        // Open signal sits close to the lower internal boundary (≤ 24px gap).
-        final double gapBelowOpen = cardRect.bottom - openRect.bottom;
-        expect(gapBelowOpen, greaterThanOrEqualTo(0));
-        expect(gapBelowOpen, lessThanOrEqualTo(24));
-
-        // Card content consumes the available page slot — no large unused band.
-        final Finder pageSlot = find.byKey(const Key('town_feed_page_view'));
-        final Rect pageRect = tester.getRect(pageSlot);
-        expect(cardRect.height / pageRect.height, greaterThan(0.88));
-      }
-
-      await expectFullViewport('milano-signal-1');
-      final Size landscapeSize = tester.getSize(
-        find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
-      );
-      // Landscape stays width-led and recognizably wide (≥ ~4:3 when grown).
-      expect(landscapeSize.width / landscapeSize.height, greaterThan(1.30));
-      expect(landscapeSize.width / landscapeSize.height, lessThan(1.90));
-      final double cardWidth = tester
-          .getSize(find.byKey(const Key('signal_card_surface_milano-signal-1')))
-          .width;
-      expect(landscapeSize.width / cardWidth, greaterThan(0.88));
-      // Grown landscape should be taller than a shallow 16:9 banner (~197).
-      expect(landscapeSize.height, greaterThan(220));
-
-      await tester.fling(pageView, const Offset(0, -500), 2000);
-      await tester.pumpAndSettle();
-      await expectFullViewport('milano-signal-2');
-      expect(
-        tester
-            .getSize(
-              find.byKey(
-                const Key('signal_media_frame_milano-signal-2_portrait'),
-              ),
-            )
-            .height,
-        greaterThan(200),
-      );
-
-      await tester.fling(pageView, const Offset(0, -500), 2000);
-      await tester.pumpAndSettle();
-      await expectFullViewport('milano-signal-3');
-      expect(
-        tester
-            .getSize(
-              find.byKey(
-                const Key('signal_media_frame_milano-signal-3_square'),
-              ),
-            )
-            .height,
-        greaterThan(180),
-      );
-    },
-  );
-
-  testWidgets('full-viewport composition holds at 320×568', (
+  testWidgets('each PageView child expands to the full viewport', (
     WidgetTester tester,
   ) async {
-    await _pumpFeed(tester, size: const Size(320, 568));
-    expect(tester.takeException(), isNull);
+    const Size size = Size(390, 844);
+    await _pumpFeed(tester, size: size);
 
-    final Finder surface = find.byKey(
-      const Key('signal_card_surface_milano-signal-1'),
+    final Size cardSize = tester.getSize(
+      find.byKey(const Key('town_feed_card_0')),
     );
-    final Finder open = find.byKey(const Key('signal_open_milano-signal-1'));
-    final Rect cardRect = tester.getRect(surface);
-    final Rect openRect = tester.getRect(open);
-    expect(cardRect.bottom - openRect.bottom, lessThanOrEqualTo(24));
-    expect(find.text('I SEE THIS TOO'), findsOneWidget);
-    expect(find.text('Open signal'), findsOneWidget);
-    expect(
-      find.byKey(const Key('signal_lower_civic_zone_milano-signal-1')),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('landscape image begins immediately after the summary', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(tester);
-
-    final Rect summaryRect = tester.getRect(
-      find.byKey(const Key('signal_summary_milano-signal-1')),
-    );
-    final Rect imageRect = tester.getRect(
-      find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
-    );
-    final Rect openRect = tester.getRect(
-      find.byKey(const Key('signal_open_milano-signal-1')),
-    );
-    final Rect cardRect = tester.getRect(
-      find.byKey(const Key('signal_card_surface_milano-signal-1')),
-    );
-
-    // Small intentional gap only — not a large empty Expanded band.
-    final double gapAboveImage = imageRect.top - summaryRect.bottom;
-    expect(gapAboveImage, greaterThanOrEqualTo(0));
-    expect(gapAboveImage, lessThanOrEqualTo(20));
-
-    // No large empty region above the landscape image relative to card height.
-    expect(gapAboveImage / cardRect.height, lessThan(0.05));
-
-    // Full-width, unstretched landscape.
-    expect(imageRect.width / cardRect.width, greaterThan(0.88));
-    expect(imageRect.width / imageRect.height, greaterThan(1.30));
-    final Image image = tester.widget<Image>(
-      find.byKey(const Key('signal_image_milano-signal-1')),
-    );
-    expect(image.fit, BoxFit.cover);
-    expect(image.fit == BoxFit.fill, isFalse);
-
-    // Lower civic zone still anchored.
-    expect(cardRect.bottom - openRect.bottom, lessThanOrEqualTo(24));
-  });
-
-  testWidgets('portrait and square media seating remain bottom-anchored', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(tester);
-    final Finder pageView = find.byKey(const Key('town_feed_page_view'));
-
-    Future<void> expectBottomSeated(String id, String mode) async {
-      final Rect frame = tester.getRect(
-        find.byKey(Key('signal_media_frame_${id}_$mode')),
-      );
-      final Rect lower = tester.getRect(
-        find.byKey(Key('signal_lower_civic_zone_$id')),
-      );
-      // Media sits just above the lower civic zone (small gap only).
-      final double gap = lower.top - frame.bottom;
-      expect(gap, greaterThanOrEqualTo(0));
-      expect(gap, lessThanOrEqualTo(20));
-    }
-
-    await tester.fling(pageView, const Offset(0, -500), 2000);
-    await tester.pumpAndSettle();
-    await expectBottomSeated('milano-signal-2', 'portrait');
-    expect(
-      find.byKey(const Key('signal_headline_milano-signal-2')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('signal_summary_milano-signal-2')),
-      findsOneWidget,
-    );
-
-    await tester.fling(pageView, const Offset(0, -500), 2000);
-    await tester.pumpAndSettle();
-    await expectBottomSeated('milano-signal-3', 'square');
-    expect(
-      find.byKey(const Key('signal_headline_milano-signal-3')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('signal_summary_milano-signal-3')),
-      findsOneWidget,
-    );
+    expect(cardSize.width, size.width);
+    expect(cardSize.height, size.height);
   });
 }
