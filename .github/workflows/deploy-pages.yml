@@ -5,9 +5,10 @@ on:
     branches:
       - main
     paths-ignore:
-      # Touching only the temporary PR30 preview workflow must not
+      # Touching only temporary preview workflows must not
       # overwrite the combined Pages artifact with a root-only build.
       - '.github/workflows/deploy-pr30-preview.yml'
+      - '.github/workflows/deploy-experience-v1.yml'
   workflow_dispatch:
 
 permissions:
