@@ -222,12 +222,12 @@ void main() {
     expect(find.byType(CommunitySignalCard), findsWidgets);
   });
 
-  testWidgets('Feed V1 renders exactly 3 cards and first Milano content', (
+  testWidgets('Feed V1.1 renders exactly 3 full-screen scenes', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
 
-    expect(find.byType(CommunitySignalCard), findsOneWidget);
+    expect(find.byType(CommunitySignalCard), findsWidgets);
     expect(find.byKey(const Key('town_feed_page_view')), findsOneWidget);
     expect(find.text('1 / 3'), findsOneWidget);
     expect(
@@ -235,12 +235,13 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Locally confirmed'), findsOneWidget);
-    expect(find.text('Milano · Città Studi'), findsWidgets);
+    expect(find.text('Città Studi'), findsOneWidget);
     expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
     expect(find.text('I SEE THIS TOO'), findsOneWidget);
     expect(find.text('Open signal'), findsOneWidget);
     expect(find.text('SPAZIO PUBBLICO'), findsOneWidget);
-    expect(find.text('Marta Rinaldi'), findsOneWidget);
+    expect(find.textContaining('Marta Rinaldi'), findsOneWidget);
+    expect(find.textContaining('Osservato ieri'), findsOneWidget);
   });
 
   testWidgets('vertical swipe moves 1→2→3 and does not loop', (
@@ -278,14 +279,19 @@ void main() {
     expect(find.text('1 / 3'), findsNothing);
   });
 
-  testWidgets('every visible card exposes required civic fields', (
+  testWidgets('every visible scene exposes required civic fields', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
     final Finder pageView = find.byKey(const Key('town_feed_page_view'));
+    final List<String> zones = <String>[
+      'Città Studi',
+      'Porta Romana',
+      'Lorenteggio',
+    ];
 
     for (int i = 0; i < 3; i++) {
-      expect(find.textContaining('Milano'), findsWidgets);
+      expect(find.text(zones[i]), findsOneWidget);
       expect(find.text('I SEE THIS TOO'), findsOneWidget);
       expect(find.text('Open signal'), findsOneWidget);
       expect(find.textContaining('Confirmed by'), findsOneWidget);
@@ -424,16 +430,17 @@ void main() {
     );
   });
 
-  testWidgets('shell shows only Home as active destination', (
+  testWidgets('Feed V1.1 has no permanent Home bar or outer card border', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
 
-    expect(find.byKey(const Key('town_feed_home_shell')), findsOneWidget);
-    expect(find.byKey(const Key('town_feed_home_label')), findsOneWidget);
-    expect(find.text('Home'), findsOneWidget);
+    expect(find.byKey(const Key('town_feed_home_shell')), findsNothing);
+    expect(find.byKey(const Key('town_feed_home_label')), findsNothing);
+    expect(find.text('Home'), findsNothing);
+    expect(find.byIcon(Icons.home_rounded), findsNothing);
 
-    // Unfinished shell controls must not appear as functional UI.
+    // Unfinished shell controls must not appear.
     expect(find.byIcon(Icons.search), findsNothing);
     expect(find.byIcon(Icons.notifications_none_rounded), findsNothing);
     expect(find.byIcon(Icons.add), findsNothing);
@@ -442,41 +449,74 @@ void main() {
     expect(find.text('Salvati'), findsNothing);
     expect(find.text('Profilo'), findsNothing);
     expect(find.text('Per te'), findsNothing);
-    expect(find.text('Spazio pubblico'), findsNothing);
-    expect(find.text('Illuminazione'), findsNothing);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byType(IconButton), findsNothing);
+
+    // Scene surface is a full-bleed ColoredBox — not a bordered card panel.
+    expect(
+      find.byKey(const Key('signal_card_surface_milano-signal-1')),
+      findsOneWidget,
+    );
+    final ColoredBox surface = tester.widget<ColoredBox>(
+      find.byKey(const Key('signal_card_surface_milano-signal-1')),
+    );
+    expect(surface.color, const Color(0xFF0A0A0A));
+    expect(
+      find.byWidgetPredicate(
+        (Widget w) =>
+            w.key == const Key('signal_card_surface_milano-signal-1') &&
+            w is DecoratedBox,
+      ),
+      findsNothing,
+    );
   });
 
-  testWidgets('removed unfinished shell controls expose no interactions', (
+  testWidgets('Feed V1.1 typography is larger and Open signal is secondary', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
 
-    expect(find.byType(FloatingActionButton), findsNothing);
-    expect(find.byType(IconButton), findsNothing);
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('town_feed_home_shell')),
-        matching: find.byType(GestureDetector),
-      ),
-      findsNothing,
+    final Text headline = tester.widget<Text>(
+      find.byKey(const Key('signal_headline_milano-signal-1')),
     );
     expect(
-      find.descendant(
-        of: find.byKey(const Key('town_feed_home_shell')),
-        matching: find.byType(InkWell),
+      headline.style!.fontSize!,
+      greaterThan(CommunitySignalCard.previousCompactHeadlinePx),
+    );
+    expect(headline.style!.fontSize!, greaterThanOrEqualTo(22));
+
+    final Text summary = tester.widget<Text>(
+      find.byKey(const Key('signal_summary_milano-signal-1')),
+    );
+    expect(summary.style!.fontSize!, greaterThanOrEqualTo(16));
+
+    final Text status = tester.widget<Text>(
+      find.byKey(const Key('signal_status_milano-signal-1')),
+    );
+    expect(status.style!.fontSize!, greaterThanOrEqualTo(15));
+
+    final Text confirmation = tester.widget<Text>(
+      find.byKey(const Key('signal_confirmation_milano-signal-1')),
+    );
+    expect(confirmation.style!.fontSize!, greaterThanOrEqualTo(15));
+
+    // Primary civic action remains OutlinedButton (orange).
+    expect(
+      find.byWidgetPredicate(
+        (Widget w) =>
+            w is OutlinedButton &&
+            (w.key == const Key('signal_confirm_milano-signal-1')),
       ),
-      findsNothing,
+      findsOneWidget,
     );
 
-    // Civic actions remain interactive.
-    expect(
-      find.byKey(const Key('signal_confirm_milano-signal-1')),
-      findsOneWidget,
-    );
-    expect(
+    // Secondary Open signal is a quieter TextButton — not solid orange fill.
+    final TextButton open = tester.widget<TextButton>(
       find.byKey(const Key('signal_open_milano-signal-1')),
-      findsOneWidget,
     );
+    final Color? bg = open.style?.backgroundColor?.resolve(<WidgetState>{});
+    expect(bg, isNot(CommunitySignalCard.orange));
+    expect(find.byType(FilledButton), findsNothing);
   });
 
   testWidgets('adaptive media frames preserve presentation aspect ratios', (
@@ -494,13 +534,12 @@ void main() {
       expect(frame, findsOneWidget);
       final Size frameSize = tester.getSize(frame);
       expect(frameSize.width / frameSize.height, closeTo(expectedAspect, 0.05));
-      expect(frameSize.height, greaterThan(80));
+      expect(frameSize.height, greaterThan(120));
 
       final Image image = tester.widget<Image>(
         find.byKey(Key('signal_image_$id')),
       );
       expect(image.fit, BoxFit.cover);
-      // BoxFit.fill the aspect-matched frame; never BoxFit.fill stretch.
       expect(image.fit == BoxFit.fill, isFalse);
     }
 
@@ -509,14 +548,19 @@ void main() {
       mode: 'landscape',
       expectedAspect: 4 / 3,
     );
-    // Landscape may grow from 16:9 toward ~4:3 while remaining wide.
     final Size landscapeFrame = tester.getSize(
       find.byKey(const Key('signal_media_frame_milano-signal-1_landscape')),
     );
     final double landscapeAspect = landscapeFrame.width / landscapeFrame.height;
     expect(landscapeAspect, greaterThan(1.30));
     expect(landscapeAspect, lessThan(1.90));
-    expect(landscapeAspect, closeTo(4 / 3, 0.45));
+
+    // Photograph dominates the scene height on a phone viewport.
+    final Size sceneSize = tester.getSize(
+      find.byKey(const Key('signal_card_surface_milano-signal-1')),
+    );
+    expect(landscapeFrame.height / sceneSize.height, greaterThan(0.28));
+    expect(landscapeFrame.width / sceneSize.width, greaterThan(0.88));
 
     await tester.fling(pageView, const Offset(0, -500), 2000);
     await tester.pumpAndSettle();
@@ -525,7 +569,6 @@ void main() {
       mode: 'portrait',
       expectedAspect: 4 / 5,
     );
-    // Portrait must remain visually substantial, not a token thumbnail.
     expect(
       tester
           .getSize(
@@ -534,7 +577,7 @@ void main() {
             ),
           )
           .height,
-      greaterThan(120),
+      greaterThan(180),
     );
 
     await tester.fling(pageView, const Offset(0, -500), 2000);
@@ -546,11 +589,13 @@ void main() {
     );
   });
 
-  testWidgets('all three media formats fit at 390 and 320 without overflow', (
+  testWidgets('all required mobile targets fit without overflow', (
     WidgetTester tester,
   ) async {
     for (final Size size in <Size>[
       const Size(390, 844),
+      const Size(393, 852),
+      const Size(430, 932),
       const Size(320, 568),
     ]) {
       await _pumpFeed(tester, size: size);
@@ -561,7 +606,8 @@ void main() {
         expect(find.text('I SEE THIS TOO'), findsOneWidget);
         expect(find.text('Open signal'), findsOneWidget);
         expect(find.textContaining('Confirmed by'), findsOneWidget);
-        expect(find.byType(CommunitySignalCard), findsOneWidget);
+        expect(find.byType(CommunitySignalCard), findsWidgets);
+        expect(find.byKey(const Key('town_feed_home_shell')), findsNothing);
         expect(
           find.descendant(
             of: find.byType(CommunitySignalCard),
@@ -569,6 +615,15 @@ void main() {
           ),
           findsNothing,
         );
+        // One scene fills the PageView viewport.
+        final Rect pageRect = tester.getRect(pageView);
+        final Finder surface = find.byKey(
+          Key('signal_card_surface_${kMilanoFeedV1MockSignals[i].id}'),
+        );
+        if (surface.evaluate().isNotEmpty) {
+          final Rect sceneRect = tester.getRect(surface);
+          expect(sceneRect.height / pageRect.height, greaterThan(0.92));
+        }
         if (i < 2) {
           await tester.fling(pageView, const Offset(0, -500), 2000);
           await tester.pumpAndSettle();
