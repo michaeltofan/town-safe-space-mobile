@@ -2,8 +2,14 @@ name: Deploy PR30 temporary preview
 
 # Temporary combined GitHub Pages publish for real-iPhone review of PR #30.
 # Production root stays the merged Feed V1; PR #30 is only under /pr30-preview/.
-# Does not merge PR #30 product code. Trigger manually via workflow_dispatch only.
+# Does not merge PR #30 product code. Triggered by push of this workflow on main
+# (github-pages environment only allows the main branch).
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-pr30-preview.yml'
   workflow_dispatch:
 
 permissions:
