@@ -1479,6 +1479,15 @@ void main() {
         await tester.tap(find.byKey(const Key('continue_to_town')));
         await tester.pumpAndSettle();
         expect(find.byType(TownFeedScreen), findsOneWidget);
+        final TownFeedScreen feed = tester.widget(find.byType(TownFeedScreen));
+        expect(feed.selectedCountry, 'Germany');
+        expect(feed.selectedCity, 'Munich');
+        expect(
+          find.text('Der Gehweg ist hier kaum noch sicher passierbar.'),
+          findsOneWidget,
+        );
+        expect(find.text('Signal öffnen'), findsOneWidget);
+        expect(find.text('Città Studi'), findsNothing);
       },
     );
 

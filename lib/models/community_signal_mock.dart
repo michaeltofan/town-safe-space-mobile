@@ -133,3 +133,74 @@ kMilanoFeedV1MockSignals = <CommunitySignalMock>[
     mediaFocus: Alignment(0, -0.10),
   ),
 ];
+
+/// Exactly three fictional Munich Community Signals — Feed V1 German.
+///
+/// Same visual presentation modes as Milano (landscape · portrait · square).
+/// Reuses the approved prototype photographs as fictional civic stand-ins;
+/// copy and neighbourhoods are Munich-specific.
+const List<CommunitySignalMock>
+kMunichFeedV1MockSignals = <CommunitySignalMock>[
+  CommunitySignalMock(
+    id: 'munich-signal-1',
+    category: 'ÖFFENTLICHER RAUM',
+    authorName: 'Anna Weber',
+    observedTime: 'Gestern beobachtet',
+    status: CommunitySignalStatus.locallyConfirmed,
+    area: 'Schwabing',
+    headline: 'Der Gehweg ist hier kaum noch sicher passierbar.',
+    summary:
+        'Unebene Platten verengen den Gehweg. Menschen mit Kinderwagen oder '
+        'Rollstuhl müssen auf die Straße ausweichen.',
+    imageAsset: 'assets/images/feed/signal_citta_studi_pavement.jpg',
+    initialConfirmationCount: 16,
+    mediaPresentation: CivicMediaPresentation.landscape,
+    mediaFocus: Alignment(0, -0.16),
+  ),
+  CommunitySignalMock(
+    id: 'munich-signal-2',
+    category: 'STRASSENBELEUCHTUNG',
+    authorName: 'Jonas Keller',
+    observedTime: 'Vor zwei Tagen gemeldet',
+    status: CommunitySignalStatus.reported,
+    area: 'Haidhausen',
+    headline: 'Mehrere Straßenlaternen bleiben am Abend dunkel.',
+    summary:
+        'Der Fußweg zwischen Wohnhäusern und Haltestelle ist kaum beleuchtet. '
+        'Anwohner haben die Störung bereits gemeldet.',
+    imageAsset: 'assets/images/feed/signal_porta_romana_lighting.jpg',
+    initialConfirmationCount: 12,
+    mediaPresentation: CivicMediaPresentation.portrait,
+    mediaFocus: Alignment(0.16, -0.20),
+  ),
+  CommunitySignalMock(
+    id: 'munich-signal-3',
+    category: 'ÖFFENTLICHE BAUARBEITEN',
+    authorName: 'Lukas Brandt',
+    observedTime: 'Diese Woche beobachtet',
+    status: CommunitySignalStatus.inProgress,
+    area: 'Sendling',
+    headline: 'Der provisorische Weg ist zu eng und schlecht ausgeschildert.',
+    summary:
+        'Fußgänger und Radfahrer teilen sich einen schmalen Durchgang. Es '
+        'fehlen klare Hinweise und ein sicherer Übergang.',
+    imageAsset: 'assets/images/feed/signal_lorenteggio_works.jpg',
+    initialConfirmationCount: 8,
+    mediaPresentation: CivicMediaPresentation.square,
+    mediaFocus: Alignment(0, -0.10),
+  ),
+];
+
+/// Resolves the Feed V1 catalog for a canonical city id.
+///
+/// No silent Milano fallback: unsupported cities throw.
+List<CommunitySignalMock> feedSignalsForCity(String city) {
+  switch (city) {
+    case 'Milano':
+      return kMilanoFeedV1MockSignals;
+    case 'Munich':
+      return kMunichFeedV1MockSignals;
+    default:
+      throw ArgumentError.value(city, 'city', 'Unsupported feed city');
+  }
+}

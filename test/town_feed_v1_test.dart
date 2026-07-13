@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:town_safe_space_mobile/geometry/point_in_polygon_engine.dart';
 import 'package:town_safe_space_mobile/models/community_signal_mock.dart';
+import 'package:town_safe_space_mobile/models/town_feed_copy.dart';
 import 'package:town_safe_space_mobile/screens/location_confirmation_screen.dart';
 import 'package:town_safe_space_mobile/screens/town_feed_screen.dart';
 import 'package:town_safe_space_mobile/screens/welcome_screen.dart';
@@ -10,7 +11,6 @@ import 'package:town_safe_space_mobile/services/city_boundary_classification_ser
 import 'package:town_safe_space_mobile/services/foreground_city_classification_bridge.dart';
 import 'package:town_safe_space_mobile/services/location_permission_service.dart';
 import 'package:town_safe_space_mobile/widgets/community_signal_card.dart';
-import 'package:town_safe_space_mobile/widgets/visitor_civic_commitment_gate.dart';
 
 class _FakePermission extends LocationPermissionService {
   _FakePermission(this.state);
@@ -38,9 +38,12 @@ class _FakeBridge extends ForegroundCityClassificationBridge {
   }
 }
 
-CityBoundaryClassificationResult _inside({required int accuracy}) {
+CityBoundaryClassificationResult _inside({
+  required int accuracy,
+  String city = 'Milano',
+}) {
   return CityBoundaryClassificationResult(
-    city: 'Milano',
+    city: city,
     containment: PointContainment.inside,
     accuracyMeters: accuracy,
     classifiedAt: DateTime.utc(2026, 1, 1),
@@ -70,14 +73,48 @@ Future<void> _pumpLocation(
 Future<void> _pumpFeed(
   WidgetTester tester, {
   Size size = const Size(390, 844),
+  String selectedCountry = 'Italy',
+  String selectedCity = 'Milano',
 }) async {
   await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
-  await tester.pumpWidget(const MaterialApp(home: TownFeedScreen()));
+  await tester.pumpWidget(
+    MaterialApp(
+      home: TownFeedScreen(
+        selectedCountry: selectedCountry,
+        selectedCity: selectedCity,
+      ),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
+Future<void> _pumpLocationForCity(
+  WidgetTester tester, {
+  required String country,
+  required String city,
+  required _FakePermission permission,
+  required _FakeBridge bridge,
+}) async {
+  await tester.binding.setSurfaceSize(const Size(390, 844));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+  await tester.pumpWidget(
+    MaterialApp(
+      home: LocationConfirmationScreen(
+        selectedCountry: country,
+        selectedCity: city,
+        permissionService: permission,
+        classificationBridge: bridge,
+      ),
+    ),
+  );
+  await tester.pump();
+}
+
 void main() {
+  const TownFeedCopy englishCopy = TownFeedCopy.english();
+  const TownFeedCopy germanCopy = TownFeedCopy.german();
+
   test('Feed mock catalog is exactly three Experience V1 Milano signals', () {
     expect(kMilanoFeedV1MockSignals, hasLength(3));
     expect(
@@ -231,6 +268,53 @@ void main() {
 
     expect(find.byType(TownFeedScreen), findsOneWidget);
     expect(find.byType(CommunitySignalCard), findsWidgets);
+    expect(
+      find.text('Marciapiede danneggiato davanti alla scuola di via Padova'),
+      findsOneWidget,
+    );
+    expect(find.text('Città Studi'), findsOneWidget);
+    expect(find.text('Open signal'), findsOneWidget);
+    expect(
+      find.text('Der Gehweg ist hier kaum noch sicher passierbar.'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Germany Munich Continue to TOWN opens German Munich feed', (
+    WidgetTester tester,
+  ) async {
+    await _pumpLocationForCity(
+      tester,
+      country: 'Germany',
+      city: 'Munich',
+      permission: _FakePermission(ForegroundLocationState.granted),
+      bridge: _FakeBridge(result: _inside(accuracy: 15, city: 'Munich')),
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Standort prüfen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('continue_to_town')));
+    await tester.pumpAndSettle();
+
+    final TownFeedScreen feed = tester.widget(find.byType(TownFeedScreen));
+    expect(feed.selectedCountry, 'Germany');
+    expect(feed.selectedCity, 'Munich');
+    expect(find.text('Schwabing'), findsOneWidget);
+    expect(
+      find.text('Der Gehweg ist hier kaum noch sicher passierbar.'),
+      findsOneWidget,
+    );
+    expect(find.text('ÖFFENTLICHER RAUM'), findsOneWidget);
+    expect(find.text('Lokal bestätigt'), findsOneWidget);
+    expect(find.text('ICH SEHE DAS AUCH'), findsOneWidget);
+    expect(find.text('Signal öffnen'), findsOneWidget);
+    expect(find.text('Von 16 Menschen in der Nähe bestätigt'), findsOneWidget);
+    expect(
+      find.text('Marciapiede danneggiato davanti alla scuola di via Padova'),
+      findsNothing,
+    );
+    expect(find.text('Città Studi'), findsNothing);
+    expect(find.text('Open signal'), findsNothing);
+    expect(find.text('I SEE THIS TOO'), findsNothing);
   });
 
   testWidgets('Feed renders scene 1 with exact Experience V1 copy', (
@@ -362,19 +446,19 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(VisitorCivicCommitmentCopy.invitationTitle),
+      find.text(englishCopy.visitorInvitationTitle),
       findsOneWidget,
     );
     expect(
-      find.text(VisitorCivicCommitmentCopy.invitationBody),
+      find.text(englishCopy.visitorInvitationBody),
       findsOneWidget,
     );
     expect(
-      find.text(VisitorCivicCommitmentCopy.invitationBodySecond),
+      find.text(englishCopy.visitorInvitationBodySecond),
       findsOneWidget,
     );
-    expect(find.text(VisitorCivicCommitmentCopy.joinAction), findsOneWidget);
-    expect(find.text(VisitorCivicCommitmentCopy.notNowAction), findsOneWidget);
+    expect(find.text(englishCopy.visitorJoinAction), findsOneWidget);
+    expect(find.text(englishCopy.visitorNotNowAction), findsOneWidget);
 
     // Feed swipe blocked while invitation is open.
     final Finder pageView = find.byKey(const Key('town_feed_page_view'));
@@ -395,11 +479,11 @@ void main() {
 
     expect(find.byKey(const Key('visitor_join_placeholder')), findsOneWidget);
     expect(
-      find.text(VisitorCivicCommitmentCopy.joinPlaceholderTitle),
+      find.text(englishCopy.visitorJoinPlaceholderTitle),
       findsOneWidget,
     );
     expect(
-      find.text(VisitorCivicCommitmentCopy.joinPlaceholderBody),
+      find.text(englishCopy.visitorJoinPlaceholderBody),
       findsOneWidget,
     );
     expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
@@ -434,7 +518,7 @@ void main() {
       find.byType(Navigator),
     );
     navigator.push(
-      MaterialPageRoute<void>(builder: (_) => const TownFeedScreen()),
+      MaterialPageRoute<void>(builder: (_) => TownFeedScreen()),
     );
     await tester.pumpAndSettle();
 
@@ -450,10 +534,10 @@ void main() {
     expect(find.byKey(const Key('town_feed_page_view')), findsNothing);
     expect(find.text('I SEE THIS TOO'), findsNothing);
     expect(find.text('Open signal'), findsNothing);
-    expect(find.text(VisitorCivicCommitmentCopy.endedTitle), findsOneWidget);
-    expect(find.text(VisitorCivicCommitmentCopy.endedBody), findsOneWidget);
+    expect(find.text(englishCopy.visitorEndedTitle), findsOneWidget);
+    expect(find.text(englishCopy.visitorEndedBody), findsOneWidget);
     expect(
-      find.text(VisitorCivicCommitmentCopy.leaveTownAction),
+      find.text(englishCopy.visitorLeaveTownAction),
       findsOneWidget,
     );
     expect(find.text('Back'), findsNothing);
@@ -476,16 +560,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('open_signal_sheet_title')), findsOneWidget);
-    expect(find.text(TownFeedScreen.openSignalSheetTitle), findsOneWidget);
+    expect(find.text(englishCopy.openSignalSheetTitle), findsOneWidget);
     expect(
       find.byKey(const Key('open_signal_prototype_message')),
       findsOneWidget,
     );
     expect(
-      find.text(TownFeedScreen.openSignalPrototypeMessage),
+      find.text(englishCopy.openSignalPrototypeMessage),
       findsOneWidget,
     );
-    expect(find.text('Close'), findsOneWidget);
+    expect(find.text(englishCopy.openSignalClose), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('open_signal_prototype_close')));
     await tester.pumpAndSettle();
@@ -542,7 +626,7 @@ void main() {
     for (final Size size in sizes) {
       await tester.binding.setSurfaceSize(size);
       await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpWidget(const MaterialApp(home: TownFeedScreen()));
+      await tester.pumpWidget(MaterialApp(home: TownFeedScreen()));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull, reason: 'overflow at $size');
@@ -578,5 +662,99 @@ void main() {
     );
     expect(cardSize.width, size.width);
     expect(cardSize.height, size.height);
+  });
+
+  test('Munich catalog is three German civic scenes', () {
+    expect(kMunichFeedV1MockSignals, hasLength(3));
+    expect(feedSignalsForCity('Milano'), same(kMilanoFeedV1MockSignals));
+    expect(feedSignalsForCity('Munich'), same(kMunichFeedV1MockSignals));
+    expect(
+      () => feedSignalsForCity('Rome'),
+      throwsA(isA<ArgumentError>()),
+    );
+    expect(kMunichFeedV1MockSignals[0].area, 'Schwabing');
+    expect(kMunichFeedV1MockSignals[1].area, 'Haidhausen');
+    expect(kMunichFeedV1MockSignals[2].area, 'Sendling');
+    expect(
+      kMunichFeedV1MockSignals[0].headline,
+      'Der Gehweg ist hier kaum noch sicher passierbar.',
+    );
+    expect(
+      kMunichFeedV1MockSignals[0].mediaPresentation,
+      CivicMediaPresentation.landscape,
+    );
+    expect(
+      kMunichFeedV1MockSignals[1].mediaPresentation,
+      CivicMediaPresentation.portrait,
+    );
+    expect(
+      kMunichFeedV1MockSignals[2].mediaPresentation,
+      CivicMediaPresentation.square,
+    );
+  });
+
+  testWidgets('Munich feed renders German scene 1 chrome and copy', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(
+      tester,
+      selectedCountry: 'Germany',
+      selectedCity: 'Munich',
+    );
+
+    expect(find.text('Anna Weber · Gestern beobachtet'), findsOneWidget);
+    expect(find.text('ÖFFENTLICHER RAUM'), findsOneWidget);
+    expect(
+      find.text('Der Gehweg ist hier kaum noch sicher passierbar.'),
+      findsOneWidget,
+    );
+    expect(find.text('Lokal bestätigt'), findsOneWidget);
+    expect(find.text('Schwabing'), findsOneWidget);
+    expect(find.text('Von 16 Menschen in der Nähe bestätigt'), findsOneWidget);
+    expect(find.text(germanCopy.seeThisToo), findsOneWidget);
+    expect(find.text(germanCopy.openSignalAction), findsOneWidget);
+    expect(find.text('Città Studi'), findsNothing);
+    expect(find.text('Open signal'), findsNothing);
+  });
+
+  testWidgets('Munich Open signal and visitor gate use German copy', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(
+      tester,
+      selectedCountry: 'Germany',
+      selectedCity: 'Munich',
+    );
+
+    await tester.tap(find.byKey(const Key('signal_open_munich-signal-1')));
+    await tester.pumpAndSettle();
+    expect(find.text(germanCopy.openSignalSheetTitle), findsOneWidget);
+    expect(find.text(germanCopy.openSignalPrototypeMessage), findsOneWidget);
+    expect(find.text(germanCopy.openSignalClose), findsOneWidget);
+    await tester.tap(find.byKey(const Key('open_signal_prototype_close')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('signal_confirm_munich-signal-1')));
+    await tester.pumpAndSettle();
+    expect(find.text(germanCopy.visitorInvitationTitle), findsOneWidget);
+    expect(find.text(germanCopy.visitorJoinAction), findsOneWidget);
+    expect(find.text(germanCopy.visitorNotNowAction), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('visitor_not_now')));
+    await tester.pumpAndSettle();
+    expect(find.text(germanCopy.visitorEndedTitle), findsOneWidget);
+    expect(find.text(germanCopy.visitorLeaveTownAction), findsOneWidget);
+  });
+
+  testWidgets('default TownFeedScreen stays Milano English chrome', (
+    WidgetTester tester,
+  ) async {
+    await _pumpFeed(tester);
+    final TownFeedScreen feed = tester.widget(find.byType(TownFeedScreen));
+    expect(feed.selectedCity, 'Milano');
+    expect(feed.selectedCountry, 'Italy');
+    expect(find.text('Città Studi'), findsOneWidget);
+    expect(find.text('Open signal'), findsOneWidget);
+    expect(find.text('Schwabing'), findsNothing);
   });
 }

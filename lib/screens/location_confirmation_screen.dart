@@ -458,9 +458,14 @@ class _LocationConfirmationScreenState
       _uiState == LocationVerificationUiState.confirmedLimited;
 
   void _onContinueToTown() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const TownFeedScreen()));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => TownFeedScreen(
+          selectedCountry: widget.selectedCountry,
+          selectedCity: widget.selectedCity,
+        ),
+      ),
+    );
   }
 
   @override
