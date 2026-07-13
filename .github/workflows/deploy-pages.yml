@@ -44,7 +44,7 @@ jobs:
       - name: Checkout production product tip
         uses: actions/checkout@v4
         with:
-          ref: 99fec708c05c978948e4a1894caf7c2ef0135296
+          ref: 52c72536d51705d3dfaa28f03f000ebec060bb14
           path: prod
 
       - name: Build production root
