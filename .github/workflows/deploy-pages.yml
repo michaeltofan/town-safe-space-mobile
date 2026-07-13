@@ -7,6 +7,7 @@ name: Deploy GitHub Pages
 #   /pr33-preview/            temporary PR #33 rebuilt-feed preview (pinned SHA)
 #   /experience-v1/           standalone HTML experience prototype
 #   /owner-journey-v1/        owner verification Flutter journey (PR #35 pin)
+#   /membership-entry-v1-review/ temporary Membership Entry v1 review (pinned SHA)
 #
 # Do not add a second workflow that calls actions/deploy-pages.
 # Competing root-only deploys overwrite this site (see run 29182694682).
@@ -95,6 +96,18 @@ jobs:
           flutter pub get
           flutter build web --release --base-href /town-safe-space-mobile/owner-journey-v1/ --pwa-strategy=none
 
+      - name: Checkout Membership Entry v1 review tip
+        uses: actions/checkout@v4
+        with:
+          ref: 7a4e9db574e5ce25cd5c8660de1a4b0bc337ff89
+          path: membership-entry-src
+
+      - name: Build membership-entry-v1-review Flutter subdirectory
+        working-directory: membership-entry-src
+        run: |
+          flutter pub get
+          flutter build web --release --base-href /town-safe-space-mobile/membership-entry-v1-review/ --pwa-strategy=none
+
       - name: Assemble combined Pages artifact
         run: |
           set -euo pipefail
@@ -108,10 +121,13 @@ jobs:
           cp -a experience-src/prototype/town-feed-experience-v1/. site/experience-v1/
           mkdir -p site/owner-journey-v1
           cp -a owner-src/build/web/. site/owner-journey-v1/
+          mkdir -p site/membership-entry-v1-review
+          cp -a membership-entry-src/build/web/. site/membership-entry-v1-review/
           rm -f site/flutter_service_worker.js
           rm -f site/pr30-preview/flutter_service_worker.js
           rm -f site/pr33-preview/flutter_service_worker.js
           rm -f site/owner-journey-v1/flutter_service_worker.js
+          rm -f site/membership-entry-v1-review/flutter_service_worker.js
 
           echo "===== ARTIFACT TREE (required paths) ====="
           find site -maxdepth 3 \( -name index.html -o -name styles.css -o -name app.js -o -name '*.jpg' -o -name '*.png' -o -name main.dart.js \) | sort
@@ -131,15 +147,19 @@ jobs:
           test -f site/experience-v1/assets/signal_lorenteggio_works.jpg
           test -f site/owner-journey-v1/index.html
           test -f site/owner-journey-v1/main.dart.js
+          test -f site/membership-entry-v1-review/index.html
+          test -f site/membership-entry-v1-review/main.dart.js
           grep -q 'href="/town-safe-space-mobile/"' site/index.html
           grep -q 'href="/town-safe-space-mobile/pr30-preview/"' site/pr30-preview/index.html
           grep -q 'href="/town-safe-space-mobile/pr33-preview/"' site/pr33-preview/index.html
           grep -q 'TOWN_EXPERIENCE_PROTOTYPE_V1' site/experience-v1/index.html
           grep -q 'href="/town-safe-space-mobile/owner-journey-v1/"' site/owner-journey-v1/index.html
+          grep -q 'href="/town-safe-space-mobile/membership-entry-v1-review/"' site/membership-entry-v1-review/index.html
           test ! -f site/flutter_service_worker.js
           test ! -f site/pr30-preview/flutter_service_worker.js
           test ! -f site/pr33-preview/flutter_service_worker.js
           test ! -f site/owner-journey-v1/flutter_service_worker.js
+          test ! -f site/membership-entry-v1-review/flutter_service_worker.js
           echo "ARTIFACT_VALIDATION=pass"
 
       - name: Setup Pages
