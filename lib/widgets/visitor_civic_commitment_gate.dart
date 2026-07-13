@@ -1,47 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../models/town_feed_copy.dart';
+
 /// Temporary visitor civic-commitment surfaces for the feed.
 ///
 /// Visual chrome matches the approved feed panel language.
-/// Copy is fixed English for this controlled step.
-class VisitorCivicCommitmentCopy {
-  static const String invitationTitle =
-      'You care about what happens in your community.';
-
-  static const String invitationBody =
-      'To confirm this signal and become part of the solution, join TOWN as a '
-      'verified local member.';
-
-  static const String invitationBodySecond =
-      'TOWN is built around real people from the same community — not anonymous '
-      'accounts, followers or social media popularity.';
-
-  static const String joinAction = 'Join your community';
-  static const String notNowAction = 'Not now';
-
-  static const String joinPlaceholderTitle = 'Join your community';
-
-  static const String joinPlaceholderBody =
-      'Account creation, local verification and annual membership will be added '
-      'in the next TOWN phase.';
-
-  static const String joinPlaceholderClose = 'Close';
-
-  static const String endedTitle =
-      'TOWN is for people who are ready to take part in their community.';
-
-  static const String endedBody =
-      'You can return when you are ready to be part of it.';
-
-  static const String leaveTownAction = 'Leave TOWN';
-}
-
-/// Membership invitation overlay shown when a visitor taps I SEE THIS TOO.
+/// Copy is supplied by [TownFeedCopy] (English for Milano, German for Munich).
 class VisitorMembershipInvitationPanel extends StatelessWidget {
   const VisitorMembershipInvitationPanel({
     super.key,
     required this.onJoin,
     required this.onNotNow,
+    this.copy = const TownFeedCopy.english(),
   });
 
   static const Color panel = Color(0xFF141414);
@@ -51,6 +21,7 @@ class VisitorMembershipInvitationPanel extends StatelessWidget {
 
   final VoidCallback onJoin;
   final VoidCallback onNotNow;
+  final TownFeedCopy copy;
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +63,10 @@ class VisitorMembershipInvitationPanel extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        VisitorCivicCommitmentCopy.invitationTitle,
-                        key: Key('visitor_invitation_title'),
-                        style: TextStyle(
+                      Text(
+                        copy.visitorInvitationTitle,
+                        key: const Key('visitor_invitation_title'),
+                        style: const TextStyle(
                           fontFamily: 'serif',
                           fontSize: 24,
                           height: 1.2,
@@ -104,20 +75,20 @@ class VisitorMembershipInvitationPanel extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      const Text(
-                        VisitorCivicCommitmentCopy.invitationBody,
-                        key: Key('visitor_invitation_body'),
-                        style: TextStyle(
+                      Text(
+                        copy.visitorInvitationBody,
+                        key: const Key('visitor_invitation_body'),
+                        style: const TextStyle(
                           fontSize: 16.5,
                           height: 1.4,
                           color: inkSoft,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        VisitorCivicCommitmentCopy.invitationBodySecond,
-                        key: Key('visitor_invitation_body_second'),
-                        style: TextStyle(
+                      Text(
+                        copy.visitorInvitationBodySecond,
+                        key: const Key('visitor_invitation_body_second'),
+                        style: const TextStyle(
                           fontSize: 16.5,
                           height: 1.4,
                           color: inkSoft,
@@ -140,9 +111,7 @@ class VisitorMembershipInvitationPanel extends StatelessWidget {
                               letterSpacing: 0.2,
                             ),
                           ),
-                          child: const Text(
-                            VisitorCivicCommitmentCopy.joinAction,
-                          ),
+                          child: Text(copy.visitorJoinAction),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -163,9 +132,7 @@ class VisitorMembershipInvitationPanel extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          child: const Text(
-                            VisitorCivicCommitmentCopy.notNowAction,
-                          ),
+                          child: Text(copy.visitorNotNowAction),
                         ),
                       ),
                     ],
@@ -182,7 +149,11 @@ class VisitorMembershipInvitationPanel extends StatelessWidget {
 
 /// Temporary next-phase placeholder after Join your community.
 class VisitorJoinPlaceholderPanel extends StatelessWidget {
-  const VisitorJoinPlaceholderPanel({super.key, required this.onClose});
+  const VisitorJoinPlaceholderPanel({
+    super.key,
+    required this.onClose,
+    this.copy = const TownFeedCopy.english(),
+  });
 
   static const Color panel = Color(0xFF141414);
   static const Color accent = Color(0xFFE8772E);
@@ -190,6 +161,7 @@ class VisitorJoinPlaceholderPanel extends StatelessWidget {
   static const Color inkSoft = Color(0xC7F5F5F5);
 
   final VoidCallback onClose;
+  final TownFeedCopy copy;
 
   @override
   Widget build(BuildContext context) {
@@ -231,10 +203,10 @@ class VisitorJoinPlaceholderPanel extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        VisitorCivicCommitmentCopy.joinPlaceholderTitle,
-                        key: Key('visitor_join_placeholder_title'),
-                        style: TextStyle(
+                      Text(
+                        copy.visitorJoinPlaceholderTitle,
+                        key: const Key('visitor_join_placeholder_title'),
+                        style: const TextStyle(
                           fontFamily: 'serif',
                           fontSize: 24,
                           height: 1.2,
@@ -243,10 +215,10 @@ class VisitorJoinPlaceholderPanel extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      const Text(
-                        VisitorCivicCommitmentCopy.joinPlaceholderBody,
-                        key: Key('visitor_join_placeholder_body'),
-                        style: TextStyle(
+                      Text(
+                        copy.visitorJoinPlaceholderBody,
+                        key: const Key('visitor_join_placeholder_body'),
+                        style: const TextStyle(
                           fontSize: 16.5,
                           height: 1.4,
                           color: inkSoft,
@@ -269,9 +241,7 @@ class VisitorJoinPlaceholderPanel extends StatelessWidget {
                               letterSpacing: 0.2,
                             ),
                           ),
-                          child: const Text(
-                            VisitorCivicCommitmentCopy.joinPlaceholderClose,
-                          ),
+                          child: Text(copy.visitorJoinPlaceholderClose),
                         ),
                       ),
                     ],
@@ -288,7 +258,11 @@ class VisitorJoinPlaceholderPanel extends StatelessWidget {
 
 /// Final exit surface after Not now — no feed, no extra actions.
 class VisitorExperienceEndedScreen extends StatelessWidget {
-  const VisitorExperienceEndedScreen({super.key, required this.onLeaveTown});
+  const VisitorExperienceEndedScreen({
+    super.key,
+    required this.onLeaveTown,
+    this.copy = const TownFeedCopy.english(),
+  });
 
   static const Color background = Color(0xFF0A0A0A);
   static const Color accent = Color(0xFFE8772E);
@@ -296,6 +270,7 @@ class VisitorExperienceEndedScreen extends StatelessWidget {
   static const Color inkSoft = Color(0xC7F5F5F5);
 
   final VoidCallback onLeaveTown;
+  final TownFeedCopy copy;
 
   @override
   Widget build(BuildContext context) {
@@ -320,11 +295,11 @@ class VisitorExperienceEndedScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
-              const Text(
-                VisitorCivicCommitmentCopy.endedTitle,
-                key: Key('visitor_ended_title'),
+              Text(
+                copy.visitorEndedTitle,
+                key: const Key('visitor_ended_title'),
                 textAlign: TextAlign.left,
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: 'serif',
                   fontSize: 28,
                   height: 1.2,
@@ -333,11 +308,11 @@ class VisitorExperienceEndedScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                VisitorCivicCommitmentCopy.endedBody,
-                key: Key('visitor_ended_body'),
+              Text(
+                copy.visitorEndedBody,
+                key: const Key('visitor_ended_body'),
                 textAlign: TextAlign.left,
-                style: TextStyle(fontSize: 17, height: 1.4, color: inkSoft),
+                style: const TextStyle(fontSize: 17, height: 1.4, color: inkSoft),
               ),
               const Spacer(),
               SizedBox(
@@ -356,7 +331,7 @@ class VisitorExperienceEndedScreen extends StatelessWidget {
                       letterSpacing: 0.2,
                     ),
                   ),
-                  child: const Text(VisitorCivicCommitmentCopy.leaveTownAction),
+                  child: Text(copy.visitorLeaveTownAction),
                 ),
               ),
             ],

@@ -55,7 +55,11 @@ bool isOwnerJourneyMode({required Uri uri, required bool isWeb}) {
 /// so the decision can be proven without depending on browser state.
 Widget initialHomeForApp({required Uri uri, required bool isWeb}) {
   if (shouldOpenOwnerFeedPreview(uri: uri, isWeb: isWeb)) {
-    return const TownFeedScreen();
+    // Explicit Milano owner visual preview — not city-context aware.
+    return TownFeedScreen(
+      selectedCountry: 'Italy',
+      selectedCity: 'Milano',
+    );
   }
   return const WelcomeScreen();
 }

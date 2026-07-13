@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/community_signal_mock.dart';
+import '../models/town_feed_copy.dart';
 import '../widgets/community_signal_card.dart';
 import '../widgets/visitor_civic_commitment_gate.dart';
 import 'welcome_screen.dart';
@@ -16,25 +17,45 @@ enum VisitorFeedPhase {
 /// TOWN Feed — Experience Prototype V1 parity.
 ///
 /// Finite vertical full-bleed civic scenes. No external header, no Home bar,
-/// no bordered cards. Open signal placeholder unchanged.
+/// no bordered cards. Open signal placeholder unchanged in behaviour.
 ///
 /// Visitors cannot confirm signals: I SEE THIS TOO opens the civic membership
 /// invitation instead of incrementing counts.
+///
+/// City context selects the catalog; country selects official-language chrome.
+/// Defaults remain Milano / English chrome for owner preview and direct entry.
 class TownFeedScreen extends StatefulWidget {
-  const TownFeedScreen({super.key, this.signals = kMilanoFeedV1MockSignals});
+  TownFeedScreen({
+    super.key,
+    this.selectedCountry = 'Italy',
+    this.selectedCity = 'Milano',
+    List<CommunitySignalMock>? signals,
+    TownFeedCopy? copy,
+  }) : assert(
+         (selectedCountry == 'Italy' && selectedCity == 'Milano') ||
+             (selectedCountry == 'Germany' && selectedCity == 'Munich'),
+         'Unsupported country/city pair: $selectedCountry / $selectedCity',
+       ),
+       signals = signals ?? feedSignalsForCity(selectedCity),
+       copy = copy ?? TownFeedCopy.forCountry(selectedCountry);
 
-  /// Injected for tests; production uses the three Milano mocks.
+  /// Canonical country (`Italy` or `Germany`).
+  final String selectedCountry;
+
+  /// Canonical city id (`Milano` or `Munich`).
+  final String selectedCity;
+
+  /// Injected for tests; production resolves via [feedSignalsForCity].
   final List<CommunitySignalMock> signals;
+
+  /// Official-language chrome for feed actions, Open signal, and visitor gate.
+  final TownFeedCopy copy;
 
   static const Color background = Color(0xFF0A0A0A);
   static const Color accent = Color(0xFFE8772E);
   static const Color panel = Color(0xFF141414);
   static const Color ink = Color(0xFFF5F5F5);
   static const Color inkSoft = Color(0xC7F5F5F5);
-
-  static const String openSignalSheetTitle = 'Signal detail';
-  static const String openSignalPrototypeMessage =
-      'Signal details will be added in the next TOWN phase.';
 
   @override
   State<TownFeedScreen> createState() => _TownFeedScreenState();
@@ -145,6 +166,7 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
       return;
     }
     setState(() => _sheetOpen = true);
+    final TownFeedCopy copy = widget.copy;
     try {
       await showModalBottomSheet<void>(
         context: context,
@@ -188,10 +210,10 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        TownFeedScreen.openSignalSheetTitle,
-                        key: Key('open_signal_sheet_title'),
-                        style: TextStyle(
+                      Text(
+                        copy.openSignalSheetTitle,
+                        key: const Key('open_signal_sheet_title'),
+                        style: const TextStyle(
                           fontFamily: 'serif',
                           fontSize: 23.2,
                           height: 1.2,
@@ -200,10 +222,10 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
                         ),
                       ),
                       const SizedBox(height: 10.4),
-                      const Text(
-                        TownFeedScreen.openSignalPrototypeMessage,
-                        key: Key('open_signal_prototype_message'),
-                        style: TextStyle(
+                      Text(
+                        copy.openSignalPrototypeMessage,
+                        key: const Key('open_signal_prototype_message'),
+                        style: const TextStyle(
                           fontSize: 17.3,
                           height: 1.4,
                           color: TownFeedScreen.inkSoft,
@@ -226,7 +248,7 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
                               letterSpacing: 0.6,
                             ),
                           ),
-                          child: const Text('Close'),
+                          child: Text(copy.openSignalClose),
                         ),
                       ),
                     ],
@@ -266,7 +288,10 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
     if (_phase == VisitorFeedPhase.experienceEnded) {
       return Scaffold(
         backgroundColor: TownFeedScreen.background,
-        body: VisitorExperienceEndedScreen(onLeaveTown: _onLeaveTown),
+        body: VisitorExperienceEndedScreen(
+          copy: widget.copy,
+          onLeaveTown: _onLeaveTown,
+        ),
       );
     }
 
@@ -292,6 +317,7 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
               return CommunitySignalCard(
                 key: Key('town_feed_card_$index'),
                 signal: signal,
+                copy: widget.copy,
                 confirmationCount: _confirmationCounts[index],
                 hasConfirmed: _confirmed[index],
                 positionLabel: '${index + 1} / ${widget.signals.length}',
@@ -322,11 +348,15 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
           ),
           if (_phase == VisitorFeedPhase.membershipInvitation)
             VisitorMembershipInvitationPanel(
+              copy: widget.copy,
               onJoin: _onJoinCommunity,
               onNotNow: _onNotNow,
             ),
           if (_phase == VisitorFeedPhase.joinPlaceholder)
-            VisitorJoinPlaceholderPanel(onClose: _onCloseJoinPlaceholder),
+            VisitorJoinPlaceholderPanel(
+              copy: widget.copy,
+              onClose: _onCloseJoinPlaceholder,
+            ),
         ],
       ),
     );

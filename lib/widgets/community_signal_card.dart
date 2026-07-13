@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../models/community_signal_mock.dart';
+import '../models/town_feed_copy.dart';
 
 /// Full-bleed civic scene matching Experience Prototype V1.
 ///
@@ -19,6 +20,7 @@ class CommunitySignalCard extends StatelessWidget {
     required this.positionLabel,
     required this.sceneIndex,
     required this.sceneCount,
+    this.copy = const TownFeedCopy.english(),
   });
 
   static const Color accent = Color(0xFFE8772E);
@@ -35,6 +37,7 @@ class CommunitySignalCard extends StatelessWidget {
   final String positionLabel;
   final int sceneIndex;
   final int sceneCount;
+  final TownFeedCopy copy;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +179,7 @@ class CommunitySignalCard extends StatelessWidget {
                   SizedBox(height: gap),
                   _SceneActions(
                     signal: signal,
+                    copy: copy,
                     confirmationCount: confirmationCount,
                     hasConfirmed: hasConfirmed,
                     onConfirm: onConfirm,
@@ -324,6 +328,7 @@ class _SceneBody extends StatelessWidget {
 class _SceneActions extends StatelessWidget {
   const _SceneActions({
     required this.signal,
+    required this.copy,
     required this.confirmationCount,
     required this.hasConfirmed,
     required this.onConfirm,
@@ -338,6 +343,7 @@ class _SceneActions extends StatelessWidget {
   });
 
   final CommunitySignalMock signal;
+  final TownFeedCopy copy;
   final int confirmationCount;
   final bool hasConfirmed;
   final VoidCallback onConfirm;
@@ -370,7 +376,7 @@ class _SceneActions extends StatelessWidget {
               ),
             ),
             Text(
-              signal.status.label,
+              copy.statusLabel(signal.status),
               key: Key('signal_status_${signal.id}'),
               style: TextStyle(
                 fontSize: statusSize,
@@ -403,7 +409,7 @@ class _SceneActions extends StatelessWidget {
         Semantics(
           liveRegion: true,
           child: Text(
-            'Confirmed by $confirmationCount people nearby',
+            copy.confirmationCount(confirmationCount),
             key: Key('signal_confirmation_${signal.id}'),
             style: TextStyle(
               fontSize: countSize,
@@ -415,6 +421,7 @@ class _SceneActions extends StatelessWidget {
         SizedBox(height: actionGap + 3.2),
         _ConfirmButton(
           signalId: signal.id,
+          copy: copy,
           hasConfirmed: hasConfirmed,
           onConfirm: onConfirm,
           btnSize: hasConfirmed ? confirmedBtnSize : btnSize,
@@ -424,6 +431,7 @@ class _SceneActions extends StatelessWidget {
         SizedBox(height: actionGap),
         _OpenSignalButton(
           signalId: signal.id,
+          copy: copy,
           onOpen: onOpenSignal,
           btnSize: btnSize,
           btnMinHeight: btnMinHeight,
@@ -437,6 +445,7 @@ class _SceneActions extends StatelessWidget {
 class _ConfirmButton extends StatelessWidget {
   const _ConfirmButton({
     required this.signalId,
+    required this.copy,
     required this.hasConfirmed,
     required this.onConfirm,
     required this.btnSize,
@@ -445,6 +454,7 @@ class _ConfirmButton extends StatelessWidget {
   });
 
   final String signalId;
+  final TownFeedCopy copy;
   final bool hasConfirmed;
   final VoidCallback onConfirm;
   final double btnSize;
@@ -453,9 +463,8 @@ class _ConfirmButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String label = hasConfirmed
-        ? 'You confirmed this locally'
-        : 'I SEE THIS TOO';
+    final String label =
+        hasConfirmed ? copy.youConfirmedLocally : copy.seeThisToo;
 
     return SizedBox(
       width: double.infinity,
@@ -493,6 +502,7 @@ class _ConfirmButton extends StatelessWidget {
 class _OpenSignalButton extends StatelessWidget {
   const _OpenSignalButton({
     required this.signalId,
+    required this.copy,
     required this.onOpen,
     required this.btnSize,
     required this.btnMinHeight,
@@ -500,6 +510,7 @@ class _OpenSignalButton extends StatelessWidget {
   });
 
   final String signalId;
+  final TownFeedCopy copy;
   final VoidCallback onOpen;
   final double btnSize;
   final double btnMinHeight;
@@ -530,7 +541,7 @@ class _OpenSignalButton extends StatelessWidget {
             letterSpacing: 0.01 * btnSize,
           ),
         ),
-        child: const Text('Open signal', textAlign: TextAlign.center),
+        child: Text(copy.openSignalAction, textAlign: TextAlign.center),
       ),
     );
   }
