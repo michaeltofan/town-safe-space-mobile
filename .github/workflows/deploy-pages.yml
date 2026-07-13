@@ -6,7 +6,7 @@ name: Deploy GitHub Pages
 #   /pr30-preview/            rejected PR #30 visual (pinned SHA)
 #   /pr33-preview/            temporary PR #33 rebuilt-feed preview (pinned SHA)
 #   /experience-v1/           standalone HTML experience prototype
-#   /owner-journey-v1/        owner verification Flutter journey (PR #34 pin)
+#   /owner-journey-v1/        owner verification Flutter journey (PR #35 pin)
 #
 # Do not add a second workflow that calls actions/deploy-pages.
 # Competing root-only deploys overwrite this site (see run 29182694682).
@@ -83,10 +83,10 @@ jobs:
           ref: ace5062d37b5c368ebc0266b46cea6bee3cad7a9
           path: experience-src
 
-      - name: Checkout PR #34 owner-verification tip
+      - name: Checkout PR #35 owner-verification tip
         uses: actions/checkout@v4
         with:
-          ref: f6dbf079b87990621f07831d70b4175a3bc5037f
+          ref: 52c72536d51705d3dfaa28f03f000ebec060bb14
           path: owner-src
 
       - name: Build owner-journey-v1 Flutter subdirectory
