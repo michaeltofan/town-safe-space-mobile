@@ -5,7 +5,7 @@ import '../models/town_feed_copy.dart';
 /// Temporary visitor civic-commitment surfaces for the feed.
 ///
 /// Visual chrome matches the approved feed panel language.
-/// Copy is supplied by [TownFeedCopy] (English for Milano, German for Munich).
+/// Copy is supplied by [TownFeedCopy] (Italian for Milano, German for Munich).
 class VisitorMembershipInvitationPanel extends StatelessWidget {
   const VisitorMembershipInvitationPanel({
     super.key,

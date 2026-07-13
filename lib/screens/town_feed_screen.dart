@@ -23,7 +23,7 @@ enum VisitorFeedPhase {
 /// invitation instead of incrementing counts.
 ///
 /// City context selects the catalog; country selects official-language chrome.
-/// Defaults remain Milano / English chrome for owner preview and direct entry.
+/// Defaults remain Milano / Italian chrome for owner preview and direct entry.
 class TownFeedScreen extends StatefulWidget {
   TownFeedScreen({
     super.key,

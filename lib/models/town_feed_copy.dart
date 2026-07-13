@@ -34,7 +34,7 @@ class TownFeedCopy {
     required this.visitorLeaveTownAction,
   });
 
-  /// Approved Milano / English chrome (current Feed V1 product).
+  /// Explicit English chrome (legacy override / tests).
   const TownFeedCopy.english()
     : openSignalAction = 'Open signal',
       openSignalSheetTitle = 'Signal detail',
@@ -69,6 +69,42 @@ class TownFeedCopy {
       visitorEndedBody =
           'You can return when you are ready to be part of it.',
       visitorLeaveTownAction = 'Leave TOWN';
+
+  /// Official Italian chrome for Milano Feed V1.
+  const TownFeedCopy.italian()
+    : openSignalAction = 'Apri segnale',
+      openSignalSheetTitle = 'Dettaglio del segnale',
+      openSignalPrototypeMessage =
+          'I dettagli di questo segnale saranno aggiunti nella prossima fase di TOWN.',
+      openSignalClose = 'Chiudi',
+      seeThisToo = 'LO VEDO ANCH’IO',
+      youConfirmedLocally = 'Hai confermato questo sul posto',
+      confirmationCountTemplate = 'Confermato da {count} persone vicine',
+      statusLocallyConfirmed = 'Confermato sul posto',
+      statusReported = 'Segnalato',
+      statusInProgress = 'In corso',
+      statusNewSignal = 'Nuovo segnale',
+      statusResolved = 'Risolto',
+      visitorInvitationTitle =
+          'Ti sta a cuore ciò che accade nella tua comunità.',
+      visitorInvitationBody =
+          'Per confermare questo segnale e diventare parte della soluzione, unisciti '
+          'a TOWN come membro locale verificato.',
+      visitorInvitationBodySecond =
+          'TOWN è costruito intorno a persone reali della stessa comunità — non su '
+          'account anonimi, follower o popolarità sui social.',
+      visitorJoinAction = 'Unisciti alla tua comunità',
+      visitorNotNowAction = 'Non ora',
+      visitorJoinPlaceholderTitle = 'Unisciti alla tua comunità',
+      visitorJoinPlaceholderBody =
+          'La creazione dell’account, la verifica locale e l’abbonamento annuale '
+          'saranno aggiunti nella prossima fase di TOWN.',
+      visitorJoinPlaceholderClose = 'Chiudi',
+      visitorEndedTitle =
+          'TOWN è per chi è pronto a partecipare alla propria comunità.',
+      visitorEndedBody =
+          'Puoi tornare quando sei pronto a farne parte.',
+      visitorLeaveTownAction = 'Esci da TOWN';
 
   /// Official German chrome for Munich Feed V1.
   const TownFeedCopy.german()
@@ -159,6 +195,6 @@ class TownFeedCopy {
     if (country == 'Germany') {
       return const TownFeedCopy.german();
     }
-    return const TownFeedCopy.english();
+    return const TownFeedCopy.italian();
   }
 }

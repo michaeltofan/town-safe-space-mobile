@@ -112,7 +112,7 @@ Future<void> _pumpLocationForCity(
 }
 
 void main() {
-  const TownFeedCopy englishCopy = TownFeedCopy.english();
+  const TownFeedCopy italianCopy = TownFeedCopy.italian();
   const TownFeedCopy germanCopy = TownFeedCopy.german();
 
   test('Feed mock catalog is exactly three Experience V1 Milano signals', () {
@@ -273,7 +273,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Città Studi'), findsOneWidget);
-    expect(find.text('Open signal'), findsOneWidget);
+    expect(find.text('Apri segnale'), findsOneWidget);
     expect(
       find.text('Der Gehweg ist hier kaum noch sicher passierbar.'),
       findsNothing,
@@ -315,6 +315,8 @@ void main() {
     expect(find.text('Città Studi'), findsNothing);
     expect(find.text('Open signal'), findsNothing);
     expect(find.text('I SEE THIS TOO'), findsNothing);
+    expect(find.text('Apri segnale'), findsNothing);
+    expect(find.text('LO VEDO ANCH’IO'), findsNothing);
   });
 
   testWidgets('Feed renders scene 1 with exact Experience V1 copy', (
@@ -341,11 +343,11 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Locally confirmed'), findsOneWidget);
+    expect(find.text(italianCopy.statusLocallyConfirmed), findsOneWidget);
     expect(find.text('Città Studi'), findsOneWidget);
-    expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
-    expect(find.text('I SEE THIS TOO'), findsOneWidget);
-    expect(find.text('Open signal'), findsOneWidget);
+    expect(find.text(italianCopy.confirmationCount(18)), findsOneWidget);
+    expect(find.text(italianCopy.seeThisToo), findsOneWidget);
+    expect(find.text(italianCopy.openSignalAction), findsOneWidget);
   });
 
   testWidgets('no Home bar and no Flutter-only city header', (
@@ -376,9 +378,9 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Chiara Valli · Segnalato due giorni fa'), findsOneWidget);
-    expect(find.text('Reported'), findsOneWidget);
+    expect(find.text(italianCopy.statusReported), findsOneWidget);
     expect(find.text('Porta Romana'), findsOneWidget);
-    expect(find.text('Confirmed by 11 people nearby'), findsOneWidget);
+    expect(find.text(italianCopy.confirmationCount(11)), findsOneWidget);
 
     await tester.fling(pageView, const Offset(0, -500), 2000);
     await tester.pumpAndSettle();
@@ -389,9 +391,9 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('In progress'), findsOneWidget);
+    expect(find.text(italianCopy.statusInProgress), findsOneWidget);
     expect(find.text('Lorenteggio'), findsOneWidget);
-    expect(find.text('Confirmed by 7 people nearby'), findsOneWidget);
+    expect(find.text(italianCopy.confirmationCount(7)), findsOneWidget);
 
     await tester.fling(pageView, const Offset(0, -500), 2000);
     await tester.pumpAndSettle();
@@ -412,9 +414,9 @@ void main() {
 
     for (int i = 0; i < 3; i++) {
       expect(find.text(areas[i]), findsOneWidget);
-      expect(find.text('I SEE THIS TOO'), findsOneWidget);
-      expect(find.text('Open signal'), findsOneWidget);
-      expect(find.textContaining('Confirmed by'), findsOneWidget);
+      expect(find.text(italianCopy.seeThisToo), findsOneWidget);
+      expect(find.text(italianCopy.openSignalAction), findsOneWidget);
+      expect(find.textContaining('Confermato da'), findsOneWidget);
       expect(find.text('${i + 1} / 3'), findsOneWidget);
       expect(find.byKey(const Key('scene_veil')), findsWidgets);
       if (i < 2) {
@@ -431,14 +433,14 @@ void main() {
     const String firstHeadline =
         'Marciapiede danneggiato davanti alla scuola di via Padova';
 
-    expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
+    expect(find.text(italianCopy.confirmationCount(18)), findsOneWidget);
     await tester.tap(find.byKey(const Key('signal_confirm_milano-signal-1')));
     await tester.pumpAndSettle();
 
     // Count must not increase; button must not flip to confirmed.
-    expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
-    expect(find.text('Confirmed by 19 people nearby'), findsNothing);
-    expect(find.text('You confirmed this locally'), findsNothing);
+    expect(find.text(italianCopy.confirmationCount(18)), findsOneWidget);
+    expect(find.text(italianCopy.confirmationCount(19)), findsNothing);
+    expect(find.text(italianCopy.youConfirmedLocally), findsNothing);
     expect(find.text(firstHeadline), findsOneWidget);
 
     expect(
@@ -446,19 +448,19 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(englishCopy.visitorInvitationTitle),
+      find.text(italianCopy.visitorInvitationTitle),
       findsOneWidget,
     );
     expect(
-      find.text(englishCopy.visitorInvitationBody),
+      find.text(italianCopy.visitorInvitationBody),
       findsOneWidget,
     );
     expect(
-      find.text(englishCopy.visitorInvitationBodySecond),
+      find.text(italianCopy.visitorInvitationBodySecond),
       findsOneWidget,
     );
-    expect(find.text(englishCopy.visitorJoinAction), findsOneWidget);
-    expect(find.text(englishCopy.visitorNotNowAction), findsOneWidget);
+    expect(find.text(italianCopy.visitorJoinAction), findsOneWidget);
+    expect(find.text(italianCopy.visitorNotNowAction), findsOneWidget);
 
     // Feed swipe blocked while invitation is open.
     final Finder pageView = find.byKey(const Key('town_feed_page_view'));
@@ -479,15 +481,15 @@ void main() {
 
     expect(find.byKey(const Key('visitor_join_placeholder')), findsOneWidget);
     expect(
-      find.text(englishCopy.visitorJoinPlaceholderTitle),
+      find.text(italianCopy.visitorJoinPlaceholderTitle),
       findsOneWidget,
     );
     expect(
-      find.text(englishCopy.visitorJoinPlaceholderBody),
+      find.text(italianCopy.visitorJoinPlaceholderBody),
       findsOneWidget,
     );
-    expect(find.text('Confirmed by 18 people nearby'), findsOneWidget);
-    expect(find.text('You confirmed this locally'), findsNothing);
+    expect(find.text(italianCopy.confirmationCount(18)), findsOneWidget);
+    expect(find.text(italianCopy.youConfirmedLocally), findsNothing);
 
     await tester.tap(find.byKey(const Key('visitor_join_placeholder_close')));
     await tester.pumpAndSettle();
@@ -523,7 +525,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(TownFeedScreen), findsOneWidget);
-    expect(find.text('I SEE THIS TOO'), findsOneWidget);
+    expect(find.text(italianCopy.seeThisToo), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('signal_confirm_milano-signal-1')));
     await tester.pumpAndSettle();
@@ -532,12 +534,12 @@ void main() {
 
     expect(find.byKey(const Key('visitor_experience_ended')), findsOneWidget);
     expect(find.byKey(const Key('town_feed_page_view')), findsNothing);
-    expect(find.text('I SEE THIS TOO'), findsNothing);
-    expect(find.text('Open signal'), findsNothing);
-    expect(find.text(englishCopy.visitorEndedTitle), findsOneWidget);
-    expect(find.text(englishCopy.visitorEndedBody), findsOneWidget);
+    expect(find.text(italianCopy.seeThisToo), findsNothing);
+    expect(find.text(italianCopy.openSignalAction), findsNothing);
+    expect(find.text(italianCopy.visitorEndedTitle), findsOneWidget);
+    expect(find.text(italianCopy.visitorEndedBody), findsOneWidget);
     expect(
-      find.text(englishCopy.visitorLeaveTownAction),
+      find.text(italianCopy.visitorLeaveTownAction),
       findsOneWidget,
     );
     expect(find.text('Back'), findsNothing);
@@ -560,16 +562,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('open_signal_sheet_title')), findsOneWidget);
-    expect(find.text(englishCopy.openSignalSheetTitle), findsOneWidget);
+    expect(find.text(italianCopy.openSignalSheetTitle), findsOneWidget);
     expect(
       find.byKey(const Key('open_signal_prototype_message')),
       findsOneWidget,
     );
     expect(
-      find.text(englishCopy.openSignalPrototypeMessage),
+      find.text(italianCopy.openSignalPrototypeMessage),
       findsOneWidget,
     );
-    expect(find.text(englishCopy.openSignalClose), findsOneWidget);
+    expect(find.text(italianCopy.openSignalClose), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('open_signal_prototype_close')));
     await tester.pumpAndSettle();
@@ -630,8 +632,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull, reason: 'overflow at $size');
-      expect(find.text('I SEE THIS TOO'), findsOneWidget, reason: '$size');
-      expect(find.text('Open signal'), findsOneWidget, reason: '$size');
+      expect(find.text(italianCopy.seeThisToo), findsOneWidget, reason: '$size');
+      expect(
+        find.text(italianCopy.openSignalAction),
+        findsOneWidget,
+        reason: '$size',
+      );
       expect(find.text('1 / 3'), findsOneWidget, reason: '$size');
       expect(
         find.byKey(const Key('scene_veil')),
@@ -746,7 +752,7 @@ void main() {
     expect(find.text(germanCopy.visitorLeaveTownAction), findsOneWidget);
   });
 
-  testWidgets('default TownFeedScreen stays Milano English chrome', (
+  testWidgets('default TownFeedScreen stays Milano Italian chrome', (
     WidgetTester tester,
   ) async {
     await _pumpFeed(tester);
@@ -754,7 +760,10 @@ void main() {
     expect(feed.selectedCity, 'Milano');
     expect(feed.selectedCountry, 'Italy');
     expect(find.text('Città Studi'), findsOneWidget);
-    expect(find.text('Open signal'), findsOneWidget);
+    expect(find.text(italianCopy.openSignalAction), findsOneWidget);
+    expect(find.text(italianCopy.seeThisToo), findsOneWidget);
+    expect(find.text('Open signal'), findsNothing);
+    expect(find.text('I SEE THIS TOO'), findsNothing);
     expect(find.text('Schwabing'), findsNothing);
   });
 }
