@@ -1,0 +1,285 @@
+import 'package:flutter/material.dart';
+
+import '../models/town_feed_copy.dart';
+
+/// Membership Entry Screen v1 — prototype boundary only.
+///
+/// Explains local membership requirements. The primary action opens an
+/// approved prototype-boundary message and does not create an account,
+/// authenticate, store data, request location, start payment, create
+/// entitlement, or change membership state.
+class MembershipEntryScreen extends StatelessWidget {
+  const MembershipEntryScreen({
+    super.key,
+    required this.selectedCountry,
+    required this.selectedCity,
+    required this.copy,
+  }) : assert(
+         (selectedCountry == 'Italy' && selectedCity == 'Milano') ||
+             (selectedCountry == 'Germany' && selectedCity == 'Munich'),
+         'Unsupported country/city pair: $selectedCountry / $selectedCity',
+       );
+
+  /// Canonical country (`Italy` or `Germany`).
+  final String selectedCountry;
+
+  /// Canonical city id (`Milano` or `Munich`).
+  final String selectedCity;
+
+  /// Official-language chrome for this country.
+  final TownFeedCopy copy;
+
+  static const Color background = Color(0xFF0A0A0A);
+  static const Color accent = Color(0xFFE8772E);
+  static const Color ink = Color(0xFFF5F5F5);
+  static const Color inkSoft = Color(0xC7F5F5F5);
+  static const Color inkMuted = Color(0x99F5F5F5);
+
+  void _onBack(BuildContext context) {
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _onContinue(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          key: const Key('membership_entry_prototype_dialog'),
+          backgroundColor: const Color(0xFF141414),
+          title: null,
+          content: Text(
+            copy.membershipEntryPrototypeMessage,
+            style: const TextStyle(fontSize: 16.5, height: 1.4, color: ink),
+          ),
+          actions: [
+            TextButton(
+              key: const Key('membership_entry_prototype_dismiss'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                copy.membershipEntryPrototypeDismiss,
+                style: const TextStyle(
+                  color: accent,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final EdgeInsets safe = MediaQuery.paddingOf(context);
+    final double padX = (MediaQuery.sizeOf(context).width * 0.045).clamp(
+      16.0,
+      21.6,
+    );
+    final String headline = copy.membershipEntryHeadline(selectedCity);
+
+    return Scaffold(
+      key: const Key('membership_entry_screen'),
+      backgroundColor: background,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            padX + safe.left,
+            8,
+            padX + safe.right,
+            20,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  key: const Key('membership_entry_back'),
+                  onPressed: () => _onBack(context),
+                  icon: const Icon(Icons.arrow_back, color: ink),
+                  tooltip: copy.membershipEntrySecondaryBack,
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 8),
+                      Text(
+                        copy.membershipEntryLabel,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          height: 1.3,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.2,
+                          color: inkMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        headline,
+                        key: const Key('membership_entry_city'),
+                        style: const TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: 28,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        copy.membershipEntryBody,
+                        style: const TextStyle(
+                          fontSize: 16.5,
+                          height: 1.4,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        copy.membershipEntryBodySecond,
+                        style: const TextStyle(
+                          fontSize: 16.5,
+                          height: 1.4,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Text(
+                        copy.membershipEntryPrice,
+                        key: const Key('membership_entry_price'),
+                        style: const TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: 26,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        copy.membershipEntryRenewal,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.4,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        copy.membershipEntryRenewalSecond,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.4,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        copy.membershipEntryConditionsTitle,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.3,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      KeyedSubtree(
+                        key: const Key('membership_entry_conditions'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              copy.membershipEntryCondition1,
+                              style: const TextStyle(
+                                fontSize: 15.5,
+                                height: 1.45,
+                                color: inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              copy.membershipEntryCondition2,
+                              style: const TextStyle(
+                                fontSize: 15.5,
+                                height: 1.45,
+                                color: inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              copy.membershipEntryCondition3,
+                              style: const TextStyle(
+                                fontSize: 15.5,
+                                height: 1.45,
+                                color: inkSoft,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        copy.membershipEntryRights,
+                        key: const Key('membership_entry_rights'),
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.45,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 52,
+                child: FilledButton(
+                  key: const Key('membership_entry_continue'),
+                  onPressed: () => _onContinue(context),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: accent,
+                    foregroundColor: const Color(0xFF111111),
+                    elevation: 0,
+                    shape: const StadiumBorder(),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  child: Text(copy.membershipEntryContinue),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () => _onBack(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: ink,
+                    side: const BorderSide(
+                      color: Color(0x2EFFFFFF),
+                      width: 1,
+                    ),
+                    shape: const StadiumBorder(),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  child: Text(copy.membershipEntrySecondaryBack),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
