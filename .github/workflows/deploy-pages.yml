@@ -44,7 +44,7 @@ jobs:
       - name: Checkout production product tip
         uses: actions/checkout@v4
         with:
-          ref: 52c72536d51705d3dfaa28f03f000ebec060bb14
+          ref: 55e4046170ef3937c415cb97b82dc703c84d8f50
           path: prod
 
       - name: Build production root
@@ -86,7 +86,7 @@ jobs:
       - name: Checkout PR #35 owner-verification tip
         uses: actions/checkout@v4
         with:
-          ref: 52c72536d51705d3dfaa28f03f000ebec060bb14
+          ref: 55e4046170ef3937c415cb97b82dc703c84d8f50
           path: owner-src
 
       - name: Build owner-journey-v1 Flutter subdirectory
