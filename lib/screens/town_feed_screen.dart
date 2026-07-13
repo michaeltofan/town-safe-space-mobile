@@ -4,13 +4,13 @@ import '../models/community_signal_mock.dart';
 import '../models/town_feed_copy.dart';
 import '../widgets/community_signal_card.dart';
 import '../widgets/visitor_civic_commitment_gate.dart';
+import 'membership_entry_screen.dart';
 import 'welcome_screen.dart';
 
 /// Temporary visitor phases for the civic commitment gate.
 enum VisitorFeedPhase {
   visitorBrowsing,
   membershipInvitation,
-  joinPlaceholder,
   experienceEnded,
 }
 
@@ -72,7 +72,6 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
   bool get _feedInteractionBlocked =>
       _sheetOpen ||
       _phase == VisitorFeedPhase.membershipInvitation ||
-      _phase == VisitorFeedPhase.joinPlaceholder ||
       _phase == VisitorFeedPhase.experienceEnded;
 
   @override
@@ -115,18 +114,16 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
     if (_phase != VisitorFeedPhase.membershipInvitation) {
       return;
     }
-    setState(() {
-      _phase = VisitorFeedPhase.joinPlaceholder;
-    });
-  }
-
-  void _onCloseJoinPlaceholder() {
-    if (_phase != VisitorFeedPhase.joinPlaceholder) {
-      return;
-    }
-    setState(() {
-      _phase = VisitorFeedPhase.membershipInvitation;
-    });
+    // Stay on membershipInvitation so system/visual back returns to the gate.
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MembershipEntryScreen(
+          selectedCountry: widget.selectedCountry,
+          selectedCity: widget.selectedCity,
+          copy: widget.copy,
+        ),
+      ),
+    );
   }
 
   void _onNotNow() {
@@ -351,11 +348,6 @@ class _TownFeedScreenState extends State<TownFeedScreen> {
               copy: widget.copy,
               onJoin: _onJoinCommunity,
               onNotNow: _onNotNow,
-            ),
-          if (_phase == VisitorFeedPhase.joinPlaceholder)
-            VisitorJoinPlaceholderPanel(
-              copy: widget.copy,
-              onClose: _onCloseJoinPlaceholder,
             ),
         ],
       ),
