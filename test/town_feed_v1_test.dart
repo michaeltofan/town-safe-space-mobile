@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:town_safe_space_mobile/geometry/point_in_polygon_engine.dart';
 import 'package:town_safe_space_mobile/models/community_signal_mock.dart';
 import 'package:town_safe_space_mobile/models/town_feed_copy.dart';
+import 'package:town_safe_space_mobile/screens/account_setup_introduction_screen.dart';
 import 'package:town_safe_space_mobile/screens/location_confirmation_screen.dart';
 import 'package:town_safe_space_mobile/screens/membership_entry_screen.dart';
 import 'package:town_safe_space_mobile/screens/town_feed_screen.dart';
@@ -533,54 +534,153 @@ void main() {
     expect(find.text('1 / 3'), findsOneWidget);
   });
 
-  testWidgets('Membership Entry Continue opens prototype boundary only', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(tester);
-    await tester.tap(find.byKey(const Key('signal_confirm_milano-signal-1')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('visitor_join_community')));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'Milano Continua opens Account Setup Introduction with Italian copy',
+    (WidgetTester tester) async {
+      await _pumpFeed(tester);
+      await tester.tap(find.byKey(const Key('signal_confirm_milano-signal-1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('visitor_join_community')));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('membership_entry_continue')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('membership_entry_continue')));
+      await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const Key('membership_entry_prototype_dialog')),
-      findsOneWidget,
-    );
-    expect(
-      find.text(italianCopy.membershipEntryPrototypeMessage),
-      findsOneWidget,
-    );
-    expect(
-      find.text(italianCopy.membershipEntryPrototypeDismiss),
-      findsOneWidget,
-    );
+      expect(
+        find.byKey(const Key('account_setup_intro_screen')),
+        findsOneWidget,
+      );
+      expect(find.byType(AccountSetupIntroductionScreen), findsOneWidget);
+      final AccountSetupIntroductionScreen intro = tester.widget(
+        find.byType(AccountSetupIntroductionScreen),
+      );
+      expect(intro.selectedCountry, 'Italy');
+      expect(intro.selectedCity, 'Milano');
 
-    await tester.tap(find.byKey(const Key('membership_entry_prototype_dismiss')));
-    await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_setup_intro_label')),
+        findsOneWidget,
+      );
+      expect(find.text(italianCopy.accountSetupIntroLabel), findsOneWidget);
+      expect(find.text(italianCopy.accountSetupIntroHeadline), findsOneWidget);
+      expect(find.text(italianCopy.accountSetupIntroBody), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_setup_intro_why')),
+        findsOneWidget,
+      );
+      expect(find.text(italianCopy.accountSetupIntroWhyTitle), findsOneWidget);
+      expect(find.text(italianCopy.accountSetupIntroWhyBody), findsOneWidget);
+      expect(
+        find.text(italianCopy.accountSetupIntroWhyBodySecond),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('account_setup_intro_verification')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroVerificationTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroVerification1),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroVerification2),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroVerification3),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('account_setup_intro_privacy')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroPrivacyTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroPrivacyBody),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroPrivacyBodySecond),
+        findsOneWidget,
+      );
+      expect(find.text(italianCopy.accountSetupIntroStart), findsOneWidget);
+      expect(
+        find.text(italianCopy.accountSetupIntroSecondaryBack),
+        findsOneWidget,
+      );
 
-    // Dismiss keeps the entry screen; no membership/account state appears.
-    expect(
-      find.byKey(const Key('membership_entry_prototype_dialog')),
-      findsNothing,
-    );
-    expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
-    expect(find.text(italianCopy.youConfirmedLocally), findsNothing);
-    expect(find.text('Account created'), findsNothing);
-    expect(find.text('Membership active'), findsNothing);
-    expect(find.text('Payment complete'), findsNothing);
+      await tester.tap(find.byKey(const Key('account_setup_intro_start')));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('membership_entry_back')));
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('visitor_membership_invitation')),
-      findsOneWidget,
-    );
-    expect(find.text(italianCopy.confirmationCount(18)), findsOneWidget);
-    expect(find.text(italianCopy.confirmationCount(19)), findsNothing);
-  });
+      expect(
+        find.byKey(const Key('account_setup_intro_prototype_dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroPrototypeMessage),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountSetupIntroPrototypeDismiss),
+        findsOneWidget,
+      );
+      expect(find.text('Account created'), findsNothing);
+      expect(find.text('Membership active'), findsNothing);
+      expect(find.text('Payment complete'), findsNothing);
+
+      await tester.tap(
+        find.byKey(const Key('account_setup_intro_prototype_dismiss')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('account_setup_intro_prototype_dialog')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('account_setup_intro_screen')),
+        findsOneWidget,
+      );
+      expect(find.byType(AccountSetupIntroductionScreen), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('account_setup_intro_back')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_setup_intro_screen')),
+        findsNothing,
+      );
+
+      await tester.tap(find.byKey(const Key('membership_entry_continue')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const Key('account_setup_intro_secondary_back')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_setup_intro_screen')),
+        findsNothing,
+      );
+
+      await tester.tap(find.byKey(const Key('membership_entry_back')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('visitor_membership_invitation')),
+        findsOneWidget,
+      );
+      expect(find.text(italianCopy.confirmationCount(18)), findsOneWidget);
+      expect(find.text(italianCopy.confirmationCount(19)), findsNothing);
+      expect(find.text(italianCopy.youConfirmedLocally), findsNothing);
+    },
+  );
 
   testWidgets('Not now ends experience; Leave TOWN returns to Welcome', (
     WidgetTester tester,
@@ -827,60 +927,122 @@ void main() {
     expect(find.text(germanCopy.visitorLeaveTownAction), findsOneWidget);
   });
 
-  testWidgets('Munich Join opens German Membership Entry Screen', (
-    WidgetTester tester,
-  ) async {
-    await _pumpFeed(
-      tester,
-      selectedCountry: 'Germany',
-      selectedCity: 'Munich',
-    );
+  testWidgets(
+    'Munich Weiter opens German Account Setup Introduction',
+    (WidgetTester tester) async {
+      await _pumpFeed(
+        tester,
+        selectedCountry: 'Germany',
+        selectedCity: 'Munich',
+      );
 
-    await tester.tap(find.byKey(const Key('signal_confirm_munich-signal-1')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('visitor_join_community')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('signal_confirm_munich-signal-1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('visitor_join_community')));
+      await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
-    expect(find.text(germanCopy.membershipEntryLabel), findsOneWidget);
-    expect(
-      find.text(germanCopy.membershipEntryHeadline('Munich')),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Werde Mitglied in deiner Münchner Gemeinschaft.'),
-      findsOneWidget,
-    );
-    expect(find.text(germanCopy.membershipEntryPrice), findsOneWidget);
-    expect(find.text('€12 pro Jahr'), findsOneWidget);
-    expect(find.text(germanCopy.membershipEntryContinue), findsOneWidget);
-    expect(
-      find.text(germanCopy.membershipEntrySecondaryBack),
-      findsOneWidget,
-    );
-    expect(find.text(italianCopy.membershipEntryPrice), findsNothing);
-    expect(find.text('€12 all’anno'), findsNothing);
+      expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
+      expect(find.text(germanCopy.membershipEntryLabel), findsOneWidget);
+      expect(
+        find.text(germanCopy.membershipEntryHeadline('Munich')),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Werde Mitglied in deiner Münchner Gemeinschaft.'),
+        findsOneWidget,
+      );
+      expect(find.text(germanCopy.membershipEntryPrice), findsOneWidget);
+      expect(find.text('€12 pro Jahr'), findsOneWidget);
+      expect(find.text(germanCopy.membershipEntryContinue), findsOneWidget);
+      expect(
+        find.text(germanCopy.membershipEntrySecondaryBack),
+        findsOneWidget,
+      );
+      expect(find.text(italianCopy.membershipEntryPrice), findsNothing);
+      expect(find.text('€12 all’anno'), findsNothing);
 
-    await tester.tap(find.byKey(const Key('membership_entry_continue')));
-    await tester.pumpAndSettle();
-    expect(
-      find.text(germanCopy.membershipEntryPrototypeMessage),
-      findsOneWidget,
-    );
-    await tester.tap(find.byKey(const Key('membership_entry_prototype_dismiss')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('membership_entry_continue')));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text(germanCopy.membershipEntrySecondaryBack));
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('visitor_membership_invitation')),
-      findsOneWidget,
-    );
-    expect(find.text(germanCopy.confirmationCount(16)), findsOneWidget);
-    expect(find.text(germanCopy.youConfirmedLocally), findsNothing);
-  });
+      expect(
+        find.byKey(const Key('account_setup_intro_screen')),
+        findsOneWidget,
+      );
+      expect(find.byType(AccountSetupIntroductionScreen), findsOneWidget);
+      final AccountSetupIntroductionScreen intro = tester.widget(
+        find.byType(AccountSetupIntroductionScreen),
+      );
+      expect(intro.selectedCountry, 'Germany');
+      expect(intro.selectedCity, 'Munich');
 
+      expect(find.text(germanCopy.accountSetupIntroLabel), findsOneWidget);
+      expect(find.text(germanCopy.accountSetupIntroHeadline), findsOneWidget);
+      expect(find.text(germanCopy.accountSetupIntroBody), findsOneWidget);
+      expect(find.text(germanCopy.accountSetupIntroWhyTitle), findsOneWidget);
+      expect(find.text(germanCopy.accountSetupIntroWhyBody), findsOneWidget);
+      expect(
+        find.text(germanCopy.accountSetupIntroWhyBodySecond),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountSetupIntroVerificationTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountSetupIntroPrivacyTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountSetupIntroPrivacyBody),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountSetupIntroPrivacyBodySecond),
+        findsOneWidget,
+      );
+      expect(find.text(germanCopy.accountSetupIntroStart), findsOneWidget);
+      expect(find.text(italianCopy.accountSetupIntroLabel), findsNothing);
+      expect(find.text(italianCopy.accountSetupIntroStart), findsNothing);
+
+      await tester.tap(find.byKey(const Key('account_setup_intro_start')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_setup_intro_prototype_dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountSetupIntroPrototypeMessage),
+        findsOneWidget,
+      );
+      expect(find.text('Account created'), findsNothing);
+      expect(find.text('Membership active'), findsNothing);
+      expect(find.text('Payment complete'), findsNothing);
+
+      await tester.tap(
+        find.byKey(const Key('account_setup_intro_prototype_dismiss')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_setup_intro_screen')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const Key('account_setup_intro_secondary_back')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
+
+      await tester.tap(find.text(germanCopy.membershipEntrySecondaryBack));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('visitor_membership_invitation')),
+        findsOneWidget,
+      );
+      expect(find.text(germanCopy.confirmationCount(16)), findsOneWidget);
+      expect(find.text(germanCopy.youConfirmedLocally), findsNothing);
+    },
+  );
   testWidgets('default TownFeedScreen stays Milano Italian chrome', (
     WidgetTester tester,
   ) async {
