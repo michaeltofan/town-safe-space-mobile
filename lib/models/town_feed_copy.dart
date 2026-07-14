@@ -43,8 +43,23 @@ class TownFeedCopy {
     required this.membershipEntryRights,
     required this.membershipEntryContinue,
     required this.membershipEntrySecondaryBack,
-    required this.membershipEntryPrototypeMessage,
-    required this.membershipEntryPrototypeDismiss,
+    required this.accountSetupIntroLabel,
+    required this.accountSetupIntroHeadline,
+    required this.accountSetupIntroBody,
+    required this.accountSetupIntroWhyTitle,
+    required this.accountSetupIntroWhyBody,
+    required this.accountSetupIntroWhyBodySecond,
+    required this.accountSetupIntroVerificationTitle,
+    required this.accountSetupIntroVerification1,
+    required this.accountSetupIntroVerification2,
+    required this.accountSetupIntroVerification3,
+    required this.accountSetupIntroPrivacyTitle,
+    required this.accountSetupIntroPrivacyBody,
+    required this.accountSetupIntroPrivacyBodySecond,
+    required this.accountSetupIntroStart,
+    required this.accountSetupIntroSecondaryBack,
+    required this.accountSetupIntroPrototypeMessage,
+    required this.accountSetupIntroPrototypeDismiss,
   });
 
   /// Explicit English chrome (legacy override / tests).
@@ -98,9 +113,34 @@ class TownFeedCopy {
           'and take part in community decisions.',
       membershipEntryContinue = 'Continue',
       membershipEntrySecondaryBack = 'Back to the community',
-      membershipEntryPrototypeMessage =
-          'Membership setup is not active in this prototype yet.',
-      membershipEntryPrototypeDismiss = 'Got it';
+      accountSetupIntroLabel = 'PERSONAL ACCOUNT',
+      accountSetupIntroHeadline = 'Start with a personal account.',
+      accountSetupIntroBody =
+          'To take part in TOWN, every member needs a personal account linked to '
+          'one local community.',
+      accountSetupIntroWhyTitle = 'Why an account is needed',
+      accountSetupIntroWhyBody =
+          'TOWN wants to reduce bots, fake accounts and anonymous behaviour that '
+          'harms the community.',
+      accountSetupIntroWhyBodySecond =
+          'A personal account makes participation more responsible and better '
+          'protects other members.',
+      accountSetupIntroVerificationTitle = 'During setup we will confirm:',
+      accountSetupIntroVerification1 =
+          '1. A secure way to access your account',
+      accountSetupIntroVerification2 = '2. Your local community',
+      accountSetupIntroVerification3 = '3. The status of your membership',
+      accountSetupIntroPrivacyTitle = 'Your privacy matters',
+      accountSetupIntroPrivacyBody =
+          'Your exact location will not be public.',
+      accountSetupIntroPrivacyBodySecond =
+          'TOWN does not store full card details and does not create advertising '
+          'or political profiles from your civic activity.',
+      accountSetupIntroStart = 'Start',
+      accountSetupIntroSecondaryBack = 'Back to membership',
+      accountSetupIntroPrototypeMessage =
+          'Account creation is not active in this prototype yet.',
+      accountSetupIntroPrototypeDismiss = 'Got it';
 
   /// Official Italian chrome for Milano Feed V1.
   const TownFeedCopy.italian()
@@ -153,9 +193,35 @@ class TownFeedCopy {
           'commentare e partecipare alle decisioni della comunità.',
       membershipEntryContinue = 'Continua',
       membershipEntrySecondaryBack = 'Torna alla comunità',
-      membershipEntryPrototypeMessage =
-          'La configurazione dell’iscrizione non è ancora attiva in questo prototipo.',
-      membershipEntryPrototypeDismiss = 'Ho capito';
+      accountSetupIntroLabel = 'ACCOUNT PERSONALE',
+      accountSetupIntroHeadline = 'Inizia con un account personale.',
+      accountSetupIntroBody =
+          'Per partecipare a TOWN, ogni membro deve avere un account personale '
+          'collegato a una sola comunità locale.',
+      accountSetupIntroWhyTitle = 'Perché serve un account',
+      accountSetupIntroWhyBody =
+          'TOWN vuole ridurre bot, account falsi e comportamenti anonimi che '
+          'danneggiano la comunità.',
+      accountSetupIntroWhyBodySecond =
+          'Un account personale rende la partecipazione più responsabile e '
+          'protegge meglio gli altri membri.',
+      accountSetupIntroVerificationTitle =
+          'Durante la configurazione confermeremo:',
+      accountSetupIntroVerification1 =
+          '1. Un metodo sicuro per accedere al tuo account',
+      accountSetupIntroVerification2 = '2. La tua comunità locale',
+      accountSetupIntroVerification3 = '3. Lo stato della tua iscrizione',
+      accountSetupIntroPrivacyTitle = 'La tua privacy conta',
+      accountSetupIntroPrivacyBody =
+          'La tua posizione esatta non sarà pubblica.',
+      accountSetupIntroPrivacyBodySecond =
+          'TOWN non conserva i dati completi della carta e non crea profili '
+          'pubblicitari o politici dalla tua attività civica.',
+      accountSetupIntroStart = 'Inizia',
+      accountSetupIntroSecondaryBack = 'Torna all’iscrizione',
+      accountSetupIntroPrototypeMessage =
+          'La creazione dell’account non è ancora attiva in questo prototipo.',
+      accountSetupIntroPrototypeDismiss = 'Ho capito';
 
   /// Official German chrome for Munich Feed V1.
   const TownFeedCopy.german()
@@ -212,10 +278,36 @@ class TownFeedCopy {
           'Gemeinschaft teilnehmen.',
       membershipEntryContinue = 'Weiter',
       membershipEntrySecondaryBack = 'Zurück zur Gemeinschaft',
-      membershipEntryPrototypeMessage =
-          'Die Einrichtung der Mitgliedschaft ist in diesem Prototyp noch nicht '
-          'verfügbar.',
-      membershipEntryPrototypeDismiss = 'Verstanden';
+      accountSetupIntroLabel = 'PERSÖNLICHES KONTO',
+      accountSetupIntroHeadline = 'Beginne mit einem persönlichen Konto.',
+      accountSetupIntroBody =
+          'Um an TOWN teilzunehmen, benötigt jedes Mitglied ein persönliches '
+          'Konto, das mit genau einer lokalen Gemeinschaft verbunden ist.',
+      accountSetupIntroWhyTitle = 'Warum ein Konto erforderlich ist',
+      accountSetupIntroWhyBody =
+          'TOWN möchte Bots, gefälschte Konten und anonymes Verhalten reduzieren, '
+          'das der Gemeinschaft schadet.',
+      accountSetupIntroWhyBodySecond =
+          'Ein persönliches Konto macht die Teilnahme verantwortungsvoller und '
+          'schützt andere Mitglieder besser.',
+      accountSetupIntroVerificationTitle =
+          'Während der Einrichtung bestätigen wir:',
+      accountSetupIntroVerification1 =
+          '1. Eine sichere Methode für den Zugang zu deinem Konto',
+      accountSetupIntroVerification2 = '2. Deine lokale Gemeinschaft',
+      accountSetupIntroVerification3 = '3. Den Status deiner Mitgliedschaft',
+      accountSetupIntroPrivacyTitle = 'Deine Privatsphäre zählt',
+      accountSetupIntroPrivacyBody =
+          'Dein genauer Standort wird nicht öffentlich angezeigt.',
+      accountSetupIntroPrivacyBodySecond =
+          'TOWN speichert keine vollständigen Kartendaten und erstellt aus '
+          'deiner zivilgesellschaftlichen Aktivität keine Werbe- oder '
+          'politischen Profile.',
+      accountSetupIntroStart = 'Starten',
+      accountSetupIntroSecondaryBack = 'Zurück zur Mitgliedschaft',
+      accountSetupIntroPrototypeMessage =
+          'Die Kontoerstellung ist in diesem Prototyp noch nicht verfügbar.',
+      accountSetupIntroPrototypeDismiss = 'Verstanden';
 
   final String openSignalAction;
   final String openSignalSheetTitle;
@@ -251,8 +343,23 @@ class TownFeedCopy {
   final String membershipEntryRights;
   final String membershipEntryContinue;
   final String membershipEntrySecondaryBack;
-  final String membershipEntryPrototypeMessage;
-  final String membershipEntryPrototypeDismiss;
+  final String accountSetupIntroLabel;
+  final String accountSetupIntroHeadline;
+  final String accountSetupIntroBody;
+  final String accountSetupIntroWhyTitle;
+  final String accountSetupIntroWhyBody;
+  final String accountSetupIntroWhyBodySecond;
+  final String accountSetupIntroVerificationTitle;
+  final String accountSetupIntroVerification1;
+  final String accountSetupIntroVerification2;
+  final String accountSetupIntroVerification3;
+  final String accountSetupIntroPrivacyTitle;
+  final String accountSetupIntroPrivacyBody;
+  final String accountSetupIntroPrivacyBodySecond;
+  final String accountSetupIntroStart;
+  final String accountSetupIntroSecondaryBack;
+  final String accountSetupIntroPrototypeMessage;
+  final String accountSetupIntroPrototypeDismiss;
 
   String confirmationCount(int count) =>
       confirmationCountTemplate.replaceAll('{count}', '$count');

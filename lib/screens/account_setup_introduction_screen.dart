@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../models/town_feed_copy.dart';
-import 'account_setup_introduction_screen.dart';
 
-/// Membership Entry Screen v1 — entry to Account Setup Introduction.
+/// Account Setup Introduction v1 — prototype boundary only.
 ///
-/// Explains local membership requirements. The primary action opens Account
-/// Setup Introduction and does not create an account, authenticate, store
-/// data, request location, start payment, create entitlement, or change
-/// membership state.
-class MembershipEntryScreen extends StatelessWidget {
-  const MembershipEntryScreen({
+/// Explains why a personal account is required. The primary action opens an
+/// approved prototype-boundary message and does not create an account,
+/// authenticate, collect personal data, start payment, verify location,
+/// create entitlement, or change membership state.
+class AccountSetupIntroductionScreen extends StatelessWidget {
+  const AccountSetupIntroductionScreen({
     super.key,
     required this.selectedCountry,
     required this.selectedCity,
@@ -40,15 +39,33 @@ class MembershipEntryScreen extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
-  void _onContinue(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AccountSetupIntroductionScreen(
-          selectedCountry: selectedCountry,
-          selectedCity: selectedCity,
-          copy: copy,
-        ),
-      ),
+  Future<void> _onStart(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          key: const Key('account_setup_intro_prototype_dialog'),
+          backgroundColor: const Color(0xFF141414),
+          title: null,
+          content: Text(
+            copy.accountSetupIntroPrototypeMessage,
+            style: const TextStyle(fontSize: 16.5, height: 1.4, color: ink),
+          ),
+          actions: [
+            TextButton(
+              key: const Key('account_setup_intro_prototype_dismiss'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                copy.accountSetupIntroPrototypeDismiss,
+                style: const TextStyle(
+                  color: accent,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -59,10 +76,9 @@ class MembershipEntryScreen extends StatelessWidget {
       16.0,
       21.6,
     );
-    final String headline = copy.membershipEntryHeadline(selectedCity);
 
     return Scaffold(
-      key: const Key('membership_entry_screen'),
+      key: const Key('account_setup_intro_screen'),
       backgroundColor: background,
       body: SafeArea(
         child: Padding(
@@ -78,10 +94,10 @@ class MembershipEntryScreen extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: IconButton(
-                  key: const Key('membership_entry_back'),
+                  key: const Key('account_setup_intro_back'),
                   onPressed: () => _onBack(context),
                   icon: const Icon(Icons.arrow_back, color: ink),
-                  tooltip: copy.membershipEntrySecondaryBack,
+                  tooltip: copy.accountSetupIntroSecondaryBack,
                 ),
               ),
               Expanded(
@@ -91,7 +107,8 @@ class MembershipEntryScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 8),
                       Text(
-                        copy.membershipEntryLabel,
+                        copy.accountSetupIntroLabel,
+                        key: const Key('account_setup_intro_label'),
                         style: const TextStyle(
                           fontSize: 12,
                           height: 1.3,
@@ -102,8 +119,7 @@ class MembershipEntryScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        headline,
-                        key: const Key('membership_entry_city'),
+                        copy.accountSetupIntroHeadline,
                         style: const TextStyle(
                           fontFamily: 'serif',
                           fontSize: 28,
@@ -114,55 +130,17 @@ class MembershipEntryScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        copy.membershipEntryBody,
+                        copy.accountSetupIntroBody,
                         style: const TextStyle(
                           fontSize: 16.5,
-                          height: 1.4,
-                          color: inkSoft,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        copy.membershipEntryBodySecond,
-                        style: const TextStyle(
-                          fontSize: 16.5,
-                          height: 1.4,
-                          color: inkSoft,
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      Text(
-                        copy.membershipEntryPrice,
-                        key: const Key('membership_entry_price'),
-                        style: const TextStyle(
-                          fontFamily: 'serif',
-                          fontSize: 26,
-                          height: 1.2,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        copy.membershipEntryRenewal,
-                        style: const TextStyle(
-                          fontSize: 15.5,
-                          height: 1.4,
-                          color: inkSoft,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        copy.membershipEntryRenewalSecond,
-                        style: const TextStyle(
-                          fontSize: 15.5,
                           height: 1.4,
                           color: inkSoft,
                         ),
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        copy.membershipEntryConditionsTitle,
+                        copy.accountSetupIntroWhyTitle,
+                        key: const Key('account_setup_intro_why'),
                         style: const TextStyle(
                           fontSize: 16,
                           height: 1.3,
@@ -171,44 +149,84 @@ class MembershipEntryScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      KeyedSubtree(
-                        key: const Key('membership_entry_conditions'),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              copy.membershipEntryCondition1,
-                              style: const TextStyle(
-                                fontSize: 15.5,
-                                height: 1.45,
-                                color: inkSoft,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              copy.membershipEntryCondition2,
-                              style: const TextStyle(
-                                fontSize: 15.5,
-                                height: 1.45,
-                                color: inkSoft,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              copy.membershipEntryCondition3,
-                              style: const TextStyle(
-                                fontSize: 15.5,
-                                height: 1.45,
-                                color: inkSoft,
-                              ),
-                            ),
-                          ],
+                      Text(
+                        copy.accountSetupIntroWhyBody,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.45,
+                          color: inkSoft,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       Text(
-                        copy.membershipEntryRights,
-                        key: const Key('membership_entry_rights'),
+                        copy.accountSetupIntroWhyBodySecond,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.45,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        copy.accountSetupIntroVerificationTitle,
+                        key: const Key('account_setup_intro_verification'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.3,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        copy.accountSetupIntroVerification1,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.45,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        copy.accountSetupIntroVerification2,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.45,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        copy.accountSetupIntroVerification3,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.45,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        copy.accountSetupIntroPrivacyTitle,
+                        key: const Key('account_setup_intro_privacy'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.3,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        copy.accountSetupIntroPrivacyBody,
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          height: 1.45,
+                          color: inkSoft,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        copy.accountSetupIntroPrivacyBodySecond,
                         style: const TextStyle(
                           fontSize: 15.5,
                           height: 1.45,
@@ -223,8 +241,8 @@ class MembershipEntryScreen extends StatelessWidget {
               SizedBox(
                 height: 52,
                 child: FilledButton(
-                  key: const Key('membership_entry_continue'),
-                  onPressed: () => _onContinue(context),
+                  key: const Key('account_setup_intro_start'),
+                  onPressed: () => _onStart(context),
                   style: FilledButton.styleFrom(
                     backgroundColor: accent,
                     foregroundColor: const Color(0xFF111111),
@@ -236,13 +254,14 @@ class MembershipEntryScreen extends StatelessWidget {
                       letterSpacing: 0.2,
                     ),
                   ),
-                  child: Text(copy.membershipEntryContinue),
+                  child: Text(copy.accountSetupIntroStart),
                 ),
               ),
               const SizedBox(height: 10),
               SizedBox(
                 height: 48,
                 child: OutlinedButton(
+                  key: const Key('account_setup_intro_secondary_back'),
                   onPressed: () => _onBack(context),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: ink,
@@ -256,7 +275,7 @@ class MembershipEntryScreen extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  child: Text(copy.membershipEntrySecondaryBack),
+                  child: Text(copy.accountSetupIntroSecondaryBack),
                 ),
               ),
             ],
