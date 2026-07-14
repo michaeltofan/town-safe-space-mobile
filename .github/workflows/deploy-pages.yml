@@ -8,6 +8,7 @@ name: Deploy GitHub Pages
 #   /experience-v1/           standalone HTML experience prototype
 #   /owner-journey-v1/        owner verification Flutter journey (PR #35 pin)
 #   /membership-entry-v1-review/ temporary Membership Entry v1 review (pinned SHA)
+#   /account-setup-introduction-v1-review/ temporary Account Setup Introduction v1 review (pinned SHA)
 #
 # Do not add a second workflow that calls actions/deploy-pages.
 # Competing root-only deploys overwrite this site (see run 29182694682).
@@ -108,6 +109,18 @@ jobs:
           flutter pub get
           flutter build web --release --base-href /town-safe-space-mobile/membership-entry-v1-review/ --pwa-strategy=none
 
+      - name: Checkout Account Setup Introduction v1 review tip
+        uses: actions/checkout@v4
+        with:
+          ref: f6b0b1573a59a587a6b2a593c10cacd6ed0d870a
+          path: account-setup-intro-src
+
+      - name: Build account-setup-introduction-v1-review Flutter subdirectory
+        working-directory: account-setup-intro-src
+        run: |
+          flutter pub get
+          flutter build web --release --base-href /town-safe-space-mobile/account-setup-introduction-v1-review/ --pwa-strategy=none
+
       - name: Assemble combined Pages artifact
         run: |
           set -euo pipefail
@@ -123,11 +136,14 @@ jobs:
           cp -a owner-src/build/web/. site/owner-journey-v1/
           mkdir -p site/membership-entry-v1-review
           cp -a membership-entry-src/build/web/. site/membership-entry-v1-review/
+          mkdir -p site/account-setup-introduction-v1-review
+          cp -a account-setup-intro-src/build/web/. site/account-setup-introduction-v1-review/
           rm -f site/flutter_service_worker.js
           rm -f site/pr30-preview/flutter_service_worker.js
           rm -f site/pr33-preview/flutter_service_worker.js
           rm -f site/owner-journey-v1/flutter_service_worker.js
           rm -f site/membership-entry-v1-review/flutter_service_worker.js
+          rm -f site/account-setup-introduction-v1-review/flutter_service_worker.js
 
           echo "===== ARTIFACT TREE (required paths) ====="
           find site -maxdepth 3 \( -name index.html -o -name styles.css -o -name app.js -o -name '*.jpg' -o -name '*.png' -o -name main.dart.js \) | sort
@@ -149,17 +165,21 @@ jobs:
           test -f site/owner-journey-v1/main.dart.js
           test -f site/membership-entry-v1-review/index.html
           test -f site/membership-entry-v1-review/main.dart.js
+          test -f site/account-setup-introduction-v1-review/index.html
+          test -f site/account-setup-introduction-v1-review/main.dart.js
           grep -q 'href="/town-safe-space-mobile/"' site/index.html
           grep -q 'href="/town-safe-space-mobile/pr30-preview/"' site/pr30-preview/index.html
           grep -q 'href="/town-safe-space-mobile/pr33-preview/"' site/pr33-preview/index.html
           grep -q 'TOWN_EXPERIENCE_PROTOTYPE_V1' site/experience-v1/index.html
           grep -q 'href="/town-safe-space-mobile/owner-journey-v1/"' site/owner-journey-v1/index.html
           grep -q 'href="/town-safe-space-mobile/membership-entry-v1-review/"' site/membership-entry-v1-review/index.html
+          grep -q 'href="/town-safe-space-mobile/account-setup-introduction-v1-review/"' site/account-setup-introduction-v1-review/index.html
           test ! -f site/flutter_service_worker.js
           test ! -f site/pr30-preview/flutter_service_worker.js
           test ! -f site/pr33-preview/flutter_service_worker.js
           test ! -f site/owner-journey-v1/flutter_service_worker.js
           test ! -f site/membership-entry-v1-review/flutter_service_worker.js
+          test ! -f site/account-setup-introduction-v1-review/flutter_service_worker.js
           echo "ARTIFACT_VALIDATION=pass"
 
       - name: Setup Pages
