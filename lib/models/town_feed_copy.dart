@@ -58,8 +58,45 @@ class TownFeedCopy {
     required this.accountSetupIntroPrivacyBodySecond,
     required this.accountSetupIntroStart,
     required this.accountSetupIntroSecondaryBack,
-    required this.accountSetupIntroPrototypeMessage,
-    required this.accountSetupIntroPrototypeDismiss,
+    required this.accountCreationEmailLabel,
+    required this.accountCreationEmailHeadline,
+    required this.accountCreationEmailBody,
+    required this.accountCreationEmailBodySecond,
+    required this.accountCreationEmailFieldLabel,
+    required this.accountCreationEmailPlaceholder,
+    required this.accountCreationEmailPrivacyNote,
+    required this.accountCreationEmailContinue,
+    required this.accountCreationEmailEmpty,
+    required this.accountCreationEmailInvalid,
+    required this.accountCreationCodeLabel,
+    required this.accountCreationCodeHeadline,
+    required this.accountCreationCodeBody,
+    required this.accountCreationCodeFieldLabel,
+    required this.accountCreationCodeVerify,
+    required this.accountCreationCodeChangeEmail,
+    required this.accountCreationCodeEmpty,
+    required this.accountCreationCodeInvalid,
+    required this.accountCreationCodePrototypeNote,
+    required this.accountCreationPasskeyLabel,
+    required this.accountCreationPasskeyHeadline,
+    required this.accountCreationPasskeyBody,
+    required this.accountCreationPasskeyBodySecond,
+    required this.accountCreationPasskeyBenefit1,
+    required this.accountCreationPasskeyBenefit2,
+    required this.accountCreationPasskeyBenefit3,
+    required this.accountCreationPasskeyCreate,
+    required this.accountCreationPasskeyPrototypeMessage,
+    required this.accountCreationPasskeySimulate,
+    required this.accountCreationReadyLabel,
+    required this.accountCreationReadyHeadline,
+    required this.accountCreationReadyBody,
+    required this.accountCreationReadyBodySecond,
+    required this.accountCreationReadyEmailStatus,
+    required this.accountCreationReadyPasskeyStatus,
+    required this.accountCreationReadyNextStep,
+    required this.accountCreationReadyContinue,
+    required this.accountCreationPaymentBoundaryMessage,
+    required this.accountCreationPaymentBoundaryDismiss,
   });
 
   /// Explicit English chrome (legacy override / tests).
@@ -138,9 +175,55 @@ class TownFeedCopy {
           'or political profiles from your civic activity.',
       accountSetupIntroStart = 'Start',
       accountSetupIntroSecondaryBack = 'Back to membership',
-      accountSetupIntroPrototypeMessage =
-          'Account creation is not active in this prototype yet.',
-      accountSetupIntroPrototypeDismiss = 'Got it';
+      accountCreationEmailLabel = 'CREATE YOUR ACCOUNT',
+      accountCreationEmailHeadline = 'Enter your email.',
+      accountCreationEmailBody =
+          'We will send you a 6-digit verification code.',
+      accountCreationEmailBodySecond = 'You do not need a password.',
+      accountCreationEmailFieldLabel = 'Email address',
+      accountCreationEmailPlaceholder = 'name@example.com',
+      accountCreationEmailPrivacyNote =
+          'We will use this email to verify your account, send essential '
+          'communications and help you recover access.',
+      accountCreationEmailContinue = 'Continue',
+      accountCreationEmailEmpty = 'Enter your email address.',
+      accountCreationEmailInvalid = 'Enter a valid email address.',
+      accountCreationCodeLabel = 'VERIFY EMAIL',
+      accountCreationCodeHeadline = 'Check your email.',
+      accountCreationCodeBody = 'We sent a 6-digit code to:',
+      accountCreationCodeFieldLabel = 'Verification code',
+      accountCreationCodeVerify = 'Verify',
+      accountCreationCodeChangeEmail = 'Change email',
+      accountCreationCodeEmpty = 'Enter the 6-digit code.',
+      accountCreationCodeInvalid = 'The code is incorrect.',
+      accountCreationCodePrototypeNote =
+          'In the prototype, enter 123456 to continue.',
+      accountCreationPasskeyLabel = 'SECURE ACCESS',
+      accountCreationPasskeyHeadline = 'Protect your TOWN account.',
+      accountCreationPasskeyBody =
+          'Use Face ID, Touch ID, your fingerprint or your device PIN.',
+      accountCreationPasskeyBodySecond =
+          'TOWN uses a passkey: you do not need to create or remember a password.',
+      accountCreationPasskeyBenefit1 = 'Better resistance to phishing',
+      accountCreationPasskeyBenefit2 = 'No password is shared with TOWN',
+      accountCreationPasskeyBenefit3 = 'You can add other devices later',
+      accountCreationPasskeyCreate = 'Create secure access',
+      accountCreationPasskeyPrototypeMessage =
+          'Real passkey creation is not active in this prototype yet.',
+      accountCreationPasskeySimulate = 'Simulate setup',
+      accountCreationReadyLabel = 'SECURE ACCOUNT',
+      accountCreationReadyHeadline = 'Your account is ready.',
+      accountCreationReadyBody =
+          'Your email is verified and your secure access is set up.',
+      accountCreationReadyBodySecond =
+          'The next step is to activate the annual TOWN membership.',
+      accountCreationReadyEmailStatus = 'Email verified',
+      accountCreationReadyPasskeyStatus = 'Secure access configured',
+      accountCreationReadyNextStep = 'TOWN membership — €12 per year',
+      accountCreationReadyContinue = 'Continue to membership',
+      accountCreationPaymentBoundaryMessage =
+          'Annual membership payment is not active in this prototype yet.',
+      accountCreationPaymentBoundaryDismiss = 'Got it';
 
   /// Official Italian chrome for Milano Feed V1.
   const TownFeedCopy.italian()
@@ -219,9 +302,62 @@ class TownFeedCopy {
           'pubblicitari o politici dalla tua attività civica.',
       accountSetupIntroStart = 'Inizia',
       accountSetupIntroSecondaryBack = 'Torna all’iscrizione',
-      accountSetupIntroPrototypeMessage =
-          'La creazione dell’account non è ancora attiva in questo prototipo.',
-      accountSetupIntroPrototypeDismiss = 'Ho capito';
+      accountCreationEmailLabel = 'CREA IL TUO ACCOUNT',
+      accountCreationEmailHeadline = 'Inserisci la tua email.',
+      accountCreationEmailBody =
+          'Ti invieremo un codice di verifica di 6 cifre.',
+      accountCreationEmailBodySecond = 'Non serve una password.',
+      accountCreationEmailFieldLabel = 'Indirizzo email',
+      accountCreationEmailPlaceholder = 'nome@esempio.it',
+      accountCreationEmailPrivacyNote =
+          'Useremo questa email per verificare il tuo account, inviarti '
+          'comunicazioni essenziali e aiutarti a recuperare l’accesso.',
+      accountCreationEmailContinue = 'Continua',
+      accountCreationEmailEmpty = 'Inserisci il tuo indirizzo email.',
+      accountCreationEmailInvalid =
+          'Inserisci un indirizzo email valido.',
+      accountCreationCodeLabel = 'VERIFICA EMAIL',
+      accountCreationCodeHeadline = 'Controlla la tua email.',
+      accountCreationCodeBody =
+          'Abbiamo inviato un codice di 6 cifre a:',
+      accountCreationCodeFieldLabel = 'Codice di verifica',
+      accountCreationCodeVerify = 'Verifica',
+      accountCreationCodeChangeEmail = 'Cambia email',
+      accountCreationCodeEmpty = 'Inserisci il codice di 6 cifre.',
+      accountCreationCodeInvalid = 'Il codice non è corretto.',
+      accountCreationCodePrototypeNote =
+          'Nel prototipo, inserisci 123456 per continuare.',
+      accountCreationPasskeyLabel = 'ACCESSO SICURO',
+      accountCreationPasskeyHeadline = 'Proteggi il tuo account TOWN.',
+      accountCreationPasskeyBody =
+          'Usa Face ID, Touch ID, l’impronta digitale o il PIN del tuo '
+          'dispositivo.',
+      accountCreationPasskeyBodySecond =
+          'TOWN utilizza una passkey: non devi creare o ricordare una password.',
+      accountCreationPasskeyBenefit1 = 'Resiste meglio al phishing',
+      accountCreationPasskeyBenefit2 =
+          'Non viene condivisa una password con TOWN',
+      accountCreationPasskeyBenefit3 =
+          'Puoi aggiungere altri dispositivi in seguito',
+      accountCreationPasskeyCreate = 'Crea accesso sicuro',
+      accountCreationPasskeyPrototypeMessage =
+          'La creazione reale della passkey non è ancora attiva in questo '
+          'prototipo.',
+      accountCreationPasskeySimulate = 'Simula configurazione',
+      accountCreationReadyLabel = 'ACCOUNT SICURO',
+      accountCreationReadyHeadline = 'Il tuo account è pronto.',
+      accountCreationReadyBody =
+          'La tua email è verificata e il tuo accesso sicuro è configurato.',
+      accountCreationReadyBodySecond =
+          'Il prossimo passo è attivare l’iscrizione annuale a TOWN.',
+      accountCreationReadyEmailStatus = 'Email verificata',
+      accountCreationReadyPasskeyStatus = 'Accesso sicuro configurato',
+      accountCreationReadyNextStep = 'Iscrizione TOWN — €12 all’anno',
+      accountCreationReadyContinue = 'Continua all’iscrizione',
+      accountCreationPaymentBoundaryMessage =
+          'Il pagamento dell’iscrizione annuale non è ancora attivo in questo '
+          'prototipo.',
+      accountCreationPaymentBoundaryDismiss = 'Ho capito';
 
   /// Official German chrome for Munich Feed V1.
   const TownFeedCopy.german()
@@ -305,9 +441,66 @@ class TownFeedCopy {
           'politischen Profile.',
       accountSetupIntroStart = 'Starten',
       accountSetupIntroSecondaryBack = 'Zurück zur Mitgliedschaft',
-      accountSetupIntroPrototypeMessage =
-          'Die Kontoerstellung ist in diesem Prototyp noch nicht verfügbar.',
-      accountSetupIntroPrototypeDismiss = 'Verstanden';
+      accountCreationEmailLabel = 'KONTO ERSTELLEN',
+      accountCreationEmailHeadline = 'Gib deine E-Mail-Adresse ein.',
+      accountCreationEmailBody =
+          'Wir senden dir einen sechsstelligen Bestätigungscode.',
+      accountCreationEmailBodySecond = 'Du brauchst kein Passwort.',
+      accountCreationEmailFieldLabel = 'E-Mail-Adresse',
+      accountCreationEmailPlaceholder = 'name@beispiel.de',
+      accountCreationEmailPrivacyNote =
+          'Wir verwenden diese E-Mail-Adresse, um dein Konto zu bestätigen, '
+          'dir notwendige Mitteilungen zu senden und dir bei der '
+          'Wiederherstellung des Zugangs zu helfen.',
+      accountCreationEmailContinue = 'Weiter',
+      accountCreationEmailEmpty = 'Gib deine E-Mail-Adresse ein.',
+      accountCreationEmailInvalid =
+          'Gib eine gültige E-Mail-Adresse ein.',
+      accountCreationCodeLabel = 'E-MAIL BESTÄTIGEN',
+      accountCreationCodeHeadline = 'Prüfe deine E-Mails.',
+      accountCreationCodeBody =
+          'Wir haben einen sechsstelligen Code gesendet an:',
+      accountCreationCodeFieldLabel = 'Bestätigungscode',
+      accountCreationCodeVerify = 'Bestätigen',
+      accountCreationCodeChangeEmail = 'E-Mail-Adresse ändern',
+      accountCreationCodeEmpty = 'Gib den sechsstelligen Code ein.',
+      accountCreationCodeInvalid = 'Der Code ist nicht korrekt.',
+      accountCreationCodePrototypeNote =
+          'Gib im Prototyp 123456 ein, um fortzufahren.',
+      accountCreationPasskeyLabel = 'SICHERER ZUGANG',
+      accountCreationPasskeyHeadline = 'Schütze dein TOWN-Konto.',
+      accountCreationPasskeyBody =
+          'Verwende Face ID, Touch ID, deinen Fingerabdruck oder die '
+          'Geräte-PIN.',
+      accountCreationPasskeyBodySecond =
+          'TOWN verwendet einen Passkey. Du musst kein Passwort erstellen oder '
+          'merken.',
+      accountCreationPasskeyBenefit1 = 'Besserer Schutz vor Phishing',
+      accountCreationPasskeyBenefit2 =
+          'Kein Passwort wird mit TOWN geteilt',
+      accountCreationPasskeyBenefit3 =
+          'Du kannst später weitere Geräte hinzufügen',
+      accountCreationPasskeyCreate = 'Sicheren Zugang erstellen',
+      accountCreationPasskeyPrototypeMessage =
+          'Die echte Passkey-Erstellung ist in diesem Prototyp noch nicht '
+          'verfügbar.',
+      accountCreationPasskeySimulate = 'Einrichtung simulieren',
+      accountCreationReadyLabel = 'KONTO GESICHERT',
+      accountCreationReadyHeadline = 'Dein Konto ist bereit.',
+      accountCreationReadyBody =
+          'Deine E-Mail-Adresse ist bestätigt und dein sicherer Zugang ist '
+          'eingerichtet.',
+      accountCreationReadyBodySecond =
+          'Als Nächstes aktivierst du deine jährliche TOWN-Mitgliedschaft.',
+      accountCreationReadyEmailStatus = 'E-Mail bestätigt',
+      accountCreationReadyPasskeyStatus = 'Sicherer Zugang eingerichtet',
+      accountCreationReadyNextStep =
+          'TOWN-Mitgliedschaft — €12 pro Jahr',
+      accountCreationReadyContinue = 'Weiter zur Mitgliedschaft',
+      accountCreationPaymentBoundaryMessage =
+          'Die Zahlung für die jährliche Mitgliedschaft ist in diesem Prototyp '
+          'noch nicht verfügbar.',
+      accountCreationPaymentBoundaryDismiss = 'Verstanden';
 
   final String openSignalAction;
   final String openSignalSheetTitle;
@@ -358,8 +551,45 @@ class TownFeedCopy {
   final String accountSetupIntroPrivacyBodySecond;
   final String accountSetupIntroStart;
   final String accountSetupIntroSecondaryBack;
-  final String accountSetupIntroPrototypeMessage;
-  final String accountSetupIntroPrototypeDismiss;
+  final String accountCreationEmailLabel;
+  final String accountCreationEmailHeadline;
+  final String accountCreationEmailBody;
+  final String accountCreationEmailBodySecond;
+  final String accountCreationEmailFieldLabel;
+  final String accountCreationEmailPlaceholder;
+  final String accountCreationEmailPrivacyNote;
+  final String accountCreationEmailContinue;
+  final String accountCreationEmailEmpty;
+  final String accountCreationEmailInvalid;
+  final String accountCreationCodeLabel;
+  final String accountCreationCodeHeadline;
+  final String accountCreationCodeBody;
+  final String accountCreationCodeFieldLabel;
+  final String accountCreationCodeVerify;
+  final String accountCreationCodeChangeEmail;
+  final String accountCreationCodeEmpty;
+  final String accountCreationCodeInvalid;
+  final String accountCreationCodePrototypeNote;
+  final String accountCreationPasskeyLabel;
+  final String accountCreationPasskeyHeadline;
+  final String accountCreationPasskeyBody;
+  final String accountCreationPasskeyBodySecond;
+  final String accountCreationPasskeyBenefit1;
+  final String accountCreationPasskeyBenefit2;
+  final String accountCreationPasskeyBenefit3;
+  final String accountCreationPasskeyCreate;
+  final String accountCreationPasskeyPrototypeMessage;
+  final String accountCreationPasskeySimulate;
+  final String accountCreationReadyLabel;
+  final String accountCreationReadyHeadline;
+  final String accountCreationReadyBody;
+  final String accountCreationReadyBodySecond;
+  final String accountCreationReadyEmailStatus;
+  final String accountCreationReadyPasskeyStatus;
+  final String accountCreationReadyNextStep;
+  final String accountCreationReadyContinue;
+  final String accountCreationPaymentBoundaryMessage;
+  final String accountCreationPaymentBoundaryDismiss;
 
   String confirmationCount(int count) =>
       confirmationCountTemplate.replaceAll('{count}', '$count');
