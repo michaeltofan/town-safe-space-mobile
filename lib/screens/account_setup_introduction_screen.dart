@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../models/town_feed_copy.dart';
+import 'account_creation_screen.dart';
 
-/// Account Setup Introduction v1 — prototype boundary only.
+/// Account Setup Introduction v1 — entry to Account Creation V1.
 ///
-/// Explains why a personal account is required. The primary action opens an
-/// approved prototype-boundary message and does not create an account,
-/// authenticate, collect personal data, start payment, verify location,
-/// create entitlement, or change membership state.
+/// Explains why a personal account is required. The primary action opens the
+/// single Account Creation screen and does not create an account, authenticate,
+/// collect personal data, start payment, verify location, create entitlement,
+/// or change membership state.
 class AccountSetupIntroductionScreen extends StatelessWidget {
   const AccountSetupIntroductionScreen({
     super.key,
@@ -39,33 +40,15 @@ class AccountSetupIntroductionScreen extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
-  Future<void> _onStart(BuildContext context) async {
-    await showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          key: const Key('account_setup_intro_prototype_dialog'),
-          backgroundColor: const Color(0xFF141414),
-          title: null,
-          content: Text(
-            copy.accountSetupIntroPrototypeMessage,
-            style: const TextStyle(fontSize: 16.5, height: 1.4, color: ink),
-          ),
-          actions: [
-            TextButton(
-              key: const Key('account_setup_intro_prototype_dismiss'),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                copy.accountSetupIntroPrototypeDismiss,
-                style: const TextStyle(
-                  color: accent,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+  void _onStart(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AccountCreationScreen(
+          selectedCountry: selectedCountry,
+          selectedCity: selectedCity,
+          copy: copy,
+        ),
+      ),
     );
   }
 

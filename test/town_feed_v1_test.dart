@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:town_safe_space_mobile/geometry/point_in_polygon_engine.dart';
 import 'package:town_safe_space_mobile/models/community_signal_mock.dart';
 import 'package:town_safe_space_mobile/models/town_feed_copy.dart';
+import 'package:town_safe_space_mobile/screens/account_creation_screen.dart';
 import 'package:town_safe_space_mobile/screens/account_setup_introduction_screen.dart';
 import 'package:town_safe_space_mobile/screens/location_confirmation_screen.dart';
 import 'package:town_safe_space_mobile/screens/membership_entry_screen.dart';
@@ -616,47 +617,202 @@ void main() {
         findsOneWidget,
       );
 
+      // Inizia opens the single Account Creation Screen (email step).
       await tester.tap(find.byKey(const Key('account_setup_intro_start')));
       await tester.pumpAndSettle();
+      expect(find.byKey(const Key('account_creation_screen')), findsOneWidget);
+      expect(find.byType(AccountCreationScreen), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_creation_email_step')),
+        findsOneWidget,
+      );
+      expect(find.text(italianCopy.accountCreationEmailLabel), findsOneWidget);
+      expect(
+        find.text(italianCopy.accountCreationEmailHeadline),
+        findsOneWidget,
+      );
 
+      // Empty Italian email error.
+      await tester.tap(find.byKey(const Key('account_creation_email_continue')));
+      await tester.pumpAndSettle();
       expect(
-        find.byKey(const Key('account_setup_intro_prototype_dialog')),
+        find.byKey(const Key('account_creation_email_error')),
+        findsOneWidget,
+      );
+      expect(find.text(italianCopy.accountCreationEmailEmpty), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_creation_email_step')),
+        findsOneWidget,
+      );
+
+      // Invalid Italian email error.
+      await tester.enterText(
+        find.byKey(const Key('account_creation_email_field')),
+        'not-an-email',
+      );
+      await tester.tap(find.byKey(const Key('account_creation_email_continue')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(italianCopy.accountCreationEmailInvalid),
         findsOneWidget,
       );
       expect(
-        find.text(italianCopy.accountSetupIntroPrototypeMessage),
+        find.byKey(const Key('account_creation_code_step')),
+        findsNothing,
+      );
+
+      // Valid email advances to code step on the same screen.
+      const String testEmail = 'prova@esempio.it';
+      await tester.enterText(
+        find.byKey(const Key('account_creation_email_field')),
+        '  $testEmail  ',
+      );
+      await tester.tap(find.byKey(const Key('account_creation_email_continue')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('account_creation_screen')), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_creation_code_step')),
+        findsOneWidget,
+      );
+      expect(find.text(testEmail), findsOneWidget);
+      expect(find.text(italianCopy.accountCreationCodeLabel), findsOneWidget);
+      expect(
+        find.text(italianCopy.accountCreationCodePrototypeNote),
+        findsOneWidget,
+      );
+
+      // Wrong code stays on code step.
+      await tester.enterText(
+        find.byKey(const Key('account_creation_code_field')),
+        '000000',
+      );
+      await tester.tap(find.byKey(const Key('account_creation_code_verify')));
+      await tester.pumpAndSettle();
+      expect(find.text(italianCopy.accountCreationCodeInvalid), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_creation_code_step')),
         findsOneWidget,
       );
       expect(
-        find.text(italianCopy.accountSetupIntroPrototypeDismiss),
+        find.byKey(const Key('account_creation_passkey_step')),
+        findsNothing,
+      );
+
+      // 123456 advances to passkey step.
+      await tester.enterText(
+        find.byKey(const Key('account_creation_code_field')),
+        '123456',
+      );
+      await tester.tap(find.byKey(const Key('account_creation_code_verify')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_passkey_step')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountCreationPasskeyLabel),
+        findsOneWidget,
+      );
+
+      // Passkey dialog → simulate → account-ready step.
+      await tester.tap(find.byKey(const Key('account_creation_passkey_create')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_passkey_prototype_dialog')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const Key('account_creation_passkey_simulate')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_ready_step')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('account_creation_email_verified_status')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountCreationReadyEmailStatus),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('account_creation_passkey_status')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountCreationReadyPasskeyStatus),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountCreationReadyNextStep),
         findsOneWidget,
       );
       expect(find.text('Account created'), findsNothing);
       expect(find.text('Membership active'), findsNothing);
       expect(find.text('Payment complete'), findsNothing);
+      expect(find.text('Subscription active'), findsNothing);
+      expect(find.text('Local verification complete'), findsNothing);
 
+      // Payment boundary; dismiss stays on ready.
       await tester.tap(
-        find.byKey(const Key('account_setup_intro_prototype_dismiss')),
+        find.byKey(const Key('account_creation_continue_membership')),
       );
       await tester.pumpAndSettle();
-
       expect(
-        find.byKey(const Key('account_setup_intro_prototype_dialog')),
+        find.byKey(const Key('account_creation_payment_boundary_dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(italianCopy.accountCreationPaymentBoundaryMessage),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const Key('account_creation_payment_boundary_dismiss')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_payment_boundary_dialog')),
         findsNothing,
       );
+      expect(
+        find.byKey(const Key('account_creation_ready_step')),
+        findsOneWidget,
+      );
+
+      // Step-by-step back inside the same route.
+      await tester.tap(find.byKey(const Key('account_creation_back')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_passkey_step')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('account_creation_back')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_code_step')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('account_creation_back')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_email_step')),
+        findsOneWidget,
+      );
+
+      // Back from email returns to Account Setup Introduction.
+      await tester.tap(find.byKey(const Key('account_creation_back')));
+      await tester.pumpAndSettle();
       expect(
         find.byKey(const Key('account_setup_intro_screen')),
         findsOneWidget,
       );
-      expect(find.byType(AccountSetupIntroductionScreen), findsOneWidget);
+      expect(find.byKey(const Key('account_creation_screen')), findsNothing);
 
       await tester.tap(find.byKey(const Key('account_setup_intro_back')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
-      expect(
-        find.byKey(const Key('account_setup_intro_screen')),
-        findsNothing,
-      );
 
       await tester.tap(find.byKey(const Key('membership_entry_continue')));
       await tester.pumpAndSettle();
@@ -665,10 +821,6 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('membership_entry_screen')), findsOneWidget);
-      expect(
-        find.byKey(const Key('account_setup_intro_screen')),
-        findsNothing,
-      );
 
       await tester.tap(find.byKey(const Key('membership_entry_back')));
       await tester.pumpAndSettle();
@@ -1004,14 +1156,90 @@ void main() {
       expect(find.text(italianCopy.accountSetupIntroLabel), findsNothing);
       expect(find.text(italianCopy.accountSetupIntroStart), findsNothing);
 
+      // Starten opens German Account Creation Screen.
       await tester.tap(find.byKey(const Key('account_setup_intro_start')));
       await tester.pumpAndSettle();
+      expect(find.byKey(const Key('account_creation_screen')), findsOneWidget);
       expect(
-        find.byKey(const Key('account_setup_intro_prototype_dialog')),
+        find.byKey(const Key('account_creation_email_step')),
+        findsOneWidget,
+      );
+      expect(find.text(germanCopy.accountCreationEmailLabel), findsOneWidget);
+      expect(find.text(italianCopy.accountCreationEmailLabel), findsNothing);
+
+      await tester.tap(find.byKey(const Key('account_creation_email_continue')));
+      await tester.pumpAndSettle();
+      expect(find.text(germanCopy.accountCreationEmailEmpty), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('account_creation_email_field')),
+        'ungueltig',
+      );
+      await tester.tap(find.byKey(const Key('account_creation_email_continue')));
+      await tester.pumpAndSettle();
+      expect(find.text(germanCopy.accountCreationEmailInvalid), findsOneWidget);
+
+      const String testEmail = 'name@beispiel.de';
+      await tester.enterText(
+        find.byKey(const Key('account_creation_email_field')),
+        testEmail,
+      );
+      await tester.tap(find.byKey(const Key('account_creation_email_continue')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_code_step')),
+        findsOneWidget,
+      );
+      expect(find.text(testEmail), findsOneWidget);
+      expect(find.text(germanCopy.accountCreationCodeLabel), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('account_creation_code_field')),
+        '111111',
+      );
+      await tester.tap(find.byKey(const Key('account_creation_code_verify')));
+      await tester.pumpAndSettle();
+      expect(find.text(germanCopy.accountCreationCodeInvalid), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('account_creation_code_field')),
+        '123456',
+      );
+      await tester.tap(find.byKey(const Key('account_creation_code_verify')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_passkey_step')),
         findsOneWidget,
       );
       expect(
-        find.text(germanCopy.accountSetupIntroPrototypeMessage),
+        find.text(germanCopy.accountCreationPasskeyLabel),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const Key('account_creation_passkey_create')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_passkey_prototype_dialog')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const Key('account_creation_passkey_simulate')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_ready_step')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountCreationReadyEmailStatus),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountCreationReadyPasskeyStatus),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountCreationReadyNextStep),
         findsOneWidget,
       );
       expect(find.text('Account created'), findsNothing);
@@ -1019,8 +1247,49 @@ void main() {
       expect(find.text('Payment complete'), findsNothing);
 
       await tester.tap(
-        find.byKey(const Key('account_setup_intro_prototype_dismiss')),
+        find.byKey(const Key('account_creation_continue_membership')),
       );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_payment_boundary_dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(germanCopy.accountCreationPaymentBoundaryMessage),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const Key('account_creation_payment_boundary_dismiss')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_ready_step')),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const Key('account_creation_back')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_passkey_step')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('account_creation_back')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_code_step')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const Key('account_creation_code_change_email')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('account_creation_email_step')),
+        findsOneWidget,
+      );
+      expect(find.text(testEmail), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('account_creation_back')));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const Key('account_setup_intro_screen')),
