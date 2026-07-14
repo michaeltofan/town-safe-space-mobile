@@ -1169,7 +1169,18 @@ void main() {
 
       await tester.tap(find.byKey(const Key('account_creation_email_continue')));
       await tester.pumpAndSettle();
-      expect(find.text(germanCopy.accountCreationEmailEmpty), findsOneWidget);
+      expect(
+        find.byKey(const Key('account_creation_email_error')),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<Text>(
+              find.byKey(const Key('account_creation_email_error')),
+            )
+            .data,
+        germanCopy.accountCreationEmailEmpty,
+      );
 
       await tester.enterText(
         find.byKey(const Key('account_creation_email_field')),
@@ -1287,7 +1298,10 @@ void main() {
         find.byKey(const Key('account_creation_email_step')),
         findsOneWidget,
       );
-      expect(find.text(testEmail), findsOneWidget);
+      final TextField emailField = tester.widget(
+        find.byKey(const Key('account_creation_email_field')),
+      );
+      expect(emailField.controller?.text, testEmail);
 
       await tester.tap(find.byKey(const Key('account_creation_back')));
       await tester.pumpAndSettle();
